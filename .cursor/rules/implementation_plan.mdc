@@ -1,0 +1,54 @@
+# Implementation Plan (GeneForge AI Studio)
+
+## Phase 1: Core Setup & Foundation
+- Initialize Next.js project (App Router, TS, Tailwind).
+- Setup basic Node.js/Express backend server.
+- Configure ESLint, Prettier, TypeScript.
+- Implement Root Layout, Navbar (with RainbowKit ConnectButton for Base), Footer.
+- Setup Zustand/Jotai store, Wagmi/RainbowKit providers.
+- Securely configure backend environment variables (GROQ_API_KEY).
+- Create placeholder backend API routes (`/api/groq/chat`).
+- Set up CI/CD basics (GitHub Actions).
+
+## Phase 2: Personalized Onboarding & Dashboard
+- Build Onboarding chat interface (`/onboarding` or `/`).
+- Implement backend logic for `POST /api/groq/chat` to proxy onboarding conversation.
+- Connect onboarding flow to update user profile state in Zustand/Jotai.
+- Integrate Base Wallet connection smoothly within onboarding.
+- Develop Main Dashboard (`/dashboard`), displaying personalized greeting (ENS/Address).
+- Implement Quick Access Cards.
+- (Optional) Implement Groq-generated avatar logic (`GET /api/groq/image?type=avatar`).
+
+## Phase 3: Core Features - Predictor & Monitor
+- Develop CRISPR Predictor page (`/predict`).
+- Implement Sequence Input Form and Prediction Results display.
+- Create backend endpoint (`POST /api/predict`) for ML model interaction (assuming external/mocked for now).
+- Integrate Groq AI Assistant panel for automatic explanations (`POST /api/groq/chat` with context).
+- Implement Groq image generation for sequence visualization (`POST /api/groq/image?type=sequence`).
+- Develop Live Lab Monitor page (`/monitor`).
+- Implement WebSocket connection (`/ws/iot`) on frontend and backend.
+- Create SensorCard components and grid layout.
+- Simulate IoT data push from backend via WebSocket.
+- Implement Groq AI Assistant panel for monitor insights (proactive/reactive via WebSocket/API).
+
+## Phase 4: AI Hub & Blockchain Gateway
+- Develop AI Assistant Hub page (`/assistant`).
+- Build general chat interface with history.
+- Implement Groq diagram generation (`POST /api/groq/image?type=diagram`).
+- (Optional) Add voice input (STT) and output (TTS).
+- Develop Blockchain Portal page (`/blockchain`).
+- Display context data passed from other pages.
+- Implement AI Assistant guidance text (via Groq).
+- Add prominent external link button.
+- Display connected Base Wallet info (OnchainKit/Wagmi).
+- (Optional) Implement read-only check (`GET /api/blockchain/checkStatus`).
+
+## Phase 5: User Profile & Refinements
+- Develop User Profile page (`/profile`).
+- Display wallet info and Groq avatar.
+- Implement basic preferences management (theme, etc.).
+- Add placeholders for future features (achievements).
+- Comprehensive testing (unit, integration, E2E if possible).
+- Styling polish, animations (Framer Motion), responsiveness checks.
+- Accessibility review.
+- Deployment preparation (Vercel, Backend Host, DB Host). 

@@ -1,0 +1,48 @@
+# Project Requirements Document (GeneForge AI Studio)
+
+## Functional Requirements
+- **Personalized Onboarding:** Groq-powered conversational flow to tailor user experience based on role (student/researcher) and connect Base Smart Wallet.
+- **CRISPR Predictor:**
+  - Input DNA sequence.
+  - Display ML-based prediction results.
+  - Provide Groq-generated explanations (text/audio) of predictions.
+  - Offer Groq-generated abstract visualizations/diagrams of sequences/processes.
+- **Live Lab Monitor:**
+  - Display real-time IoT sensor data (temp, humidity) via WebSocket.
+  - Show data visualizations (charts, status indicators).
+  - Provide Groq-generated insights/alerts based on sensor data.
+- **AI Assistant Hub:**
+  - General conversational interface (Groq) for CRISPR/platform questions.
+  - Ability to request and display Groq-generated conceptual diagrams.
+  - (Optional) Voice interaction (STT/TTS).
+- **Blockchain Portal:**
+  - Display contextual data (prediction/snapshot) intended for verification.
+  - Provide AI-guided explanation of blockchain's role.
+  - Clear link to external dApp for verification using connected Base Wallet.
+  - (Optional) Display read-only status from external contract.
+- **User Profile:**
+  - Display connected Base Wallet address/ENS.
+  - Manage basic user preferences (theme, AI voice).
+  - Display Groq-generated avatar.
+
+## Non-Functional Requirements
+- **Performance:** Fast Groq response times for interactive AI features. Real-time updates for IoT monitor (~1-5 second latency).
+- **Usability:** Intuitive UI/UX, seamless navigation between features, clear feedback for actions.
+- **Scalability:** Backend capable of handling moderate WebSocket connections and Groq API calls (consider rate limits).
+- **Reliability:** Graceful handling of API errors, WebSocket disconnections.
+- **Security:** Secure management of Groq API keys in the backend. No private keys handled frontend.
+- **Interoperability:** Connects identity via Base Wallet, links to external blockchain dApp.
+
+## Technical Constraints
+- **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS, Zustand/Jotai, Wagmi/RainbowKit.
+- **Backend:** Node.js (Express/Fastify), TypeScript.
+- **AI:** Must use Groq API for chat and image generation.
+- **Web3:** Must use Base Smart Wallet via RainbowKit/Wagmi for identity. Link to external blockchain dApp (logic is external).
+- **Real-time:** Must use WebSockets for IoT data.
+- **Database:** MongoDB with Mongoose is optional for storing backend state (profiles, history).
+- **Deployment:** Vercel (Frontend), Separate Host (Backend, e.g., Fly.io), MongoDB Atlas (if used).
+
+## Business Rules
+- User identity is tied to their Base Wallet address.
+- Personalization is based on onboarding responses and potentially wallet activity (future).
+- Core blockchain verification logic resides in an external dApp/contract. 

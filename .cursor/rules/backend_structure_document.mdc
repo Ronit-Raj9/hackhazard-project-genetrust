@@ -1,0 +1,40 @@
+# Backend Structure Document
+
+## Directory Structure (Node.js/Express Example)
+- `/src`
+  - `/api` - API route definitions (e.g., `/groq`, `/iot`, `/blockchain`)
+  - `/controllers` - Request handling logic
+  - `/services` - Business logic (Groq interaction, WebSocket management, DB logic)
+  - `/models` - Mongoose schemas (if using MongoDB)
+  - `/middleware` - Express middleware (auth, logging, error handling)
+  - `/config` - Configuration settings (env vars)
+  - `/utils` - Helper functions
+  - `server.ts` - Main server entry point
+  - `app.ts` - Express app setup
+
+## Naming Conventions
+- Use camelCase for variables and functions
+- Use PascalCase for classes and types
+- Use kebab-case for filenames
+- Use camelCase for MongoDB document fields (if applicable)
+
+## Error Handling
+- Centralized error handling middleware in Express
+- Consistent error response format
+- Proper logging of errors (e.g., using Winston/Pino)
+- Specific handling for Groq API errors, WebSocket errors
+
+## External Service Interactions
+- Groq API: Securely manage API keys, handle rate limits, structure prompts effectively.
+- WebSockets: Manage connections, broadcast messages, handle disconnections gracefully.
+- MongoDB (Optional): Use Mongoose for schema definition, validation, and queries. Implement connection pooling.
+- Blockchain (Read-Only): Use ethers.js/viem with an RPC provider for Base chain interactions.
+
+## API Response Format
+```json
+{
+  "success": true,
+  "data": {},
+  "error": null // or { "message": "...", "code": "..." }
+}
+``` 

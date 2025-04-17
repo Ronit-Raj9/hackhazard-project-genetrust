@@ -1,0 +1,36 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Technology Stack Document
+
+## Frontend
+- Framework: Next.js (App Router) with TypeScript
+- State Management: Zustand / Jotai
+- Styling: Tailwind CSS, shadcn/ui, Framer Motion (Animations)
+- UI Components: Custom, Recharts (Charts)
+- Web3 Integration: RainbowKit / Wagmi (for Base Smart Wallet)
+- Testing: Jest + React Testing Library (or Vitest + RTL)
+
+## Backend
+- Language: Node.js with TypeScript
+- Framework: Express.js / Fastify
+- AI Integration: Groq API (Chat, Image, potentially Audio) via Backend Proxy
+- Real-time: WebSockets (e.g., socket.io)
+- Database: Optional MongoDB w/ Mongoose (for user profiles, chat history, etc.)
+- API Documentation: Swagger/OpenAPI (Optional)
+
+## DevOps
+- CI/CD: GitHub Actions
+- Containerization: Docker (Optional)
+- Hosting: Vercel (Frontend & Serverless Functions), Fly.io/Railway (Backend), MongoDB Atlas (DB)
+- Monitoring: Vercel Analytics / Custom Logging
+- Logging: Winston / Pino
+
+## Development Practices
+- Version Control: Git (GitHub)
+- Code Quality: ESLint + Prettier
+- Code Reviews: Required for all PRs
+- Testing: Focus on core functionality and API integrations
+- Documentation: READMEs, JSDoc/TSDoc comments 

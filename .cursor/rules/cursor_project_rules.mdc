@@ -1,0 +1,30 @@
+# Cursor Project Rules
+
+## AI Assistant Guidelines
+- AI should follow the project structure defined in backend_structure_document.mdc
+- When generating code, follow the tech stack defined in tech_stack_document.mdc
+- Frontend components must adhere to guidelines in frontend_guidelines_document.mdc
+- Follow the app flow outlined in app_flow_document.mdc
+- New features should be implemented according to the implementation_plan.mdc
+
+## Code Generation Rules
+- Generate complete, working code that can be run immediately
+- Include all necessary imports and dependencies
+- Follow established patterns in the existing codebase
+- Include proper error handling and validation
+- Write clean, maintainable code with appropriate comments
+- Use TypeScript types for all functions and components
+
+## Documentation Requirements
+- Document all API endpoints with parameters and responses
+- Include JSDoc comments for all functions and components
+- Add comprehensive README files for each major directory
+- Comment complex logic and algorithms
+- Include usage examples for reusable components
+
+## Testing Expectations
+- Write unit tests for all business logic
+- Include component tests for UI elements
+- Test both success and error scenarios
+- Mock external dependencies for reliable testing
+- Maintain test coverage above 80% 

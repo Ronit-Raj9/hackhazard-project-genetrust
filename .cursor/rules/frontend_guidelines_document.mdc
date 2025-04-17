@@ -1,0 +1,37 @@
+# Frontend Guidelines Document
+
+## Component Structure
+- Use functional components with hooks (React 18+).
+- Utilize Next.js App Router for file-based routing (`/app` directory).
+- Organize components logically (e.g., `/components/ui`, `/components/features`, `/components/layout`).
+- Follow Atomic Design principles where practical.
+- Define page-specific components within their respective route directories in `/app`.
+
+## State Management
+- Use Zustand or Jotai for global/shared application state (user profile, AI assistant state, etc.).
+- Leverage Wagmi hooks for managing wallet connection state and interactions.
+- Use local `useState` / `useReducer` for component-specific state.
+- Fetch data using React Server Components, Route Handlers, or client-side libraries like SWR/TanStack Query if needed for complex caching/mutation.
+
+## Styling Guidelines
+- Use Tailwind CSS utility classes for primary styling.
+- Utilize `shadcn/ui` components for base structure, accessibility, and theme consistency.
+- Implement custom styles using Tailwind's `@apply` or CSS Modules when necessary.
+- Use Framer Motion for animations and transitions.
+- Ensure responsiveness across major screen sizes.
+- Follow a consistent design system (colors, typography, spacing defined in `tailwind.config.js`).
+
+## Performance Optimization
+- Leverage Next.js features: Server Components, Static/Server-Side Generation (SSG/SSR) where appropriate.
+- Use `next/image` for optimized image loading.
+- Implement code splitting using `next/dynamic` for large components or libraries.
+- Optimize bundle sizes by analyzing with `@next/bundle-analyzer`.
+- Efficient data fetching strategies.
+- Memoize expensive computations using `useMemo` and `useCallback` correctly.
+
+## Accessibility (a11y)
+- Use semantic HTML elements.
+- Ensure components from `shadcn/ui` are used correctly to maintain accessibility.
+- Provide appropriate ARIA attributes for custom interactive elements.
+- Ensure sufficient color contrast.
+- Test keyboard navigation and screen reader compatibility. 

@@ -1,0 +1,41 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Application Flow Document (GeneForge AI Studio)
+
+## User Journey
+1. Landing / Personalized Onboarding (Groq Chat, Wallet Connect)
+2. Main Dashboard (Personalized, Quick Access)
+3. CRISPR Predictor (Sequence Input -> ML -> Prediction -> Groq Explanation/Visualization)
+4. Live Lab Monitor (WebSocket Data -> Visualization -> Groq Insights)
+5. AI Assistant Hub (General Groq Interaction - Chat, Diagrams)
+6. Blockchain Portal (Context Display -> AI Guidance -> External Link)
+7. User Profile Management
+
+## Authentication/Identity Flow
+- Primary identity via Base Smart Wallet connection (using RainbowKit/Wagmi).
+- Wallet address used for personalization and potentially linking to backend state.
+- No traditional email/password login.
+
+## Data Flow
+- **Frontend <-> Backend (Node/Express):**
+  - REST API calls (POST `/api/groq/...`, GET `/api/blockchain/...`, POST `/api/predict/...`)
+  - WebSocket connection (`/ws/iot`) for real-time IoT data push from backend.
+- **Backend <-> External Services:**
+  - Backend proxies requests to Groq API (Chat, Image).
+  - Backend connects to IoT data source (details TBD).
+  - Backend (optionally) interacts with MongoDB for profile/history.
+  - Backend (optionally) makes read-only calls to Base blockchain RPC.
+- **Client-Side:** Sequence prediction logic/ML model assumed to be called via backend API.
+
+## Error Handling Flow
+- Frontend displays user-friendly errors (e.g., toasts) for API failures, WebSocket issues, wallet errors.
+- Backend implements centralized error handling for internal errors and issues proxying to Groq/IoT/DB.
+- Specific error states for Groq rate limits or API key issues.
+
+## State Management
+- Zustand/Jotai manages global UI state, wallet connection info, user profile/preferences, AI chat history.
+- Wagmi hooks manage direct wallet interaction state.
+- Local component state for form inputs, UI toggles, etc. 
