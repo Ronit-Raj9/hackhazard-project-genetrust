@@ -7,14 +7,16 @@ import Profile from '../models/profile.model';
 import config from '../config';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import { google } from 'googleapis';
 
-// Google OAuth configuration
-const oauth2Client = new google.auth.OAuth2(
-  config.GOOGLE_CLIENT_ID,
-  config.GOOGLE_CLIENT_SECRET,
-  config.GOOGLE_REDIRECT_URI
-);
+// Extended request with typed user property
+interface AuthenticatedRequest extends Request {
+  user: {
+    _id: string;
+    email?: string;
+    walletAddress?: string;
+    role?: string;
+  };
+}
 
 // Options for cookies
 const cookieOptions: CookieOptions = {
@@ -58,6 +60,7 @@ export const loginWithWallet = asyncHandler(async (req: Request, res: Response) 
     user = await User.create({
       walletAddress: normalizedWalletAddress,
       role: 'user',
+      authProvider: 'wallet',
     });
 
     // Create profile
@@ -105,6 +108,11 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   // Check if user already exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
+    // Check if it's a Google user and provide a helpful message
+    if (existingUser.authProvider === 'google') {
+      throw new ApiError(409, 'This email is already registered with Google. Please login with Google instead.');
+    }
+    
     throw new ApiError(409, 'User with this email already exists');
   }
 
@@ -118,6 +126,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     password: hashedPassword,
     name,
     role: 'user',
+    authProvider: 'email',
   });
 
   // Create profile
@@ -168,9 +177,18 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, 'User not found');
   }
 
+  // Check auth provider and handle accordingly
+  if (user.authProvider === 'google') {
+    throw new ApiError(400, 'This account was created with Google. Please use the "Login with Google" option instead.');
+  }
+  
+  if (user.authProvider === 'wallet') {
+    throw new ApiError(400, 'This account was created with a wallet address. Please connect your wallet instead.');
+  }
+
   // Check if password exists in user document
   if (!user.password) {
-    throw new ApiError(400, 'Invalid login method. Try logging in with wallet instead.');
+    throw new ApiError(400, 'Invalid login method. Please use the appropriate login option for your account.');
   }
 
   // Check password
@@ -184,12 +202,9 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   // Log cookie settings
   console.log(`Setting auth cookie with options:`, {
-    httpOnly: cookieOptions.httpOnly,
     secure: cookieOptions.secure,
     sameSite: cookieOptions.sameSite,
-    maxAge: cookieOptions.maxAge,
-    path: cookieOptions.path,
-    domain: cookieOptions.domain || 'not set'
+    httpOnly: cookieOptions.httpOnly
   });
   
   // Set cookie
@@ -208,6 +223,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
           role: user.role,
           preferences: user.preferences,
           profileImageUrl: user.profileImageUrl,
+          authProvider: user.authProvider,
         },
         accessToken, // Include token in response body as fallback
       },
@@ -237,13 +253,19 @@ export const getCurrentUser = asyncHandler(async (req: Request, res: Response) =
   if (!req.user) {
     throw new ApiError(401, 'Unauthorized request');
   }
-
+  
+  // Type assertion to get proper TypeScript support
+  const authReq = req as AuthenticatedRequest;
+  
   // Find user by ID
-  const user = await User.findById(req.user.id).select('-__v -password');
+  const user = await User.findById(authReq.user._id).select('-__v -password');
 
   if (!user) {
     throw new ApiError(404, 'User not found');
   }
+
+  // Add profile information if needed
+  await user.populate('profile');
 
   // Return response
   return res.status(200).json(
@@ -258,6 +280,8 @@ export const getCurrentUser = asyncHandler(async (req: Request, res: Response) =
           role: user.role,
           preferences: user.preferences,
           profileImageUrl: user.profileImageUrl,
+          authProvider: user.authProvider,
+          onboardingCompleted: user.profile?.onboardingCompleted
         },
       },
       'User fetched successfully'
@@ -281,6 +305,19 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
     // Don't reveal that the user doesn't exist
     return res.status(200).json(
       new ApiResponse(200, {}, 'Password reset email sent, if email exists')
+    );
+  }
+  
+  // Check if user is a Google or wallet user
+  if (user.authProvider === 'google') {
+    return res.status(400).json(
+      new ApiResponse(400, {}, 'This account uses Google authentication. Please reset your password through Google.')
+    );
+  }
+  
+  if (user.authProvider === 'wallet') {
+    return res.status(400).json(
+      new ApiResponse(400, {}, 'This account uses wallet authentication. Password reset is not applicable.')
     );
   }
 
@@ -360,16 +397,28 @@ export const changePassword = asyncHandler(async (req: Request, res: Response) =
   if (!req.user) {
     throw new ApiError(401, 'Unauthorized request');
   }
+  
+  // Type assertion to get proper TypeScript support
+  const authReq = req as AuthenticatedRequest;
 
   if (!currentPassword || !newPassword) {
     throw new ApiError(400, 'Current password and new password are required');
   }
 
   // Find user by ID with password
-  const user = await User.findById(req.user.id).select('+password');
+  const user = await User.findById(authReq.user._id).select('+password');
 
   if (!user) {
     throw new ApiError(404, 'User not found');
+  }
+  
+  // Check auth provider
+  if (user.authProvider === 'google') {
+    throw new ApiError(400, 'You cannot change the password for a Google account. Please manage your account through Google.');
+  }
+  
+  if (user.authProvider === 'wallet') {
+    throw new ApiError(400, 'Password change is not applicable for wallet-based accounts.');
   }
 
   // Check if password exists in user document
@@ -393,212 +442,4 @@ export const changePassword = asyncHandler(async (req: Request, res: Response) =
   return res.status(200).json(
     new ApiResponse(200, {}, 'Password changed successfully')
   );
-});
-
-/**
- * Google OAuth initiate
- */
-export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
-  const scopes = [
-    'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/userinfo.email'
-  ];
-
-  const authUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: scopes,
-    include_granted_scopes: true
-  });
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      { authUrl },
-      'Google authentication URL generated'
-    )
-  );
-});
-
-/**
- * Google OAuth callback
- */
-export const googleCallback = asyncHandler(async (req: Request, res: Response) => {
-  const { code } = req.body;
-
-  if (!code) {
-    throw new ApiError(400, 'Authorization code is required');
-  }
-
-  try {
-    console.log('Processing Google auth code...');
-    
-    // Exchange code for tokens
-    let tokens;
-    try {
-      const tokenResponse = await oauth2Client.getToken(code);
-      tokens = tokenResponse.tokens;
-      console.log('Successfully exchanged code for Google tokens');
-    } catch (error: any) {
-      console.error('Google token exchange error:', error?.response?.data || error);
-      
-      // Format a user-friendly error
-      if (error?.response?.data?.error === 'invalid_grant') {
-        throw new ApiError(400, 'Authentication code expired or already used');
-      } else {
-        throw new ApiError(400, `Google authentication failed: ${error?.response?.data?.error || error.message}`);
-      }
-    }
-    
-    if (!tokens || !tokens.access_token) {
-      console.error('No tokens received from Google OAuth');
-      throw new ApiError(400, 'Failed to validate Google authorization');
-    }
-    
-    oauth2Client.setCredentials(tokens);
-
-    // Get user info from Google
-    let userInfo;
-    try {
-      const oauth2 = google.oauth2({
-        auth: oauth2Client,
-        version: 'v2'
-      });
-      userInfo = await oauth2.userinfo.get();
-      console.log('Successfully retrieved user info from Google');
-    } catch (error: any) {
-      console.error('Failed to get user info from Google:', error);
-      throw new ApiError(400, 'Could not retrieve user information from Google');
-    }
-    
-    console.log('Received user info from Google:', 
-      userInfo.data.email ? `${userInfo.data.email} (email)` : 'No email',
-      userInfo.data.name ? 'name provided' : 'no name'
-    );
-    
-    const googleEmail = userInfo.data.email;
-    const googleId = userInfo.data.id;
-    
-    if (!googleEmail) {
-      throw new ApiError(400, 'Email is required from Google account');
-    }
-    if (!googleId) {
-      throw new ApiError(400, 'Google ID is required from Google account');
-    }
-
-    let user: IUser | null = null;
-
-    // 1. Try to find user by Google ID first
-    user = await User.findOne({ googleId });
-
-    if (!user) {
-      // 2. If not found by Google ID, try finding by email
-      console.log(`User not found by googleId ${googleId}. Trying by email ${googleEmail}...`);
-      user = await User.findOne({ email: googleEmail });
-
-      if (user) {
-        // 3. User found by email - link Google ID
-        console.log('Found existing user by email. Linking googleId...');
-        user.googleId = googleId;
-        // Optionally update name/picture if missing or different
-        if (!user.name && userInfo.data.name) user.name = userInfo.data.name;
-        if (!user.profileImageUrl && userInfo.data.picture) user.profileImageUrl = userInfo.data.picture;
-        
-        await user.save();
-        console.log('Updated existing user with Google ID');
-      } else {
-        // 4. User not found by Google ID or email - create new user
-        console.log('User not found by email either. Creating new user for Google auth...');
-        try {
-          user = await User.create({
-            googleId,
-            email: googleEmail,
-            name: userInfo.data.name || '',
-            role: 'user',
-            profileImageUrl: userInfo.data.picture || '',
-          });
-
-          // Create profile for the new user
-          await Profile.create({
-            userId: user._id,
-            onboardingCompleted: false,
-          });
-          
-          console.log('Successfully created new user and profile');
-        } catch (error: any) {
-          console.error('Error creating user during Google auth:', error);
-          if (error.code === 11000) { // MongoDB duplicate key error
-            // This *shouldn't* happen with the checks above, but handle defensively
-            throw new ApiError(409, 'An account conflict occurred. Please try logging in differently or contact support.');
-          } else {
-            throw new ApiError(500, 'Failed to create user account during Google auth');
-          }
-        }
-      }
-    } else {
-      // User found by Google ID - ensure email matches if provided
-      console.log('Found existing user by googleId:', user.email);
-      if (user.email !== googleEmail) {
-         // Optional: Handle email mismatch scenario (e.g., log warning, update email, or throw error depending on policy)
-         console.warn(`Google ID ${googleId} logged in, but email mismatch: DB has ${user.email}, Google has ${googleEmail}`);
-         // For now, we'll allow login but you might want a stricter policy here
-         // Example: Update email if it's not set in DB
-         // if (!user.email) { user.email = googleEmail; await user.save(); }
-      }
-    }
-
-    // If we somehow still don't have a user object, something went wrong
-    if (!user) {
-      console.error('User object is null after Google auth logic');
-      throw new ApiError(500, 'Authentication process failed unexpectedly.');
-    }
-
-    // Load user profile to check onboarding status
-    await user.populate('profile');
-    console.log('User profile populated, onboarding status:', user.profile?.onboardingCompleted);
-
-    // Generate access token
-    const accessToken = user.generateAccessToken();
-    console.log('Generated JWT access token for user');
-
-    // Set cookie with proper options for the environment
-    console.log(`Setting authentication cookie (NODE_ENV: ${config.NODE_ENV}):`, {
-      secure: cookieOptions.secure,
-      sameSite: cookieOptions.sameSite,
-      httpOnly: cookieOptions.httpOnly
-    });
-    
-    // Set cookie
-    res.cookie('accessToken', accessToken, cookieOptions);
-    
-    // Log headers for debugging
-    console.log('Response headers set:', res.getHeaders());
-
-    // Return response with token in body as well (fallback mechanism)
-    return res.status(200).json(
-      new ApiResponse(
-        200,
-        {
-          user: {
-            id: user._id,
-            email: user.email,
-            name: user.name,
-            walletAddress: user.walletAddress,
-            role: user.role,
-            preferences: user.preferences,
-            profileImageUrl: user.profileImageUrl || userInfo.data.picture,
-            onboardingCompleted: user.profile?.onboardingCompleted
-          },
-          accessToken, // Include token in response body as fallback
-        },
-        'User logged in successfully with Google'
-      )
-    );
-  } catch (error) {
-    console.error('Google auth error:', error);
-    if (error instanceof ApiError) {
-      throw error; // Re-throw our formatted errors
-    } else {
-      throw new ApiError(500, 'Failed to authenticate with Google');
-    }
-  }
 }); 

@@ -5,6 +5,16 @@ import ApiResponse from '../utils/ApiResponse';
 import { chatCompletion, getBlockchainGuidance } from '../services/groq.service';
 import User from '../models/user.model';
 
+// Extended request with typed user property
+interface AuthenticatedRequest extends Request {
+  user: {
+    _id: string;
+    email?: string;
+    walletAddress?: string;
+    role?: string;
+  };
+}
+
 /**
  * Chat completion with Groq
  */
@@ -45,8 +55,11 @@ export const getGuidance = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, 'Unauthorized request');
   }
 
+  // Type assertion to get proper TypeScript support
+  const authReq = req as AuthenticatedRequest;
+
   // Check if wallet address exists on the user object
-  if (!req.user.walletAddress) {
+  if (!authReq.user.walletAddress) {
     throw new ApiError(400, 'Wallet address not found for user. Cannot get blockchain guidance.');
   }
 
@@ -59,7 +72,7 @@ export const getGuidance = asyncHandler(async (req: Request, res: Response) => {
 
   // Get blockchain guidance
   const guidance = await getBlockchainGuidance(
-    req.user.walletAddress,
+    authReq.user.walletAddress,
     dataType as 'prediction' | 'monitoring'
   );
 

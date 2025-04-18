@@ -5,6 +5,16 @@ import ApiResponse from '../utils/ApiResponse';
 import Profile from '../models/profile.model';
 import User from '../models/user.model';
 
+// Extended request with typed user property
+interface AuthenticatedRequest extends Request {
+  user: {
+    _id: string;
+    email?: string;
+    walletAddress?: string;
+    role?: string;
+  };
+}
+
 /**
  * Get user profile
  */
@@ -14,8 +24,11 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, 'Unauthorized request');
   }
 
+  // Type assertion to get proper TypeScript support
+  const authReq = req as AuthenticatedRequest;
+
   // Find profile by user ID
-  const profile = await Profile.findOne({ userId: req.user.id }).select('-__v');
+  const profile = await Profile.findOne({ userId: authReq.user._id }).select('-__v');
 
   if (!profile) {
     throw new ApiError(404, 'Profile not found');
@@ -40,6 +53,9 @@ export const updateOnboardingProfile = asyncHandler(async (req: Request, res: Re
     throw new ApiError(401, 'Unauthorized request');
   }
 
+  // Type assertion to get proper TypeScript support
+  const authReq = req as AuthenticatedRequest;
+
   const { role, experienceLevel, interests } = req.body;
 
   // Validate required fields
@@ -49,7 +65,7 @@ export const updateOnboardingProfile = asyncHandler(async (req: Request, res: Re
 
   // Find and update profile
   const profile = await Profile.findOneAndUpdate(
-    { userId: req.user.id },
+    { userId: authReq.user._id },
     {
       role,
       experienceLevel,
@@ -82,11 +98,14 @@ export const updatePreferences = asyncHandler(async (req: Request, res: Response
     throw new ApiError(401, 'Unauthorized request');
   }
 
+  // Type assertion to get proper TypeScript support
+  const authReq = req as AuthenticatedRequest;
+
   const { theme, aiVoice } = req.body;
 
   // Update user preferences
   const user = await User.findByIdAndUpdate(
-    req.user.id,
+    authReq.user._id,
     {
       'preferences.theme': theme,
       'preferences.aiVoice': aiVoice,
@@ -119,6 +138,9 @@ export const addRecentActivity = asyncHandler(async (req: Request, res: Response
     throw new ApiError(401, 'Unauthorized request');
   }
 
+  // Type assertion to get proper TypeScript support
+  const authReq = req as AuthenticatedRequest;
+
   const { type, data } = req.body;
 
   // Validate required fields
@@ -127,7 +149,7 @@ export const addRecentActivity = asyncHandler(async (req: Request, res: Response
   }
 
   // Find profile
-  const profile = await Profile.findOne({ userId: req.user.id });
+  const profile = await Profile.findOne({ userId: authReq.user._id });
 
   if (!profile) {
     throw new ApiError(404, 'Profile not found');

@@ -3332,3 +3332,16 @@
 2025-04-18 17:37:21 info: Socket.IO initialized
 2025-04-18 17:37:21 info: Server running on port 8000
 2025-04-18 17:37:21 info: Sensor simulation started
+2025-04-18 17:40:44 error: [POST] /api/auth/google/callback >> StatusCode:: 409, Message:: An account conflict occurred. Please try logging in differently or contact support.
+2025-04-18 17:40:44 error: Error: An account conflict occurred. Please try logging in differently or contact support.
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:531:19
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 17:40:44 error: [POST] /api/auth/google/callback >> StatusCode:: 409, Message:: An account conflict occurred. Please try logging in differently or contact support.
+2025-04-18 17:40:44 error: Error: An account conflict occurred. Please try logging in differently or contact support.
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:531:19
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 18:43:13 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 18:43:13 info: Socket.IO initialized
+2025-04-18 18:43:13 info: Server running on port 8000
+2025-04-18 18:43:13 info: Sensor simulation started
+2025-04-18 18:43:20 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net

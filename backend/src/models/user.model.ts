@@ -10,10 +10,12 @@ export interface IUser extends Document {
   walletAddress?: string;
   googleId?: string;
   role: 'user' | 'admin';
+  authProvider?: 'email' | 'google' | 'wallet';
   preferences: {
     theme?: 'light' | 'dark';
     aiVoice?: string;
   };
+  
   profileImageUrl?: string;
   resetPasswordToken?: string;
   resetPasswordExpire?: Date;
@@ -53,6 +55,11 @@ const userSchema = new Schema<IUser>(
       type: String,
       unique: true,
       sparse: true, // Allow null/undefined values
+    },
+    authProvider: {
+      type: String,
+      enum: ['email', 'google', 'wallet'],
+      default: 'email',
     },
     role: {
       type: String,
@@ -95,7 +102,7 @@ userSchema.methods.generateAccessToken = function () {
   
   return jwtSign(
     {
-      id: this._id.toString(),
+      _id: this._id.toString(),
       email: this.email,
       walletAddress: this.walletAddress,
       role: this.role,
@@ -106,6 +113,20 @@ userSchema.methods.generateAccessToken = function () {
     }
   );
 };
+
+// Pre-save middleware to set auth provider based on credentials
+userSchema.pre('save', function(next) {
+  if (this.isNew || this.isModified('googleId') || this.isModified('walletAddress')) {
+    if (this.googleId && !this.authProvider) {
+      this.authProvider = 'google';
+    } else if (this.walletAddress && !this.authProvider) {
+      this.authProvider = 'wallet';
+    } else if (!this.authProvider) {
+      this.authProvider = 'email';
+    }
+  }
+  next();
+});
 
 // Create and export User model
 const User = mongoose.model<IUser>('User', userSchema);

@@ -3154,3 +3154,12 @@
     at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
     at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
     at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-18 17:40:44 error: [POST] /api/auth/google/callback >> StatusCode:: 409, Message:: An account conflict occurred. Please try logging in differently or contact support.
+2025-04-18 17:40:44 error: Error: An account conflict occurred. Please try logging in differently or contact support.
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:531:19
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 17:40:44 error: [POST] /api/auth/google/callback >> StatusCode:: 409, Message:: An account conflict occurred. Please try logging in differently or contact support.
+2025-04-18 17:40:44 error: Error: An account conflict occurred. Please try logging in differently or contact support.
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:531:19
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 18:43:20 error: Uncaught Exception: listen EADDRINUSE: address already in use :::8000

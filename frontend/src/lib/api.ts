@@ -113,19 +113,14 @@ export const authAPI = {
   loginWithWallet: (walletAddress: string) => api.post('/auth/login/wallet', { walletAddress }),
   
   // Google auth
-  loginWithGoogle: () => api.get('/auth/google'),
-  handleGoogleCallback: (code: string) => {
-    console.log('Sending Google callback code to backend');
-    return api.post('/auth/google/callback', { code })
-      .then(response => {
-        // Explicitly save token from successful Google auth response
-        const token = response?.data?.data?.accessToken;
-        if (token) {
-          console.log('Received accessToken from Google auth, saving as fallback');
-          saveAuthToken(token);
-        }
-        return response;
-      });
+  loginWithGoogle: () => {
+    // Instead of an API call, we'll redirect the user directly to the Google OAuth endpoint
+    const googleAuthUrl = `${API_URL}/auth/google`;
+    console.log('Redirecting to Google OAuth page:', googleAuthUrl);
+    // Redirect the browser to the Google auth endpoint
+    window.location.href = googleAuthUrl;
+    // Return a promise that never resolves since we're redirecting the page
+    return new Promise(() => {});
   },
   
   // Common

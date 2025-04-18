@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import path from 'path';
 import { createWriteStream } from 'fs';
+import passport from './config/passport.config';
 
 import config from './config';
 import connectToDatabase from './config/database';
@@ -38,6 +39,9 @@ app.use(express.json({ limit: '16kb' }));
 app.use(express.urlencoded({ extended: true, limit: '16kb' }));
 app.use(cookieParser(config.COOKIE_SECRET));
 app.use(morgan('combined', { stream: accessLogStream }));
+
+// Initialize Passport
+app.use(passport.initialize());
 
 // Routes
 app.use('/api', apiRoutes);

@@ -13,7 +13,7 @@ export default function GoogleCallbackPage() {
   const processingRef = useRef(false);
 
   useEffect(() => {
-    // This function will only execute once per code
+    // This function handles the Google OAuth callback after the backend has processed it
     const handleGoogleCallback = async () => {
       // Use ref to prevent concurrent execution even across re-renders
       if (processingRef.current) {
@@ -25,90 +25,37 @@ export default function GoogleCallbackPage() {
       setIsProcessing(true);
       
       try {
-        setStatus('Getting authorization code...');
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const error = urlParams.get('error');
+        setStatus('Verifying authentication...');
         
-        // Handle errors returned by Google
-        if (error) {
-          console.error('Google returned an error:', error);
-          setStatus('Google authentication failed');
-          setError(`Google error: ${error}`);
-          setTimeout(() => router.push(`/login?error=${encodeURIComponent(error)}`), 2000);
-          return;
-        }
-        
-        if (!code) {
-          setStatus('No authorization code found');
-          setError('Missing authorization code from Google');
-          setTimeout(() => router.push('/login?error=Missing%20authorization%20code'), 2000);
-          return;
-        }
-        
-        setStatus('Verifying with Google...');
-        console.log('Processing Google authentication code...');
-        
+        // The backend has already set the JWT cookie during the OAuth flow,
+        // so we just need to get the current user to verify it worked
         try {
-          // Send the code to our backend
-          const response = await authAPI.handleGoogleCallback(code);
-          console.log('Google authentication successful:', response.data.message);
+          const userResponse = await authAPI.getCurrentUser();
+          console.log('Authentication verification successful');
           
-          // Check if we have a token in the response
-          const token = response?.data?.data?.accessToken;
-          if (token) {
-            console.log('Token received from backend, saved to localStorage as fallback');
+          // Get onboarding status
+          const onboardingCompleted = userResponse?.data?.data?.user?.onboardingCompleted;
+          
+          // Redirect based on onboarding status
+          if (onboardingCompleted) {
+            setStatus('Success! Redirecting to dashboard...');
+            setTimeout(() => router.push('/dashboard'), 1000);
           } else {
-            console.warn('No token found in Google callback response, relying on HTTP cookies');
+            setStatus('Success! Redirecting to onboarding...');
+            setTimeout(() => router.push('/onboarding'), 1000);
+          }
+        } catch (verifyErr: any) {
+          console.error('Failed to verify authentication after Google login:', verifyErr);
+          
+          // Log more details about the error
+          if (verifyErr.response) {
+            console.error('Response status:', verifyErr.response.status);
+            console.error('Response data:', verifyErr.response.data);
           }
           
-          // Manually check authentication after Google login
-          try {
-            const userResponse = await authAPI.getCurrentUser();
-            console.log('Authentication verification successful');
-            
-            // Get onboarding status - safely access properties
-            const isOnboarded = userResponse?.data?.data?.user?.onboardingCompleted;
-            
-            // Redirect based on onboarding status
-            if (isOnboarded) {
-              setStatus('Success! Redirecting to dashboard...');
-              setTimeout(() => router.push('/dashboard'), 1000);
-            } else {
-              setStatus('Success! Redirecting to onboarding...');
-              setTimeout(() => router.push('/onboarding'), 1000);
-            }
-          } catch (verifyErr: any) {
-            console.error('Failed to verify authentication after Google login:', verifyErr);
-            
-            // Log more details about the error
-            if (verifyErr.response) {
-              console.error('Response status:', verifyErr.response.status);
-              console.error('Response data:', verifyErr.response.data);
-            }
-            
-            setStatus('Authentication verification failed');
-            setError(verifyErr.response?.data?.message || 'Could not verify your login status. Please try again.');
-            setTimeout(() => router.push('/login?error=Authentication%20verification%20failed'), 3000);
-          }
-        } catch (err: any) {
-          console.error('Google callback error:', err);
-          let errorMessage = 'Failed to authenticate with Google';
-          
-          // Extract specific error messages
-          if (err.response?.data?.message) {
-            errorMessage = err.response.data.message;
-          } else if (err.message?.includes('invalid_grant')) {
-            errorMessage = 'Authentication code expired or already used';
-          } else if (err.message?.includes('user exists')) {
-            errorMessage = 'An account with this email already exists';
-          }
-          
-          setStatus('Authentication failed');
-          setError(errorMessage);
-          
-          // Redirect after showing the error
-          setTimeout(() => router.push(`/login?error=${encodeURIComponent(errorMessage)}`), 3000);
+          setStatus('Authentication verification failed');
+          setError(verifyErr.response?.data?.message || 'Could not verify your login status. Please try again.');
+          setTimeout(() => router.push('/login?error=Authentication%20verification%20failed'), 3000);
         }
       } catch (err: any) {
         console.error('Error in callback processing:', err);

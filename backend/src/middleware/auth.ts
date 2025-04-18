@@ -4,19 +4,8 @@ import asyncHandler from '../utils/asyncHandler';
 import ApiError from '../utils/ApiError';
 import config from '../config';
 
-// Extend the Request interface to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        email?: string;
-        walletAddress?: string;
-        role?: string;
-      };
-    }
-  }
-}
+// We'll no longer extend the Request interface here
+// Instead we'll use the one from the @types/express directory
 
 /**
  * Middleware to verify JWT token from cookies
@@ -43,7 +32,7 @@ export const verifyJWT = asyncHandler(
       // Verify token
       // Define the expected payload structure
       interface JwtPayload {
-        id: string;
+        _id: string;
         email?: string;
         walletAddress?: string;
         role?: string;
@@ -55,16 +44,16 @@ export const verifyJWT = asyncHandler(
       }
       
       const decodedToken = jwt.verify(token, config.JWT_SECRET) as JwtPayload;
-      console.log('JWT verification successful, ID:', decodedToken.id);
+      console.log('JWT verification successful, ID:', decodedToken._id);
 
-      // Check if essential 'id' field exists
-      if (!decodedToken.id) {
+      // Check if essential '_id' field exists
+      if (!decodedToken._id) {
           throw new ApiError(401, 'Invalid token payload: Missing user ID');
       }
 
       // Set user in request, handling potentially missing fields
       req.user = {
-        id: decodedToken.id,
+        _id: decodedToken._id,
         email: decodedToken.email,
         walletAddress: decodedToken.walletAddress,
         role: decodedToken.role
