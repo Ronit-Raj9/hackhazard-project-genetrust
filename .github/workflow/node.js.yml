@@ -1,0 +1,49 @@
+name: Geneforge Backend CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: ./backend/package-lock.json
+
+    - name: Create .env file from PROD_ENV_FILE secret
+      working-directory: ./backend
+      run: echo "${{ secrets.PROD_ENV_FILE }}" > .env
+
+    - name: Install dependencies
+      working-directory: ./backend
+      run: |
+        if [ -d "node_modules" ]; then
+          echo "node_modules already exists. Skipping install."
+        else
+          echo "Installing dependencies..."
+          npm ci
+        fi
+    - name: Build TypeScript
+      working-directory: ./backend
+      run: npm run build
+
+    - name: Install PM2 globally
+      run: npm install -g pm2
+
+    - name: Restart PM2 backend process
+      working-directory: ./backend
+      run: pm2 restart geneforge-backend || pm2 start npm --name geneforge-backend -- run start
