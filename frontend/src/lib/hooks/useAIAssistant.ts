@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { groqAPI } from '../api';
 import { useAIAssistantStore } from '../store';
 
@@ -14,17 +14,24 @@ export function useAIAssistant(context: string = 'general') {
   } = useAIAssistantStore();
   
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
+
+  // Use effect to set context only once
+  useEffect(() => {
+    if (context !== currentContext) {
+      setContext(context);
+    }
+  }, [context, currentContext, setContext]);
 
   // Initialize assistant for a specific context if needed
   const initializeAssistant = (newContext: string, systemMessage?: string) => {
-    setContext(newContext);
-    
-    // If this is a new context, add system message
-    if (!conversations[newContext] && systemMessage) {
+    // Only add system message if it doesn't exist
+    if (systemMessage && (!conversations[newContext] || conversations[newContext].length === 0)) {
       addMessage(newContext, {
         role: 'system',
         content: systemMessage,
       });
+      setInitialized(true);
     }
     
     return conversations[newContext] || [];

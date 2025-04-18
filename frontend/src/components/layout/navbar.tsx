@@ -15,7 +15,6 @@ export function Navbar() {
   const { user, isAuthenticated } = useAuthState();
   const pathname = usePathname();
   const isHomePage = pathname === '/';
-  const isOnboardingPage = pathname === '/onboarding';
 
   // Handle scroll effect
   useEffect(() => {
@@ -62,7 +61,7 @@ export function Navbar() {
             <div className="hidden sm:ml-8 sm:flex sm:space-x-4">
               {[
                 { name: 'Home', href: '/' },
-                { name: 'Dashboard', href: '/dashboard' },
+                ...(isAuthenticated ? [{ name: 'Dashboard', href: '/dashboard' }] : []),
                 { name: 'ChainSight', href: '/chainSight' },
                 { name: 'CRISPR Predictor', href: '/crispr-predictor' },
                 { name: 'Lab Monitor', href: '/lab-monitor' }
@@ -130,7 +129,7 @@ export function Navbar() {
           <div className="pt-2 pb-3 space-y-1">
             {[
               { name: 'Home', href: '/' },
-              { name: 'Dashboard', href: '/dashboard' },
+              ...(isAuthenticated ? [{ name: 'Dashboard', href: '/dashboard' }] : []),
               { name: 'ChainSight', href: '/chainSight' },
               { name: 'CRISPR Predictor', href: '/crispr-predictor' },
               { name: 'Lab Monitor', href: '/lab-monitor' }

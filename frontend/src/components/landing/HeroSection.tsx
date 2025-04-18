@@ -4,11 +4,13 @@ import { useRef } from 'react'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { Dna, Gauge, ArrowRight, ShieldCheck } from 'lucide-react'
 import { useMousePosition } from '@/lib/hooks/useMousePosition'
+import { useAuth } from '@/lib/hooks/useAuth'
 import AnimatedButton from './AnimatedButton'
 import ParticleBackground from './ParticleBackground'
 
 export default function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null)
+  const { isAuthenticated, isInitialized } = useAuth()
   // Type assertion to make TypeScript happy - we know this works at runtime
   const { x, y } = useMousePosition(containerRef as any)
   

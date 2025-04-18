@@ -16,7 +16,6 @@ export interface ProfileData {
   role: 'student' | 'researcher' | 'other';
   experienceLevel: 'beginner' | 'intermediate' | 'advanced';
   interests: string[];
-  onboardingCompleted: boolean;
   recentActivity: {
     type: 'prediction' | 'monitoring';
     data: Record<string, any>;

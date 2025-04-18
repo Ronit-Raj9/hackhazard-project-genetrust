@@ -4,12 +4,14 @@ import ApiError from '../utils/ApiError';
 import ApiResponse from '../utils/ApiResponse';
 import { 
   chatCompletion, 
-  getBlockchainGuidance, 
+  getBlockchainGuidance,
   analyzeLabImage, 
   transcribeLabAudio, 
-  interpretLabCommand 
+  interpretLabCommand,
+  getSensorInsights
 } from '../services/groq.service';
 import User from '../models/user.model';
+import logger from '../utils/logger';
 
 // Extended request with typed user property
 interface AuthenticatedRequest extends Request {
@@ -281,6 +283,44 @@ export const interpretCommand = asyncHandler(async (req: Request, res: Response)
         actionParams: result.actionParams
       },
       'Command interpretation successful'
+    )
+  );
+});
+
+/**
+ * Get AI insights for sensor data
+ */
+export const getSensorDataInsights = asyncHandler(async (req: Request, res: Response) => {
+  const { temperature, humidity, pressure, co2, oxygen, ph } = req.body;
+
+  // Validate required sensor data
+  if (temperature === undefined || humidity === undefined) {
+    throw new ApiError(400, 'Temperature and humidity are required');
+  }
+
+  // Get insights from Groq
+  const insights = await getSensorInsights(
+    parseFloat(temperature),
+    parseFloat(humidity),
+    pressure ? parseFloat(pressure) : undefined,
+    co2 ? parseFloat(co2) : undefined,
+    oxygen ? parseFloat(oxygen) : undefined
+  );
+
+  if (!insights.success) {
+    throw new ApiError(500, 'Failed to generate insights for sensor data');
+  }
+
+  // Return response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        insights: insights.message,
+        recommendations: insights.message.split('\n\n').filter(line => line.includes('Recommendation')),
+        timestamp: new Date().toISOString()
+      },
+      'Sensor data insights generated successfully'
     )
   );
 }); 

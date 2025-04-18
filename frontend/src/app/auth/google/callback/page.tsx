@@ -47,18 +47,9 @@ export default function GoogleCallbackPage() {
           console.log('Authentication verification successful, user data:', 
             userResponse?.data?.data?.user?.id ? 'User ID: ' + userResponse.data.data.user.id : 'No user ID');
           
-          // Get onboarding status
-          const onboardingCompleted = userResponse?.data?.data?.user?.onboardingCompleted || false;
-          console.log('Onboarding status:', onboardingCompleted ? 'Completed' : 'Not completed');
-          
-          // Redirect based on onboarding status
-          if (onboardingCompleted) {
-            setStatus('Success! Redirecting to dashboard...');
-            setTimeout(() => router.push('/dashboard'), 1000);
-          } else {
-            setStatus('Success! Redirecting to onboarding...');
-            setTimeout(() => router.push('/onboarding'), 1000);
-          }
+          // Always redirect to dashboard
+          setStatus('Success! Redirecting to dashboard...');
+          setTimeout(() => router.push('/dashboard'), 1000);
         } catch (verifyErr: any) {
           console.error('Failed to verify authentication after Google login:', verifyErr);
           

@@ -3484,3 +3484,365 @@
 2025-04-18 19:50:35 info: Socket.IO initialized
 2025-04-18 19:50:35 info: Server running on port 8000
 2025-04-18 19:50:36 info: Sensor simulation started
+2025-04-18 20:00:16 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:00:16 info: Socket.IO initialized
+2025-04-18 20:00:16 info: Server running on port 8000
+2025-04-18 20:00:16 info: Sensor simulation started
+2025-04-18 20:08:26 error: Error in Groq chat completion: 401 {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+2025-04-18 20:08:26 error: [POST] /api/groq/onboarding-chat >> StatusCode:: 500, Message:: Failed to get response from Groq
+2025-04-18 20:08:26 error: Error: Failed to get response from Groq
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/groq.controller.ts:143:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 20:10:18 info: Groq API Key status: Available
+2025-04-18 20:10:18 info: Groq client initialized successfully
+2025-04-18 20:10:19 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:10:19 info: Socket.IO initialized
+2025-04-18 20:10:19 info: Server running on port 8000
+2025-04-18 20:10:19 info: Sensor simulation started
+2025-04-18 20:17:08 info: Groq API Key status: Available
+2025-04-18 20:17:08 info: Groq client initialized successfully
+2025-04-18 20:17:09 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:17:09 info: Socket.IO initialized
+2025-04-18 20:17:09 info: Server running on port 8000
+2025-04-18 20:17:09 info: Sensor simulation started
+2025-04-18 20:19:15 info: Groq API Key status: Available
+2025-04-18 20:19:15 info: Groq client initialized successfully
+2025-04-18 20:19:16 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:19:16 info: Socket.IO initialized
+2025-04-18 20:19:16 info: Server running on port 8000
+2025-04-18 20:19:16 info: Sensor simulation started
+2025-04-18 20:21:08 info: Groq API Key status: Valid
+2025-04-18 20:21:08 info: Groq client initialized successfully
+2025-04-18 20:21:09 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:21:09 info: Socket.IO initialized
+2025-04-18 20:21:09 info: Server running on port 8000
+2025-04-18 20:21:09 info: Sensor simulation started
+2025-04-18 20:21:32 info: Groq API Key status: Valid
+2025-04-18 20:21:32 info: Groq client initialized successfully
+2025-04-18 20:21:33 info: MongoDB Connected: ac-zbybbvl-shard-00-01.djs2ncb.mongodb.net
+2025-04-18 20:21:33 info: Socket.IO initialized
+2025-04-18 20:21:33 info: Server running on port 8000
+2025-04-18 20:21:33 info: Sensor simulation started
+2025-04-18 20:27:41 info: Groq API Key status: Valid
+2025-04-18 20:27:41 info: Groq client initialized successfully
+2025-04-18 20:27:42 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:27:42 info: Socket.IO initialized
+2025-04-18 20:27:42 info: Server running on port 8000
+2025-04-18 20:27:42 info: Sensor simulation started
+2025-04-18 20:28:24 info: Groq API Key status: Valid
+2025-04-18 20:28:24 info: Groq client initialized successfully
+2025-04-18 20:28:25 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:28:25 info: Socket.IO initialized
+2025-04-18 20:28:25 info: Server running on port 8000
+2025-04-18 20:28:25 info: Sensor simulation started
+2025-04-18 20:28:45 info: Groq API Key status: Valid
+2025-04-18 20:28:45 info: Groq client initialized successfully
+2025-04-18 20:28:46 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:28:46 info: Socket.IO initialized
+2025-04-18 20:28:46 info: Server running on port 8000
+2025-04-18 20:28:46 info: Sensor simulation started
+2025-04-18 20:29:00 info: Groq API Key status: Valid
+2025-04-18 20:29:00 info: Groq client initialized successfully
+2025-04-18 20:29:01 info: MongoDB Connected: ac-zbybbvl-shard-00-01.djs2ncb.mongodb.net
+2025-04-18 20:29:01 info: Socket.IO initialized
+2025-04-18 20:29:01 info: Server running on port 8000
+2025-04-18 20:29:01 info: Sensor simulation started
+2025-04-18 20:30:48 info: Groq API Key status: Valid
+2025-04-18 20:30:48 info: Groq client initialized successfully
+2025-04-18 20:30:49 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:34:17 info: Making Groq request with model: llama3-8b-8192
+2025-04-18 20:34:17 info: Groq request successful
+2025-04-18 20:34:25 info: Making Groq request with model: llama3-8b-8192
+2025-04-18 20:34:31 info: Groq request successful
+2025-04-18 20:35:09 info: Making Groq request with model: llama3-8b-8192
+2025-04-18 20:35:09 info: Groq request successful
+2025-04-18 20:37:16 error: [PUT] /api/profile/onboarding >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 20:37:16 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:79:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 20:40:39 info: Groq API Key status: Valid
+2025-04-18 20:40:39 info: Groq client initialized successfully
+2025-04-18 20:40:40 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:40:40 info: Socket.IO initialized
+2025-04-18 20:40:40 info: Server running on port 8000
+2025-04-18 20:40:40 info: Sensor simulation started
+2025-04-18 20:40:51 error: [PUT] /api/profile/onboarding >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 20:40:51 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:79:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 20:42:38 info: Groq API Key status: Valid
+2025-04-18 20:42:38 info: Groq client initialized successfully
+2025-04-18 20:42:39 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:42:39 info: Socket.IO initialized
+2025-04-18 20:42:39 info: Server running on port 8000
+2025-04-18 20:42:39 info: Sensor simulation started
+2025-04-18 20:45:38 info: Groq API Key status: Valid
+2025-04-18 20:45:38 info: Groq client initialized successfully
+2025-04-18 20:45:39 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:45:39 info: Socket.IO initialized
+2025-04-18 20:45:39 info: Server running on port 8000
+2025-04-18 20:45:39 info: Sensor simulation started
+2025-04-18 20:50:59 info: Groq API Key status: Valid
+2025-04-18 20:50:59 info: Groq client initialized successfully
+2025-04-18 20:51:05 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 20:51:05 info: Socket.IO initialized
+2025-04-18 20:51:05 info: Server running on port 8000
+2025-04-18 20:51:06 info: Sensor simulation started
+2025-04-18 20:51:43 info: Making Groq request with model: llama3-8b-8192
+2025-04-18 20:51:44 info: Groq request successful
+2025-04-18 21:08:11 info: Groq API Key status: Valid
+2025-04-18 21:08:11 info: Groq client initialized successfully
+2025-04-18 21:08:12 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 21:10:59 info: Groq API Key status: Valid
+2025-04-18 21:10:59 info: Groq client initialized successfully
+2025-04-18 21:11:00 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 21:11:00 info: Socket.IO initialized
+2025-04-18 21:11:00 info: Server running on port 8000
+2025-04-18 21:11:00 info: Sensor simulation started
+2025-04-18 21:11:39 info: Google OAuth login initiated
+2025-04-18 21:11:39 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 21:11:39 info: Google OAuth callback received
+2025-04-18 21:11:39 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 21:11:39 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 21:11:40 info: User found with email okayjiuu@gmail.com, auth provider: google
+2025-04-18 21:11:40 info: Google authentication successful for user: 68025ba5c0697887750311c2
+2025-04-18 21:11:40 info: Google OAuth authentication successful, generating token
+2025-04-18 21:11:40 info: Generating access token for user: 68025ba5c0697887750311c2
+2025-04-18 21:11:40 info: Setting access token cookie
+2025-04-18 21:11:40 info: Cookie settings: httpOnly=true, secure=false, sameSite=lax
+2025-04-18 21:11:40 info: Redirecting to: http://localhost:3000/auth/google/callback
+2025-04-18 21:12:25 info: Google OAuth login initiated
+2025-04-18 21:12:25 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 21:12:25 info: Google OAuth callback received
+2025-04-18 21:12:25 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 21:12:25 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 21:12:26 info: User found with email okayjiuu@gmail.com, auth provider: google
+2025-04-18 21:12:26 info: Google authentication successful for user: 68025ba5c0697887750311c2
+2025-04-18 21:12:26 info: Google OAuth authentication successful, generating token
+2025-04-18 21:12:26 info: Generating access token for user: 68025ba5c0697887750311c2
+2025-04-18 21:12:26 info: Setting access token cookie
+2025-04-18 21:12:26 info: Cookie settings: httpOnly=true, secure=false, sameSite=lax
+2025-04-18 21:12:26 info: Redirecting to: http://localhost:3000/auth/google/callback
+2025-04-18 21:12:31 info: Google OAuth login initiated
+2025-04-18 21:12:31 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 21:12:31 info: Google OAuth callback received
+2025-04-18 21:12:32 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 21:12:32 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 21:12:32 info: User found with email okayjiuu@gmail.com, auth provider: google
+2025-04-18 21:12:32 info: Google authentication successful for user: 68025ba5c0697887750311c2
+2025-04-18 21:12:32 info: Google OAuth authentication successful, generating token
+2025-04-18 21:12:32 info: Generating access token for user: 68025ba5c0697887750311c2
+2025-04-18 21:12:32 info: Setting access token cookie
+2025-04-18 21:12:32 info: Cookie settings: httpOnly=true, secure=false, sameSite=lax
+2025-04-18 21:12:32 info: Redirecting to: http://localhost:3000/auth/google/callback
+2025-04-18 21:12:42 info: Google OAuth login initiated
+2025-04-18 21:12:42 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 21:12:42 info: Google OAuth callback received
+2025-04-18 21:12:42 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 21:12:42 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 21:12:42 info: User found with email okayjiuu@gmail.com, auth provider: google
+2025-04-18 21:12:42 info: Google authentication successful for user: 68025ba5c0697887750311c2
+2025-04-18 21:12:42 info: Google OAuth authentication successful, generating token
+2025-04-18 21:12:42 info: Generating access token for user: 68025ba5c0697887750311c2
+2025-04-18 21:12:42 info: Setting access token cookie
+2025-04-18 21:12:42 info: Cookie settings: httpOnly=true, secure=false, sameSite=lax
+2025-04-18 21:12:42 info: Redirecting to: http://localhost:3000/auth/google/callback
+2025-04-18 21:12:51 info: Google OAuth login initiated
+2025-04-18 21:12:51 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 21:12:52 info: Google OAuth callback received
+2025-04-18 21:12:52 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 21:12:52 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 21:12:52 info: User found with email okayjiuu@gmail.com, auth provider: google
+2025-04-18 21:12:52 info: Google authentication successful for user: 68025ba5c0697887750311c2
+2025-04-18 21:12:52 info: Google OAuth authentication successful, generating token
+2025-04-18 21:12:52 info: Generating access token for user: 68025ba5c0697887750311c2
+2025-04-18 21:12:52 info: Setting access token cookie
+2025-04-18 21:12:52 info: Cookie settings: httpOnly=true, secure=false, sameSite=lax
+2025-04-18 21:12:52 info: Redirecting to: http://localhost:3000/auth/google/callback
+2025-04-18 21:19:15 info: Groq API Key status: Valid
+2025-04-18 21:19:15 info: Groq client initialized successfully
+2025-04-18 21:19:16 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 21:19:16 info: Socket.IO initialized
+2025-04-18 21:19:16 info: Server running on port 8000
+2025-04-18 21:19:16 info: Sensor simulation started
+2025-04-18 21:19:38 info: Groq API Key status: Valid
+2025-04-18 21:19:38 info: Groq client initialized successfully
+2025-04-18 21:19:39 info: MongoDB Connected: ac-zbybbvl-shard-00-01.djs2ncb.mongodb.net
+2025-04-18 21:19:39 info: Socket.IO initialized
+2025-04-18 21:19:39 info: Server running on port 8000
+2025-04-18 21:19:39 info: Sensor simulation started
+2025-04-18 21:21:36 info: Google OAuth login initiated
+2025-04-18 21:21:36 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 21:21:37 info: Google OAuth callback received
+2025-04-18 21:21:37 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 21:21:37 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 21:21:37 info: User found with email okayjiuu@gmail.com, auth provider: google
+2025-04-18 21:21:37 info: Google authentication successful for user: 68025ba5c0697887750311c2
+2025-04-18 21:21:37 info: Google OAuth authentication successful, generating token
+2025-04-18 21:21:37 info: Generating access token for user: 68025ba5c0697887750311c2
+2025-04-18 21:21:37 info: Setting access token cookie
+2025-04-18 21:21:37 info: Cookie settings: httpOnly=true, secure=false, sameSite=lax
+2025-04-18 21:21:37 info: Redirecting to: http://localhost:3000/auth/google/callback
+2025-04-18 21:22:12 info: Groq API Key status: Valid
+2025-04-18 21:22:12 info: Groq client initialized successfully
+2025-04-18 21:22:14 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 21:22:14 info: Socket.IO initialized
+2025-04-18 21:22:14 info: Server running on port 8000
+2025-04-18 21:22:14 info: Sensor simulation started
+2025-04-18 21:24:08 info: Groq API Key status: Valid
+2025-04-18 21:24:08 info: Groq client initialized successfully
+2025-04-18 21:24:09 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 21:24:09 info: Socket.IO initialized
+2025-04-18 21:24:09 info: Server running on port 8000
+2025-04-18 21:24:09 info: Sensor simulation started
+2025-04-18 21:58:51 info: Groq API Key status: Valid
+2025-04-18 21:58:51 info: Groq client initialized successfully
+2025-04-18 21:58:53 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 21:58:53 info: Socket.IO initialized
+2025-04-18 21:58:53 info: Server running on port 8000
+2025-04-18 21:58:53 info: Sensor simulation started
+2025-04-18 21:58:57 info: Google OAuth login initiated
+2025-04-18 21:58:57 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 21:58:57 info: Google OAuth callback received
+2025-04-18 21:58:58 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 21:58:58 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 21:58:58 info: User found with email okayjiuu@gmail.com, auth provider: google
+2025-04-18 21:58:58 info: Google authentication successful for user: 68025ba5c0697887750311c2
+2025-04-18 21:58:58 info: Google OAuth authentication successful, generating token
+2025-04-18 21:58:58 info: Generating access token for user: 68025ba5c0697887750311c2
+2025-04-18 21:58:58 info: Setting access token cookie
+2025-04-18 21:58:58 info: Cookie settings: httpOnly=true, secure=false, sameSite=lax
+2025-04-18 21:58:58 info: Redirecting to frontend: http://localhost:3000/auth/google/callback
+2025-04-18 21:59:17 info: Groq API Key status: Valid
+2025-04-18 21:59:17 info: Groq client initialized successfully
+2025-04-18 21:59:18 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 21:59:28 error: [GET] /api/profile >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 21:59:28 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:34:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 21:59:40 error: [GET] /api/profile >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 21:59:40 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:34:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 22:01:14 error: [GET] /api/profile >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 22:01:14 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:34:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 22:01:18 error: [GET] /api/profile >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 22:01:18 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:34:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 22:01:18 error: [GET] /api/profile >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 22:01:18 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:34:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 22:07:30 error: [POST] /api/groq/transcribe >> StatusCode:: 404, Message:: Route /api/groq/transcribe not found
+2025-04-18 22:07:30 error: Error: Route /api/groq/transcribe not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/server.ts:51:8
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+2025-04-18 22:07:32 error: [POST] /api/groq/transcribe >> StatusCode:: 404, Message:: Route /api/groq/transcribe not found
+2025-04-18 22:07:32 error: Error: Route /api/groq/transcribe not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/server.ts:51:8
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+2025-04-18 22:07:32 error: [POST] /api/groq/transcribe >> StatusCode:: 404, Message:: Route /api/groq/transcribe not found
+2025-04-18 22:07:32 error: Error: Route /api/groq/transcribe not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/server.ts:51:8
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+2025-04-18 22:07:36 info: Making Groq request with model: llama3-8b-8192
+2025-04-18 22:07:36 error: Error in Groq chat completion: 401 {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+2025-04-18 22:07:36 error: [POST] /api/groq/chat >> StatusCode:: 500, Message:: Failed to get response from Groq
+2025-04-18 22:07:36 error: Error: Failed to get response from Groq
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/groq.controller.ts:33:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 22:09:36 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-18 22:09:36 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:28:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-18 22:09:36 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-18 22:09:36 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:28:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-18 22:10:46 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-18 22:10:46 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:28:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-18 22:10:46 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-18 22:10:46 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:28:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-18 22:11:27 info: Groq API Key status: Valid
+2025-04-18 22:11:27 info: Groq client initialized successfully
+2025-04-18 22:11:28 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 22:11:28 info: Socket.IO initialized
+2025-04-18 22:11:28 info: Server running on port 8000
+2025-04-18 22:11:28 info: Sensor simulation started
+2025-04-18 22:12:44 info: Groq API Key status: Valid
+2025-04-18 22:12:44 info: Groq client initialized successfully
+2025-04-18 22:12:46 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 22:12:46 info: Socket.IO initialized
+2025-04-18 22:12:46 info: Server running on port 8000
+2025-04-18 22:12:46 info: Sensor simulation started
+2025-04-18 22:20:23 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 22:20:23 info: Socket.IO initialized
+2025-04-18 22:20:23 info: Server running on port 8000
+2025-04-18 22:20:23 info: Sensor simulation started
+2025-04-18 22:20:41 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 22:20:41 info: Socket.IO initialized
+2025-04-18 22:20:41 info: Server running on port 8000
+2025-04-18 22:20:41 info: Sensor simulation started

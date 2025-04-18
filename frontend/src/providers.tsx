@@ -21,53 +21,52 @@ const queryClient = new QueryClient({
   },
 });
 
-// Use a fixed WalletConnect projectId
-const projectId = 'c86f23da1913707381b31528a79c3e23';
+// Get project ID from environment variables with fallback
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c86f23da1913707381b31528a79c3e23';
 
 // Configure chains
 const chains = [baseSepolia];
 
-// Create wagmi config but delay actual initialization
-let config: any = null;
-let connectors: any = null;
-
-// Memoize the config creation to prevent multiple initializations
-const getConfig = () => {
-  if (!config) {
-    // Set up connectors with proper type
-    const walletConfig = getDefaultWallets({
-      appName: 'ChainSight',
-      projectId,
-    });
-    
-    connectors = walletConfig.connectors;
-    
-    // Create wagmi config with proper chain typing
-    config = createConfig({
-      chains: [baseSepolia],
-      transports: {
-        [baseSepolia.id]: http('https://sepolia.base.org'),
-      },
-      connectors,
-    });
-  }
-  return config;
+// Create a function to get the Wagmi configuration
+const getWagmiConfig = () => {
+  // Set up wallet connectors
+  const { connectors } = getDefaultWallets({
+    appName: 'GeneTrust Chain Explorer',
+    projectId: projectId,
+  });
+  
+  // Create wagmi config
+  return createConfig({
+    chains,
+    transports: {
+      [baseSepolia.id]: http('https://sepolia.base.org'),
+    },
+    connectors,
+  });
 };
 
 export function Providers({ children }: { children: ReactNode }) {
   const [isClient, setIsClient] = useState(false);
+  const [wagmiConfig, setWagmiConfig] = useState<any>(null);
 
   // Only initialize on client side
   useEffect(() => {
-    setIsClient(true);
+    if (typeof window !== 'undefined') {
+      setIsClient(true);
+      // Initialize configuration on the client side
+      try {
+        const config = getWagmiConfig();
+        setWagmiConfig(config);
+      } catch (err) {
+        console.error('Failed to initialize wallet configuration:', err);
+      }
+    }
   }, []);
 
-  // Don't render providers during SSR
-  if (!isClient) {
-    return <>{children}</>;
+  // Don't render wallet providers during SSR or while initializing
+  if (!isClient || !wagmiConfig) {
+    return <AuthProvider>{children}</AuthProvider>;
   }
-
-  const wagmiConfig = getConfig();
 
   return (
     <WalletInitContext.Provider value={true}>

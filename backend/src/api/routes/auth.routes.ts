@@ -74,9 +74,9 @@ router.get('/google/callback',
       res.cookie('accessToken', accessToken, cookieOptions);
       logger.info(`Cookie settings: httpOnly=${cookieOptions.httpOnly}, secure=${cookieOptions.secure}, sameSite=${cookieOptions.sameSite}`);
       
-      // Determine redirect based on onboarding status
-      const redirectUrl = `${config.FRONTEND_URL}/auth/google/callback`;
-      logger.info(`Redirecting to: ${redirectUrl}`);
+      // Redirect to frontend callback page
+      const redirectUrl = config.FRONTEND_REDIRECT_URI;
+      logger.info(`Redirecting to frontend: ${redirectUrl}`);
       res.redirect(redirectUrl);
     } catch (error) {
       logger.error('Error in Google callback handler:', error);

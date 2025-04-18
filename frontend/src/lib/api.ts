@@ -133,8 +133,6 @@ export const authAPI = {
 // Profile API
 export const profileAPI = {
   getProfile: () => api.get('/profile'),
-  updateOnboarding: (data: { role: string; experienceLevel: string; interests: string[] }) => 
-    api.put('/profile/onboarding', data),
   updatePreferences: (data: { theme?: string; aiVoice?: string }) => 
     api.put('/profile/preferences', data),
   addActivity: (data: { type: 'prediction' | 'monitoring'; data: any }) => 
@@ -165,17 +163,50 @@ export const iotAPI = {
 export const groqAPI = {
   chat: (messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>) => 
     api.post('/groq/chat', { messages }),
+  
   onboardingChat: (message: string, history: Array<{ role: 'user' | 'assistant'; content: string }> = []) => 
     api.post('/groq/onboarding-chat', { message, history }),
+    
   getBlockchainGuidance: (dataType: 'prediction' | 'monitoring') => 
     api.get(`/groq/blockchain-guidance?dataType=${dataType}`),
-  // New multimodal Groq APIs
+    
+  // Health check for Groq API
+  checkHealth: async () => {
+    try {
+      console.log('Checking Groq API health...');
+      const response = await api.get('/groq/health');
+      console.log('Groq health status:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error checking Groq health:', error);
+      return {
+        status: 'error',
+        groq: {
+          connected: false,
+          message: 'Failed to connect to Groq health endpoint'
+        }
+      };
+    }
+  },
+    
+  // Lab monitoring APIs
   analyzeVision: (scenario: string) => 
     api.post('/groq/analyze-vision', { scenario }),
+    
   transcribeAudio: (audioCommand: string) => 
     api.post('/groq/transcribe', { audioCommand }),
+    
   interpretCommand: (text: string) => 
     api.post('/groq/interpret-command', { text }),
+    
+  getSensorInsights: (sensorData: { 
+    temperature: number; 
+    humidity: number; 
+    pressure?: number; 
+    co2?: number; 
+    oxygen?: number;
+    ph?: number;
+  }) => api.post('/groq/sensor-insights', sensorData),
 };
 
 // Modify the interceptor for handling auth errors to prevent redirects on network errors

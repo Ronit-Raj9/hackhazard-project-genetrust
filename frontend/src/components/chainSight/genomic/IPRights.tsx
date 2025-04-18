@@ -411,7 +411,7 @@ export const IPRights = () => {
               <p className="text-xs text-gray-300">
                 This will register your intellectual property claim on the blockchain, providing a timestamped record of your discovery.
                 The transaction will be visible in your transaction history below.
-              </p>
+            </p>
           </div>
           
             <div className="mt-6">

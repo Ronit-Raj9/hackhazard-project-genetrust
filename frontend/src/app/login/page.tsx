@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Mail, User, Lock, Eye, EyeOff, ArrowRight, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useOnboardingStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -221,7 +220,6 @@ function SearchParamsComponent({
 export default function LoginPage() {
   const router = useRouter();
   const { login, loginWithGoogle, register: registerUser, isAuthenticated, isInitialized } = useAuth();
-  const { completed } = useOnboardingStore();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -269,10 +267,10 @@ export default function LoginPage() {
   // Redirect if already authenticated immediately after auth has initialized
   useEffect(() => {
     if (isInitialized && isAuthenticated) {
-      const redirectPath = completed ? '/dashboard' : '/onboarding';
-      router.push(redirectPath);
+      // Always redirect to dashboard
+      router.push('/dashboard');
     }
-  }, [isAuthenticated, isInitialized, router, completed]);
+  }, [isAuthenticated, isInitialized, router]);
 
   // Clear success messages when tab changes
   useEffect(() => {

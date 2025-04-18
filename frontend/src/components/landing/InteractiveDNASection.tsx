@@ -36,6 +36,7 @@ function BasePairComponent({
   onBaseClick: (index: number) => void
   zIndex: number
 }) {
+  // --- Restoring internal logic ---
   const [isHovered, setIsHovered] = useState(false)
   const controls = useAnimation()
   
@@ -116,6 +117,7 @@ function BasePairComponent({
     }
   }, [isTargeted, controls, delay])
   
+  // --- Restoring Original Return --- 
   return (
     <motion.div 
       className="absolute"
@@ -173,7 +175,7 @@ function BasePairComponent({
       
       {/* Complementary base */}
       <motion.div 
-          className={`absolute left-[40px] top-0 w-9 h-9 rounded-full ${baseColors[complementaryBase[base]]} flex items-center justify-center text-white text-sm font-bold backdrop-blur-sm ${baseEffects[complementaryBase[base]]} border-2 ${baseInnerRings[complementaryBase[base]]}`}
+          className={`absolute left-[40px] top-0 w-9 h-9 rounded-full ${baseColors[complementaryBase[base] as BasePair]} flex items-center justify-center text-white text-sm font-bold backdrop-blur-sm ${baseEffects[complementaryBase[base] as BasePair]} border-2 ${baseInnerRings[complementaryBase[base] as BasePair]}`}
           whileHover={{ scale: 1.3, rotate: -10 }}
           whileTap={{ scale: 0.95 }}
           animate={controls}
@@ -217,6 +219,7 @@ function BasePairComponent({
             {isTargeted ? 'CRISPR Target Site' : 'Non-target region'}
           </div>
                 
+                {/* Display linked bases (still using empty linkedBases state) */}
                 {linkedWith.length > 0 && (
                   <div className="text-xs px-2 py-1 rounded-full bg-indigo-900/30 border border-indigo-500/20">
                     Links: {linkedWith.map(i => i+1).join(', ')}
@@ -369,7 +372,7 @@ export default function InteractiveDNASection() {
   
   const sectionRef = useRef<HTMLDivElement>(null)
   const dnaRef = useRef<HTMLDivElement>(null)
-  const isInView = useInView(sectionRef, { once: false, amount: 0.2 })
+  const isInView = useInView(sectionRef, { once: false, amount: 0.2 }) // Restored useInView
   const controls = useAnimation()
   
   // State for connections and positions
@@ -453,7 +456,7 @@ export default function InteractiveDNASection() {
     }
   }
   
-  // Initialize positions and connections once
+  // Initialize positions and connections once - Restoring this hook
   useEffect(() => {
     const newPositions = calculateHelixPositions()
     setPositions(newPositions)
@@ -462,21 +465,21 @@ export default function InteractiveDNASection() {
     setConnections(newConnections)
   }, [dnaSequence.length]) // Only recalculate if DNA length changes
   
-  // Update linked bases when connections change
-  useEffect(() => {
-    const newLinkedBases = dnaSequence.map((_, i) => {
-      const linked: number[] = []
-      connections.forEach(conn => {
-        if (conn.from === i) linked.push(conn.to)
-        if (conn.to === i) linked.push(conn.from)
-      })
-      return linked
-    })
+  // Update linked bases when connections change - Keeping this commented out
+  // useEffect(() => {
+  //   const newLinkedBases = dnaSequence.map((_, i) => {
+  //     const linked: number[] = []
+  //     connections.forEach(conn => {
+  //       if (conn.from === i) linked.push(conn.to)
+  //       if (conn.to === i) linked.push(conn.from)
+  //     })
+  //     return linked
+  //   })
     
-    setLinkedBases(newLinkedBases)
-  }, [connections, dnaSequence])
+  //   setLinkedBases(newLinkedBases)
+  // }, [connections, dnaSequence])
   
-  // Handle animation controls based on view state
+  // Handle animation controls based on view state // Restored useEffect
   useEffect(() => {
     if (isInView) {
       controls.start({
@@ -498,7 +501,7 @@ export default function InteractiveDNASection() {
     }
   }, [isInView, controls])
   
-  // Rotate through facts every 8 seconds
+  // Rotate through facts every 8 seconds - Uncommented for testing
   useEffect(() => {
     const interval = setInterval(() => {
       setFactIndex(prev => (prev + 1) % dnaFacts.length)
@@ -528,7 +531,8 @@ export default function InteractiveDNASection() {
   
   // Decorative elements for the background - random positions
   const decorElements = useMemo(() => {
-    const elements = []
+    // Explicitly type the elements array
+    const elements: Array<{ position: [number, number], color: string, delay: number, size: number }> = []
     const colors = ['#4361ee', '#3a86ff', '#ff0a54', '#10B981']
     
     for (let i = 0; i < 12; i++) {
@@ -557,7 +561,7 @@ export default function InteractiveDNASection() {
       {/* Subtle glow effect */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-indigo-900/10 blur-3xl" />
       
-      {/* Decorative background elements */}
+      {/* Decorative background elements - Restored */}
       {decorElements.map((elem, i) => (
         <DecoElement 
           key={`deco-${i}`}
@@ -571,7 +575,7 @@ export default function InteractiveDNASection() {
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={controls}
+          animate={controls} // Restored controls
           className="text-center mb-10"
         >
           <h2 className="text-4xl font-bold text-white mb-4 inline-block relative">
@@ -627,13 +631,13 @@ export default function InteractiveDNASection() {
               className="relative h-[600px] mx-auto"
               style={{ width: '600px' }}
           initial={{ opacity: 0 }}
-              animate={{ opacity: 1, ...floatingAnimation }}
+              animate={{ opacity: 1, ...floatingAnimation }} // Restored floating animation
               transition={{ duration: 1, delay: 0.3 }}
             >
               {/* DNA Backbone Strand - left side with improved gradient */}
               <motion.div 
                 className="absolute left-1/2 top-0 h-full w-2 bg-gradient-to-b from-indigo-600/40 via-indigo-400/30 to-indigo-600/40 rounded-full blur-[0.5px]"
-                animate={{
+                animate={{ // Restored backbone animation
                   x: [-30, -25, -30, -35, -30],
                   filter: ["blur(0.5px)", "blur(1px)", "blur(0.5px)"],
                   opacity: [0.8, 0.7, 0.8],
@@ -649,7 +653,7 @@ export default function InteractiveDNASection() {
               {/* DNA Backbone Strand - right side with improved gradient */}
               <motion.div 
                 className="absolute left-1/2 top-0 h-full w-2 bg-gradient-to-b from-indigo-600/40 via-indigo-400/30 to-indigo-600/40 rounded-full blur-[0.5px]"
-                animate={{
+                animate={{ // Restored backbone animation
                   x: [30, 35, 30, 25, 30],
                   filter: ["blur(0.5px)", "blur(1px)", "blur(0.5px)"],
                   opacity: [0.8, 0.7, 0.8],
@@ -662,7 +666,7 @@ export default function InteractiveDNASection() {
                 }}
               />
               
-              {/* Regular connection lines */}
+              {/* Regular connection lines - Restored */}
               {regularConnections.map((conn, i) => (
                 <ConnectionLine 
                   key={`conn-${i}`}
@@ -677,7 +681,7 @@ export default function InteractiveDNASection() {
                 />
               ))}
               
-              {/* Highlighted connection lines */}
+              {/* Highlighted connection lines - Restored */}
               {highlightedConnections.map((conn, i) => (
                 <ConnectionLine 
                   key={`highlight-conn-${i}`}
@@ -688,7 +692,7 @@ export default function InteractiveDNASection() {
                 />
               ))}
               
-              {/* DNA Bases with enhanced appearance and z-index for proper layering */}
+              {/* DNA Bases - Restored (using simplified component) */}
               {positions.map((position, index) => (
                 dnaSequence[index] && (
                   <BasePairComponent 
@@ -698,14 +702,14 @@ export default function InteractiveDNASection() {
                   isTargeted={targetedIndices.includes(index)}
                     position={position}
                     delay={index * 0.1}
-                    linkedWith={linkedBases[index] || []}
+                    linkedWith={linkedBases[index] || []} // Note: linkedBases will be empty
                     onBaseClick={handleBaseClick}
                     zIndex={dnaSequence.length - index} // Higher bases get higher z-index
                   />
                 )
               ))}
               
-              {/* Small info labels for target sites */}
+              {/* Small info labels for target sites - Restored */}
               {targetedIndices.map((index) => {
                 const position = positions[index]
                 if (!position) return null
@@ -734,7 +738,7 @@ export default function InteractiveDNASection() {
           </div>
         </div>
           
-        {/* Rotating info panel */}
+        {/* Rotating info panel - Restored */}
         <AnimatePresence mode="wait">
           <InfoPanel key={factIndex} factIndex={factIndex} />
         </AnimatePresence>

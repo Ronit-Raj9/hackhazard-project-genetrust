@@ -31,6 +31,7 @@ const config = {
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
   GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:8000/api/auth/google/callback',
+  FRONTEND_REDIRECT_URI: process.env.FRONTEND_REDIRECT_URI || 'http://localhost:3000/auth/google/callback',
   
   // Prediction Service URL
   PREDICTION_SERVICE_URL: process.env.PREDICTION_SERVICE_URL || 'http://localhost:8000',

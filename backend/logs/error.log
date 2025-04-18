@@ -3190,3 +3190,128 @@
 2025-04-18 19:46:32 error: Error: Failed to get response from Groq
     at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/groq.controller.ts:137:11
     at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 20:08:26 error: Error in Groq chat completion: 401 {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+2025-04-18 20:08:26 error: [POST] /api/groq/onboarding-chat >> StatusCode:: 500, Message:: Failed to get response from Groq
+2025-04-18 20:08:26 error: Error: Failed to get response from Groq
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/groq.controller.ts:143:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 20:30:49 error: Uncaught Exception: listen EADDRINUSE: address already in use :::8000
+2025-04-18 20:37:16 error: [PUT] /api/profile/onboarding >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 20:37:16 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:79:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 20:40:51 error: [PUT] /api/profile/onboarding >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 20:40:51 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:79:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 21:08:12 error: Uncaught Exception: EIO: i/o error, write
+2025-04-18 21:59:18 error: Uncaught Exception: listen EADDRINUSE: address already in use :::8000
+2025-04-18 21:59:28 error: [GET] /api/profile >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 21:59:28 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:34:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 21:59:40 error: [GET] /api/profile >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 21:59:40 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:34:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 22:01:14 error: [GET] /api/profile >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 22:01:14 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:34:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 22:01:18 error: [GET] /api/profile >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 22:01:18 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:34:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 22:01:18 error: [GET] /api/profile >> StatusCode:: 404, Message:: Profile not found
+2025-04-18 22:01:18 error: Error: Profile not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/profile.controller.ts:34:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 22:07:30 error: [POST] /api/groq/transcribe >> StatusCode:: 404, Message:: Route /api/groq/transcribe not found
+2025-04-18 22:07:30 error: Error: Route /api/groq/transcribe not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/server.ts:51:8
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+2025-04-18 22:07:32 error: [POST] /api/groq/transcribe >> StatusCode:: 404, Message:: Route /api/groq/transcribe not found
+2025-04-18 22:07:32 error: Error: Route /api/groq/transcribe not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/server.ts:51:8
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+2025-04-18 22:07:32 error: [POST] /api/groq/transcribe >> StatusCode:: 404, Message:: Route /api/groq/transcribe not found
+2025-04-18 22:07:32 error: Error: Route /api/groq/transcribe not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/server.ts:51:8
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:265:14)
+2025-04-18 22:07:36 error: Error in Groq chat completion: 401 {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+2025-04-18 22:07:36 error: [POST] /api/groq/chat >> StatusCode:: 500, Message:: Failed to get response from Groq
+2025-04-18 22:07:36 error: Error: Failed to get response from Groq
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/groq.controller.ts:33:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 22:09:36 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-18 22:09:36 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:28:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-18 22:09:36 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-18 22:09:36 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:28:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-18 22:10:46 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-18 22:10:46 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:28:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-18 22:10:46 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-18 22:10:46 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:28:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)

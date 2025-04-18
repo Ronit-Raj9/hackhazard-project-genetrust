@@ -50,7 +50,25 @@ export function useOnboarding() {
       
       return assistantMessage;
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to process message';
+      console.error('Onboarding chat error:', err);
+      
+      // Enhanced error handling - extract the most useful error message
+      let errorMessage = 'Failed to process message';
+      
+      if (err.response?.data?.message) {
+        // Use server-provided error message
+        errorMessage = err.response.data.message;
+      } else if (err.response?.status === 401) {
+        errorMessage = 'Authentication error - please log in again';
+      } else if (err.response?.status === 429) {
+        errorMessage = 'Too many requests - please try again later';
+      } else if (err.message.includes('Network Error')) {
+        errorMessage = 'Network error - please check your connection';
+      } else if (err.message) {
+        // Use the error message directly
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
