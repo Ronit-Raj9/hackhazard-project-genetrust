@@ -131,7 +131,7 @@ export default function FeaturesSection() {
         >
           <h2 className="text-4xl font-bold text-white mb-4">Cutting-Edge Features</h2>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            GENEForge combines powerful AI, IoT, and blockchain technologies to enhance your research experience
+          GeneTrust combines powerful AI, IoT, and blockchain technologies to enhance your research experience
           </p>
         </motion.div>
         

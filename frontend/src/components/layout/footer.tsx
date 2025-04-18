@@ -8,7 +8,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-3 gap-8">
           <div>
-            <h3 className="text-xl font-semibold text-white mb-2">GENEForge</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">GeneTrust</h3>
             <p className="text-gray-400 text-sm mb-4">Built for the Future of Gene Editing</p>
             <div className="flex space-x-4">
               <Link href="#" className="text-gray-400 hover:text-gray-300">
@@ -88,7 +88,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-4 text-center text-gray-500 text-sm">
-          © {new Date().getFullYear()} GENEForge AI. All rights reserved.
+          © {new Date().getFullYear()} GeneTrust AI. All rights reserved.
         </div>
       </div>
     </footer>

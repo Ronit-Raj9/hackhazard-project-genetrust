@@ -21,7 +21,7 @@ export function ExplanationText() {
         
         <div className="space-y-4 text-gray-600">
           <p>
-            GeneForge AI Studio leverages blockchain technology to provide immutable, 
+          GeneTrust AI Studio leverages blockchain technology to provide immutable, 
             tamper-proof records of your {dataType === 'prediction' ? 'CRISPR predictions' : 'lab monitoring data'}.
           </p>
           

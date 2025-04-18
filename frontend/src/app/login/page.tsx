@@ -405,7 +405,7 @@ export default function LoginPage() {
         >
           <h1 className="text-5xl font-bold mb-2">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400">
-              GENEForge
+              GeneTrust
             </span>
           </h1>
           <motion.p 
@@ -414,7 +414,7 @@ export default function LoginPage() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-gray-300"
           >
-            Sign in to access the AI-Powered CRISPR Intelligence
+            Sign in to access the AI-Powered Gene Intelligence
           </motion.p>
         </motion.div>
 

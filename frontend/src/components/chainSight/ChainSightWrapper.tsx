@@ -79,7 +79,7 @@ export default function ChainSightWrapper() {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            ChainSight Genomic Platform
+            GeneTrust Genomic Platform
           </motion.h1>
           
           <motion.p 

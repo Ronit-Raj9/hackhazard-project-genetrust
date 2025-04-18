@@ -12,9 +12,10 @@ import { UserInfo } from '../auth/UserInfo';
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { isAuthenticated } = useAuthState();
+  const { user, isAuthenticated } = useAuthState();
   const pathname = usePathname();
   const isHomePage = pathname === '/';
+  const isOnboardingPage = pathname === '/onboarding';
 
   // Handle scroll effect
   useEffect(() => {

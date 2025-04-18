@@ -72,7 +72,7 @@ export function exportToTextFile(
   const comparison = compareSequences(originalSequence, editedSequence);
   
   const content = `
-GeneForge AI Studio - CRISPR Prediction Results
+GeneTrust AI Studio - CRISPR Prediction Results
 ==============================================
 Prediction ID: ${predictionId}
 Date: ${new Date().toLocaleString()}

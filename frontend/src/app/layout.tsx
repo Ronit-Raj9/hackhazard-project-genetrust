@@ -9,7 +9,7 @@ import { ConditionalFooter } from '@/components/layout/conditional-footer';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GeneForge AI Studio - CRISPR Gene Editing",
+  title: "GeneTrust AI Studio - CRISPR Gene Editing",
   description: "A cutting-edge platform that combines AI, IoT, and blockchain for CRISPR gene editing exploration",
 };
 

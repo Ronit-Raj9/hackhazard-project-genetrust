@@ -92,20 +92,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         dispatch({ type: 'SET_LOADING', payload: true });
         dispatch({ type: 'CLEAR_ERROR' });
         
-        const response = await authAPI.loginWithGoogle();
-        const authUrl = response.data.data?.authUrl || response.data.authUrl;
+        // The Google login implementation redirects directly to Google's OAuth service
+        // It doesn't return a response since it redirects the browser
+        authAPI.loginWithGoogle();
         
-        if (!authUrl) {
-          throw new Error('No authentication URL received from server');
-        }
-        
-        // Navigate to Google authentication page
-        window.location.href = authUrl;
+        // This code won't execute because the page will be redirected
         return Promise.resolve();
       } catch (err: any) {
         console.error('Google login error:', err);
-        const errorMessage = err.response?.data?.message || 'Failed to initiate Google login';
+        const errorMessage = err.message || 'Failed to initiate Google login';
         dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
+        dispatch({ type: 'SET_LOADING', payload: false });
         return Promise.reject(err);
       }
     },

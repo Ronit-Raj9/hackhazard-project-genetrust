@@ -47,7 +47,7 @@ export default function Footer() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400 mb-4">GENEForge</h3>
+              <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400 mb-4">GeneTrust</h3>
               <p className="text-gray-400 mb-6">
                 Built for the Future of Gene Editing
               </p>
@@ -63,7 +63,7 @@ export default function Footer() {
                 <Link href="https://linkedin.com" target="_blank" className="text-gray-400 hover:text-white transition-colors">
                   <Linkedin size={20} />
                 </Link>
-                <Link href="mailto:info@geneforge.ai" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="mailto:info@genetrust.ai" className="text-gray-400 hover:text-white transition-colors">
                   <Mail size={20} />
                 </Link>
               </div>
@@ -160,7 +160,7 @@ export default function Footer() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.8 }}
         >
-          © {currentYear} GENEForge AI. All rights reserved.
+          © {currentYear} GeneTrust AI. All rights reserved.
         </motion.div>
       </div>
     </footer>

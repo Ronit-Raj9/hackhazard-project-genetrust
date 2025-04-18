@@ -3,10 +3,10 @@ import React from 'react';
 export default function AboutPage() {
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-6">About GeneForge AI Studio</h1>
+      <h1 className="text-3xl font-bold mb-6">About GeneTrust AI Studio</h1>
       <p className="mb-4">
-        GeneForge AI Studio is a cutting-edge platform that combines AI, IoT, and blockchain 
-        for CRISPR gene editing exploration.
+      GeneTrust AI Studio is a cutting-edge platform that combines AI, IoT, and blockchain 
+        for Gene editing exploration.
       </p>
       <p className="mb-4">
         Our mission is to provide researchers, students, and enthusiasts with tools to visualize 

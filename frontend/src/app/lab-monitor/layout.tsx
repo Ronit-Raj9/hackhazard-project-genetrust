@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Lab Monitor | GENEForge',
+  title: 'Lab Monitor | GeneTrust',
   description: 'Monitor your lab experiments and equipment in real-time.',
 };
 

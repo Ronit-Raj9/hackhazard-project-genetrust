@@ -15,6 +15,7 @@ import { verifyJWT } from '../../middleware/auth';
 import { IUser } from '../../models/user.model';
 import config from '../../config';
 import { CookieOptions } from 'express';
+import logger from '../../utils/logger';
 
 const router = Router();
 
@@ -36,35 +37,49 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 
 // Google OAuth routes
-router.get('/google', passport.authenticate('google', {
-  scope: ['profile', 'email'],
-  session: false
-}));
+router.get('/google', (req, res, next) => {
+  logger.info('Google OAuth login initiated');
+  logger.info(`Redirect URI: ${config.GOOGLE_REDIRECT_URI}`);
+  
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    session: false
+  })(req, res, next);
+});
 
 router.get('/google/callback', 
-  passport.authenticate('google', { 
-    failureRedirect: `${config.FRONTEND_URL}/login?error=google_auth_failed`,
-    session: false
-  }),
+  (req, res, next) => {
+    logger.info('Google OAuth callback received');
+    passport.authenticate('google', { 
+      failureRedirect: `${config.FRONTEND_URL}/login?error=google_auth_failed`,
+      session: false
+    })(req, res, next);
+  },
   (req, res) => {
     try {
+      logger.info('Google OAuth authentication successful, generating token');
       const user = req.user as IUser;
       
       if (!user) {
+        logger.error('No user found in request after Google authentication');
         return res.redirect(`${config.FRONTEND_URL}/login?error=authentication_failed`);
       }
       
       // Generate JWT token
+      logger.info(`Generating access token for user: ${user._id}`);
       const accessToken = user.generateAccessToken();
       
       // Set cookie
+      logger.info('Setting access token cookie');
       res.cookie('accessToken', accessToken, cookieOptions);
+      logger.info(`Cookie settings: httpOnly=${cookieOptions.httpOnly}, secure=${cookieOptions.secure}, sameSite=${cookieOptions.sameSite}`);
       
       // Determine redirect based on onboarding status
-      // Default to dashboard - the frontend will check onboarding status
-      res.redirect(`${config.FRONTEND_URL}/auth/google/callback`);
+      const redirectUrl = `${config.FRONTEND_URL}/auth/google/callback`;
+      logger.info(`Redirecting to: ${redirectUrl}`);
+      res.redirect(redirectUrl);
     } catch (error) {
-      console.error('Error in Google callback handler:', error);
+      logger.error('Error in Google callback handler:', error);
       res.redirect(`${config.FRONTEND_URL}/login?error=unexpected_error`);
     }
   }

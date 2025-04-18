@@ -32,7 +32,7 @@ export default function CTASection() {
               Ready to Transform Your Gene Editing Workflow?
             </h2>
             <p className="text-xl text-gray-300 mb-10">
-              Join GENEForge AI Studio today and experience the future of genetic research
+              Join GeneTrust AI Studio today and experience the future of genetic research
             </p>
             
             {/* Only show login/register buttons for non-authenticated users */}

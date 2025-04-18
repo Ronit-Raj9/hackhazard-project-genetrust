@@ -2,7 +2,13 @@ import { Request, Response } from 'express';
 import asyncHandler from '../utils/asyncHandler';
 import ApiError from '../utils/ApiError';
 import ApiResponse from '../utils/ApiResponse';
-import { chatCompletion, getBlockchainGuidance } from '../services/groq.service';
+import { 
+  chatCompletion, 
+  getBlockchainGuidance, 
+  analyzeLabImage, 
+  transcribeLabAudio, 
+  interpretLabCommand 
+} from '../services/groq.service';
 import User from '../models/user.model';
 
 // Extended request with typed user property
@@ -115,7 +121,7 @@ export const handleOnboardingChat = asyncHandler(async (req: Request, res: Respo
   const messages: ChatMessage[] = [
     {
       role: 'system',
-      content: 'You are GeneForge AI Assistant, an onboarding guide for the GeneForge AI Studio platform. Your goal is to understand the user\'s background and preferences to personalize their experience. Ask about their role (student, researcher), experience level with CRISPR, and specific interests. Keep your responses friendly, concise, and helpful. Don\'t overwhelm with too much information at once.',
+      content: 'You are GeneTrust AI Assistant, an onboarding guide for the GeneTrust AI Studio platform. Your goal is to understand the user\'s background and preferences to personalize their experience. Ask about their role (student, researcher), experience level with CRISPR, and specific interests. Keep your responses friendly, concise, and helpful. Don\'t overwhelm with too much information at once.',
     },
   ];
 
@@ -174,6 +180,107 @@ export const handleOnboardingChat = asyncHandler(async (req: Request, res: Respo
         },
       },
       'Onboarding chat response successful'
+    )
+  );
+});
+
+/**
+ * Analyze a vision scene (simulated) using Groq
+ */
+export const analyzeVisionScene = asyncHandler(async (req: Request, res: Response) => {
+  const { scenario } = req.body;
+
+  // Validate scenario
+  if (!scenario) {
+    throw new ApiError(400, 'Scenario identifier is required');
+  }
+
+  // Only accept specific scenarios for simulation purposes
+  if (!['normal_lab', 'spill_detected', 'no_gloves', 'contamination_risk', 'equipment_misuse'].includes(scenario)) {
+    throw new ApiError(400, 'Invalid scenario identifier');
+  }
+
+  // Get alert for the scenario
+  const result = await analyzeLabImage(scenario);
+
+  if (!result.success) {
+    throw new ApiError(500, 'Failed to analyze lab scene');
+  }
+
+  // Return response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        scenario,
+        alert: result.message,
+        severity: result.severity,
+      },
+      'Lab scene analysis completed'
+    )
+  );
+});
+
+/**
+ * Transcribe audio from the lab using Groq
+ * Note: In a real implementation, you would process an actual audio file
+ * For this demo, we'll use a simulation approach with predefined texts
+ */
+export const transcribeAudio = asyncHandler(async (req: Request, res: Response) => {
+  const { audioCommand } = req.body;
+
+  // Validate input format (for simulation)
+  if (!audioCommand) {
+    throw new ApiError(400, 'Audio command identifier is required');
+  }
+
+  // Get transcription
+  const result = await transcribeLabAudio(audioCommand);
+
+  if (!result.success) {
+    throw new ApiError(500, 'Failed to transcribe audio');
+  }
+
+  // Return response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        transcription: result.transcription
+      },
+      'Audio transcription successful'
+    )
+  );
+});
+
+/**
+ * Interpret a command using Groq LLM
+ */
+export const interpretCommand = asyncHandler(async (req: Request, res: Response) => {
+  const { text } = req.body;
+
+  // Validate input
+  if (!text) {
+    throw new ApiError(400, 'Command text is required');
+  }
+
+  // Interpret command
+  const result = await interpretLabCommand(text);
+
+  if (!result.success) {
+    throw new ApiError(500, 'Failed to interpret command');
+  }
+
+  // Return response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        intent: result.intent,
+        confidence: result.confidence,
+        actionParams: result.actionParams
+      },
+      'Command interpretation successful'
     )
   );
 }); 

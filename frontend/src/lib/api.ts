@@ -169,6 +169,13 @@ export const groqAPI = {
     api.post('/groq/onboarding-chat', { message, history }),
   getBlockchainGuidance: (dataType: 'prediction' | 'monitoring') => 
     api.get(`/groq/blockchain-guidance?dataType=${dataType}`),
+  // New multimodal Groq APIs
+  analyzeVision: (scenario: string) => 
+    api.post('/groq/analyze-vision', { scenario }),
+  transcribeAudio: (audioCommand: string) => 
+    api.post('/groq/transcribe', { audioCommand }),
+  interpretCommand: (text: string) => 
+    api.post('/groq/interpret-command', { text }),
 };
 
 // Modify the interceptor for handling auth errors to prevent redirects on network errors

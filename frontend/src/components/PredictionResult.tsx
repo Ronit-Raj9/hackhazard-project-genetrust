@@ -116,7 +116,7 @@ export function PredictionResult({
           variant="outline"
           onClick={() => {
             const blob = new Blob([
-              `GeneForge AI Studio - CRISPR Prediction\n`,
+              `GeneTrust AI Studio - Gene Prediction\n`,
               `Prediction ID: ${predictionId}\n\n`,
               `Original Sequence:\n${originalSequence}\n\n`,
               `Edited Sequence:\n${editedSequence}\n\n`,

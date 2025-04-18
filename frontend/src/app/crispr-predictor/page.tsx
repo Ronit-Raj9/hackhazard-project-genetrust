@@ -396,7 +396,7 @@ export default function CrisprPredictorPage() {
             transition={{ delay: 0.8, duration: 0.5 }}
             className="mt-12 text-center text-gray-500 text-sm"
           >
-            GeneForge AI Studio • Advanced CRISPR Gene Editing Platform
+            GeneTrust AI Studio • Advanced Gene Editing Platform
           </motion.div>
         </motion.div>
       </div>

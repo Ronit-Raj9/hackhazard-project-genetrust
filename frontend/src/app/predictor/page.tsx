@@ -130,7 +130,7 @@ export default function CRISPRPredictor() {
               animate={{ scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              GENEForge CRISPR Predictor
+              GeneTrust Gene Predictor
             </motion.div>
           </motion.div>
         )}
@@ -485,7 +485,7 @@ export default function CRISPRPredictor() {
           animate={{ opacity: 1 }}
           transition={{ delay: 2, duration: 1 }}
         >
-          GENEForge CRISPR Predictor • Advanced Genomic Analysis Platform
+          GeneTrust Gene Predictor • Advanced Genomic Analysis Platform
         </motion.div>
       </motion.div>
     </div>

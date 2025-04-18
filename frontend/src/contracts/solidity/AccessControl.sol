@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 /**
  * @title AccessControl
- * @dev Manages access control for the HackHazards platform
+ * @dev Manages access control for the GeneTrust platform
  */
 contract AccessControl {
     // Role definitions

@@ -99,28 +99,19 @@ export function useAuth(requireAuth: boolean = false) {
     try {
       console.log('Initiating Google login...');
       setLoading(true);
+      setError(null);
       
-      const response = await authAPI.loginWithGoogle();
-      console.log('Google auth URL received:', response.data);
+      // The Google login doesn't return a response - it redirects directly
+      authAPI.loginWithGoogle();
       
-      // Check if the authUrl is at different path in the response
-      const authUrl = response.data.data?.authUrl || response.data.authUrl;
-      
-      if (!authUrl) {
-        console.error('No auth URL in response:', response.data);
-        throw new Error('No authentication URL received from server');
-      }
-      
-      // Navigate to Google authentication page
-      window.location.href = authUrl;
-      return;
+      // This function won't return since it redirects the browser
+      return Promise.resolve();
     } catch (err: any) {
       console.error('Google login initialization error:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to initiate Google login';
+      const errorMessage = err.message || 'Failed to initiate Google login';
       setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
       setLoading(false);
+      throw new Error(errorMessage);
     }
   };
 

@@ -40,7 +40,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   // Set up connectors - fixed type error by removing chains parameter
   const { connectors } = getDefaultWallets({
-    appName: 'GeneForge AI Studio',
+    appName: 'GeneTrust',
     projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'default-project-id',
   });
 

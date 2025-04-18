@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useGoogleAuth } from '@/lib/hooks/useGoogleAuth';
 import { Button } from '@/components/ui/button';
 import { FcGoogle } from 'react-icons/fc';
@@ -17,13 +18,27 @@ export default function GoogleLoginButton({
   variant = 'outline',
   fullWidth = false,
 }: GoogleLoginButtonProps) {
-  const { loginWithGoogle, isLoading, error } = useGoogleAuth();
+  const { loginWithGoogle, isLoading, error: hookError } = useGoogleAuth();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGoogleLogin = () => {
+    setError(null);
+    try {
+      loginWithGoogle();
+    } catch (err) {
+      console.error('Google login failed:', err);
+      setError(err instanceof Error ? err.message : 'Failed to start Google login flow');
+    }
+  };
+
+  // Display either the component's error state or the hook's error state
+  const displayError = error || hookError;
 
   return (
     <div className="space-y-2">
       <Button
         type="button"
-        onClick={loginWithGoogle}
+        onClick={handleGoogleLogin}
         disabled={isLoading}
         className={`${className} ${fullWidth ? 'w-full' : ''} flex items-center justify-center gap-2`}
         size={size}
@@ -37,8 +52,8 @@ export default function GoogleLoginButton({
         {isLoading ? 'Connecting...' : 'Continue with Google'}
       </Button>
       
-      {error && (
-        <p className="text-sm text-red-500 mt-1">{error}</p>
+      {displayError && (
+        <p className="text-sm text-red-500 mt-1">{displayError}</p>
       )}
     </div>
   );

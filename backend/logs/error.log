@@ -3163,3 +3163,30 @@
     at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:531:19
     at processTicksAndRejections (node:internal/process/task_queues:105:5)
 2025-04-18 18:43:20 error: Uncaught Exception: listen EADDRINUSE: address already in use :::8000
+2025-04-18 19:18:46 error: Uncaught Exception: listen EADDRINUSE: address already in use :::8000
+2025-04-18 19:21:10 error: Uncaught Exception: listen EADDRINUSE: address already in use :::8000
+2025-04-18 19:33:17 error: Error in Google authentication callback: Profile validation failed: userId: Path `userId` is required.
+2025-04-18 19:33:17 error: [GET] /api/auth/google/callback >> StatusCode:: 500, Message:: Profile validation failed: userId: Path `userId` is required.
+2025-04-18 19:33:17 error: ValidationError: Profile validation failed: userId: Path `userId` is required.
+    at model.Document.invalidate (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/mongoose/lib/document.js:3351:32)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/mongoose/lib/document.js:3112:17
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/mongoose/lib/schemaType.js:1407:9
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+2025-04-18 19:33:17 error: [GET] /favicon.ico >> StatusCode:: 404, Message:: Route /favicon.ico not found
+2025-04-18 19:33:17 error: Error: Route /favicon.ico not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/server.ts:51:8
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at initialize (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/passport/lib/middleware/initialize.js:98:5)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:286:9
+2025-04-18 19:36:22 error: Uncaught Exception: listen EADDRINUSE: address already in use :::8000
+2025-04-18 19:46:32 error: Error in Groq chat completion: 401 {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+2025-04-18 19:46:32 error: [POST] /api/groq/onboarding-chat >> StatusCode:: 500, Message:: Failed to get response from Groq
+2025-04-18 19:46:32 error: Error: Failed to get response from Groq
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/groq.controller.ts:137:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)

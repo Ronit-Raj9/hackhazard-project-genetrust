@@ -2,7 +2,7 @@ import { createPublicClient, createWalletClient, http, custom } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 import { keccak256, stringToHex, parseEther, Hex, Address } from 'viem';
 
-// Import the contract ABIs for GENEForge genomics platform
+// Import the contract ABIs for GeneTrust genomics platform
 import SampleProvenanceABI from './abis/SampleProvenance.json';
 import ExperimentalDataAuditABI from './abis/ExperimentalDataAudit.json';
 import AccessControlABI from './abis/AccessControl.json';
@@ -106,7 +106,7 @@ const isLocalStorageAvailable = () => {
 // Check for persisted wallet state at module load time
 if (isLocalStorageAvailable()) {
   try {
-    const persistedState = localStorage.getItem('chainSight-wallet-storage');
+    const persistedState = localStorage.getItem('geneTrust-wallet-storage');
     if (persistedState) {
       const { state } = JSON.parse(persistedState);
       if (state.wallet?.isConnected && state.wallet?.address) {
@@ -137,7 +137,7 @@ async function getWalletClient() {
     let persistedWalletAddress = null;
     if (isLocalStorageAvailable()) {
       try {
-        const persistedState = localStorage.getItem('chainSight-wallet-storage');
+        const persistedState = localStorage.getItem('geneTrust-wallet-storage');
         if (persistedState) {
           const { state } = JSON.parse(persistedState);
           if (state.wallet?.isConnected && state.wallet?.address) {

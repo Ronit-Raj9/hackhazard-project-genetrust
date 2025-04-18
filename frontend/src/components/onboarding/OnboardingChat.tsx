@@ -44,7 +44,7 @@ export function OnboardingChat() {
               className="bg-indigo-100 p-4 rounded-xl"
             >
               <p className="text-indigo-700">
-                Welcome to GeneForge AI Studio! I'm your onboarding assistant. 
+                Welcome to GeneTrust AI Studio! I'm your onboarding assistant. 
                 I'll help personalize your experience. Are you a student, 
                 researcher, or just curious about gene editing?
               </p>

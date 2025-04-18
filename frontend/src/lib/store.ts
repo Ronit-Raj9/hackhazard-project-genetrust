@@ -137,7 +137,7 @@ export const useOnboardingStore = create<OnboardingState>()(
       clearChatHistory: () => set({ chatHistory: [] }),
     }),
     {
-      name: 'geneforge-onboarding',
+      name: 'genetrust-onboarding',
     }
   )
 );

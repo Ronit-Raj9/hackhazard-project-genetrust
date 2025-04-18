@@ -3345,3 +3345,142 @@
 2025-04-18 18:43:13 info: Server running on port 8000
 2025-04-18 18:43:13 info: Sensor simulation started
 2025-04-18 18:43:20 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:11:04 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:11:04 info: Socket.IO initialized
+2025-04-18 19:11:04 info: Server running on port 8000
+2025-04-18 19:11:04 info: Sensor simulation started
+2025-04-18 19:12:13 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:12:13 info: Socket.IO initialized
+2025-04-18 19:12:13 info: Server running on port 8000
+2025-04-18 19:12:13 info: Sensor simulation started
+2025-04-18 19:12:25 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:12:25 info: Socket.IO initialized
+2025-04-18 19:12:25 info: Server running on port 8000
+2025-04-18 19:12:25 info: Sensor simulation started
+2025-04-18 19:14:10 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:14:10 info: Socket.IO initialized
+2025-04-18 19:14:10 info: Server running on port 8000
+2025-04-18 19:14:11 info: Sensor simulation started
+2025-04-18 19:17:37 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:17:37 info: Socket.IO initialized
+2025-04-18 19:17:37 info: Server running on port 8000
+2025-04-18 19:17:37 info: Sensor simulation started
+2025-04-18 19:18:02 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:18:02 info: Socket.IO initialized
+2025-04-18 19:18:02 info: Server running on port 8000
+2025-04-18 19:18:02 info: Sensor simulation started
+2025-04-18 19:18:30 info: MongoDB Connected: ac-zbybbvl-shard-00-02.djs2ncb.mongodb.net
+2025-04-18 19:18:30 info: Socket.IO initialized
+2025-04-18 19:18:30 info: Server running on port 8000
+2025-04-18 19:18:30 info: Sensor simulation started
+2025-04-18 19:18:46 info: MongoDB Connected: ac-zbybbvl-shard-00-02.djs2ncb.mongodb.net
+2025-04-18 19:21:10 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:23:11 info: Google OAuth login initiated
+2025-04-18 19:23:11 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 19:26:39 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:26:39 info: Socket.IO initialized
+2025-04-18 19:26:39 info: Server running on port 8000
+2025-04-18 19:26:39 info: Sensor simulation started
+2025-04-18 19:29:44 info: MongoDB Connected: ac-zbybbvl-shard-00-02.djs2ncb.mongodb.net
+2025-04-18 19:29:44 info: Socket.IO initialized
+2025-04-18 19:29:44 info: Server running on port 8000
+2025-04-18 19:29:44 info: Created new sensor data document
+2025-04-18 19:29:44 info: Sensor simulation started
+2025-04-18 19:33:09 info: Google OAuth login initiated
+2025-04-18 19:33:09 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 19:33:16 info: Google OAuth callback received
+2025-04-18 19:33:17 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 19:33:17 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 19:33:17 info: Creating new user for email: okayjiuu@gmail.com
+2025-04-18 19:33:17 info: Creating profile for new user: 68025ba5c0697887750311c2
+2025-04-18 19:33:17 error: Error in Google authentication callback: Profile validation failed: userId: Path `userId` is required.
+2025-04-18 19:33:17 error: [GET] /api/auth/google/callback >> StatusCode:: 500, Message:: Profile validation failed: userId: Path `userId` is required.
+2025-04-18 19:33:17 error: ValidationError: Profile validation failed: userId: Path `userId` is required.
+    at model.Document.invalidate (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/mongoose/lib/document.js:3351:32)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/mongoose/lib/document.js:3112:17
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/mongoose/lib/schemaType.js:1407:9
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+2025-04-18 19:33:17 error: [GET] /favicon.ico >> StatusCode:: 404, Message:: Route /favicon.ico not found
+2025-04-18 19:33:17 error: Error: Route /favicon.ico not found
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/server.ts:51:8
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at initialize (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/passport/lib/middleware/initialize.js:98:5)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:286:9
+2025-04-18 19:34:46 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:34:46 info: Socket.IO initialized
+2025-04-18 19:34:46 info: Server running on port 8000
+2025-04-18 19:34:46 info: Sensor simulation started
+2025-04-18 19:35:05 info: MongoDB Connected: ac-zbybbvl-shard-00-01.djs2ncb.mongodb.net
+2025-04-18 19:35:05 info: Socket.IO initialized
+2025-04-18 19:35:05 info: Server running on port 8000
+2025-04-18 19:35:05 info: Sensor simulation started
+2025-04-18 19:35:21 info: MongoDB Connected: ac-zbybbvl-shard-00-01.djs2ncb.mongodb.net
+2025-04-18 19:35:21 info: Socket.IO initialized
+2025-04-18 19:35:21 info: Server running on port 8000
+2025-04-18 19:35:21 info: Sensor simulation started
+2025-04-18 19:35:38 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:35:38 info: Socket.IO initialized
+2025-04-18 19:35:38 info: Server running on port 8000
+2025-04-18 19:35:38 info: Sensor simulation started
+2025-04-18 19:35:59 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:35:59 info: Socket.IO initialized
+2025-04-18 19:35:59 info: Server running on port 8000
+2025-04-18 19:35:59 info: Sensor simulation started
+2025-04-18 19:36:22 info: MongoDB Connected: ac-zbybbvl-shard-00-02.djs2ncb.mongodb.net
+2025-04-18 19:36:49 info: Google OAuth callback received
+2025-04-18 19:36:49 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 19:36:49 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 19:36:49 info: User found with email okayjiuu@gmail.com, auth provider: google
+2025-04-18 19:36:49 info: Google authentication successful for user: 68025ba5c0697887750311c2
+2025-04-18 19:36:49 info: Google OAuth authentication successful, generating token
+2025-04-18 19:36:49 info: Generating access token for user: 68025ba5c0697887750311c2
+2025-04-18 19:36:49 info: Setting access token cookie
+2025-04-18 19:36:49 info: Cookie settings: httpOnly=true, secure=false, sameSite=lax
+2025-04-18 19:36:49 info: Redirecting to: http://localhost:3000/auth/google/callback
+2025-04-18 19:37:06 info: Google OAuth login initiated
+2025-04-18 19:37:06 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 19:37:07 info: Google OAuth callback received
+2025-04-18 19:37:07 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 19:37:07 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 19:37:07 info: User found with email okayjiuu@gmail.com, auth provider: google
+2025-04-18 19:37:07 info: Google authentication successful for user: 68025ba5c0697887750311c2
+2025-04-18 19:37:07 info: Google OAuth authentication successful, generating token
+2025-04-18 19:37:07 info: Generating access token for user: 68025ba5c0697887750311c2
+2025-04-18 19:37:07 info: Setting access token cookie
+2025-04-18 19:37:07 info: Cookie settings: httpOnly=true, secure=false, sameSite=lax
+2025-04-18 19:37:07 info: Redirecting to: http://localhost:3000/auth/google/callback
+2025-04-18 19:40:35 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:40:35 info: Socket.IO initialized
+2025-04-18 19:40:35 info: Server running on port 8000
+2025-04-18 19:40:35 info: Sensor simulation started
+2025-04-18 19:40:48 info: MongoDB Connected: ac-zbybbvl-shard-00-02.djs2ncb.mongodb.net
+2025-04-18 19:40:48 info: Socket.IO initialized
+2025-04-18 19:40:48 info: Server running on port 8000
+2025-04-18 19:40:48 info: Sensor simulation started
+2025-04-18 19:41:00 info: Google OAuth login initiated
+2025-04-18 19:41:00 info: Redirect URI: http://localhost:8000/api/auth/google/callback
+2025-04-18 19:41:01 info: Google OAuth callback received
+2025-04-18 19:41:01 info: Google authentication callback for profile: 112695414640884107185, okayji uu
+2025-04-18 19:41:01 info: Authenticating with email: okayjiuu@gmail.com
+2025-04-18 19:41:01 info: User found with email okayjiuu@gmail.com, auth provider: google
+2025-04-18 19:41:01 info: Google authentication successful for user: 68025ba5c0697887750311c2
+2025-04-18 19:41:01 info: Google OAuth authentication successful, generating token
+2025-04-18 19:41:01 info: Generating access token for user: 68025ba5c0697887750311c2
+2025-04-18 19:41:01 info: Setting access token cookie
+2025-04-18 19:41:01 info: Cookie settings: httpOnly=true, secure=false, sameSite=lax
+2025-04-18 19:41:01 info: Redirecting to: http://localhost:3000/auth/google/callback
+2025-04-18 19:46:32 error: Error in Groq chat completion: 401 {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+2025-04-18 19:46:32 error: [POST] /api/groq/onboarding-chat >> StatusCode:: 500, Message:: Failed to get response from Groq
+2025-04-18 19:46:32 error: Error: Failed to get response from Groq
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/groq.controller.ts:137:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-18 19:50:35 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-18 19:50:35 info: Socket.IO initialized
+2025-04-18 19:50:35 info: Server running on port 8000
+2025-04-18 19:50:36 info: Sensor simulation started

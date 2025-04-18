@@ -23,11 +23,11 @@ export function useGoogleAuth(): UseGoogleAuthReturn {
       setIsLoading(true);
       setError(null);
       
-      // The authAPI.loginWithGoogle function redirects the user to Google OAuth
-      // It uses window.location.href = googleAuthUrl which won't return
+      // Just directly call the API function which redirects the user
+      // No need to wait for a response as it will redirect the browser
       authAPI.loginWithGoogle();
       
-      // Note: No need to set loading to false as the page will redirect away
+      // Note: This code won't execute as the page will be redirected
     } catch (err) {
       setIsLoading(false);
       setError(err instanceof Error ? err.message : 'Failed to initiate Google login');

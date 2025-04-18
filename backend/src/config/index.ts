@@ -8,7 +8,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const config = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '8000'),
-  MONGO_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/geneforge',
+  MONGO_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/genetrust',
   
   // JWT configuration
   JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
@@ -30,7 +30,7 @@ const config = {
   // Google OAuth config
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
-  GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback',
+  GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:8000/api/auth/google/callback',
   
   // Prediction Service URL
   PREDICTION_SERVICE_URL: process.env.PREDICTION_SERVICE_URL || 'http://localhost:8000',

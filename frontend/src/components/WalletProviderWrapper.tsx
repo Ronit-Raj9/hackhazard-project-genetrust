@@ -27,7 +27,7 @@ export default function WalletProviderWrapper({ children }: WalletProviderWrappe
 
   // Set up connectors with proper type
   const { connectors } = getDefaultWallets({
-    appName: 'GeneForge Dashboard',
+    appName: 'GeneTrust Dashboard',
     projectId,
   });
 

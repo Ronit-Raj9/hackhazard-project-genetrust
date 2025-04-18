@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
 # Implementation Plan (GeneForge AI Studio)
 
 ## Phase 1: Core Setup & Foundation
