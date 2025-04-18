@@ -1,28 +1,26 @@
 // Color palette for the ChainSight components
-export const DNA_COLORS = {
-  primary: "#00FFFF", // Electric Cyan
-  secondary: "#FF00FF", // Vibrant Magenta
-  tertiary: "#00FF7F", // Bioluminescent Green
-  accent: "#4B0082", // Deep Indigo
+export const DNA_COLORS = [
+  '#00CCFF',  // Vivid cyan
+  '#B16CEA',  // Bright purple
+  '#FF4D6E',  // Coral pink
+  '#4F46E5',  // Indigo
+  '#16A34A',  // Green
+  '#F59E0B',  // Amber
+];
+
+export const GENOMIC_THEME = {
+  primary: '#4F46E5',
+  secondary: '#B16CEA',
+  accent: '#00CCFF',
   background: {
-    dark: "#080828", // Dark Navy
-    darker: "#05051A", // Deeper Navy
+    dark: '#060620',
+    light: '#F8FAFC'
   },
   text: {
-    primary: "#FFFFFF", // White
-    secondary: "#B8B8D0", // Light Lavender
-    muted: "#6E6E9A", // Muted Purple
-  },
-  status: {
-    success: "#00FF7F", // Bioluminescent Green
-    warning: "#FFD700", // Gold
-    error: "#FF355E", // Bright Red
-  },
-  gradients: {
-    primary: "linear-gradient(135deg, #00FFFF 0%, #0080FF 100%)", // Cyan to Blue
-    secondary: "linear-gradient(135deg, #FF00FF 0%, #9000FF 100%)", // Magenta to Purple
-    tertiary: "linear-gradient(135deg, #00FF7F 0%, #00BFFF 100%)", // Green to Cyan
-  },
+    primary: '#F8FAFC',
+    secondary: '#CBD5E1',
+    muted: '#64748B'
+  }
 };
 
 // Shadows and glows for UI elements

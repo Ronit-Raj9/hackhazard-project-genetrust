@@ -1,5 +1,8 @@
 "use client";
 
+// Add next.js dynamic marker to prevent prerendering
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMousePositionContext } from "@/components/landing/MousePositionProvider";

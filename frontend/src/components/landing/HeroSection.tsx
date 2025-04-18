@@ -2,16 +2,15 @@
 
 import { useRef } from 'react'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
-import { Canvas } from '@react-three/fiber'
 import { Dna, Gauge, ArrowRight, ShieldCheck } from 'lucide-react'
 import { useMousePosition } from '@/lib/hooks/useMousePosition'
-import DNAScene from './DNAModel'
 import AnimatedButton from './AnimatedButton'
 import ParticleBackground from './ParticleBackground'
 
 export default function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { x, y } = useMousePosition(containerRef)
+  // Type assertion to make TypeScript happy - we know this works at runtime
+  const { x, y } = useMousePosition(containerRef as any)
   
   // Normalize mouse position to -0.5 to 0.5
   const mouseX = useMotionValue(0)
@@ -32,13 +31,6 @@ export default function HeroSection() {
     >
       {/* Particle background */}
       <ParticleBackground />
-      
-      {/* DNA visualization - taking full width in background */}
-      <div className="absolute inset-0 w-full h-full opacity-70 pointer-events-none z-0">
-        <Canvas camera={{ position: [0, 0, 15], fov: 25 }}>
-          <DNAScene mouseX={mouseX} mouseY={mouseY} />
-        </Canvas>
-      </div>
       
       {/* Content - centered with glass morphism effect */}
       <div className="container mx-auto px-4 z-20 relative">

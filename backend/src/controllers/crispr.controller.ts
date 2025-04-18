@@ -6,23 +6,21 @@ import config from '../config';
 
 // Interface for the expected response from the Python prediction service
 interface PredictionServiceResponse {
-  originalSequence?: string;
-  editedSequence?: string;
-  changeIndicator?: string;
-  efficiency?: number;
-  changedPosition?: number;
-  originalBase?: string;
-  newBase?: string;
-  message?: string;
-  originalEfficiency?: number;
+  originalSequence: string;
+  editedSequence: string;
+  changeIndicator: string;
+  efficiency: number;
+  changedPosition: number;
+  originalBase: string;
+  newBase: string;
+  message: string;
+  originalEfficiency: number;
   error?: string; // Optional error field
 }
 
 // Helper function to validate DNA sequence
 const isValidDNASequence = (sequence: string): boolean => {
-  if (typeof sequence !== 'string' || sequence.length !== 20) {
-    return false;
-  }
+  // Must contain only A, T, C, G
   const validBases = /^[ATCG]+$/;
   return validBases.test(sequence.toUpperCase());
 };
@@ -41,7 +39,12 @@ export const predictCrisprSequence = asyncHandler(async (req: Request, res: Resp
   const upperSequence = String(sequence).toUpperCase();
 
   if (!isValidDNASequence(upperSequence)) {
-    throw new ApiError(400, 'Invalid DNA sequence. Must be 20 characters long and contain only A, T, C, G.');
+    throw new ApiError(400, 'Invalid DNA sequence. Must contain only A, T, C, G.');
+  }
+
+  // For the Python model, we need a sequence of exactly 20 characters
+  if (upperSequence.length !== 20) {
+    throw new ApiError(400, 'DNA sequence must be exactly 20 characters long for CRISPR prediction.');
   }
 
   // --- Call Python Prediction Service ---
@@ -70,6 +73,7 @@ export const predictCrisprSequence = asyncHandler(async (req: Request, res: Resp
     }
 
     console.log('CRISPR prediction service responded successfully.');
+    console.log('Prediction results:', responseData);
 
     // --- Send Response to Frontend ---
     // Ensure we are sending the correct data structure

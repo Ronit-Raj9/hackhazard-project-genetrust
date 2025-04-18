@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { Providers } from "@/components/providers";
+import { Providers } from "@/providers";
 import { Navbar } from '@/components/layout/navbar';
 import { ConditionalFooter } from '@/components/layout/conditional-footer';
 
@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+      <body className={`${inter.className} min-h-screen flex flex-col`} suppressHydrationWarning>
         <Providers>
           <Navbar />
           <main className="flex-grow">{children}</main>

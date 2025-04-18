@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider, createConfig } from 'wagmi';
 import { base, baseSepolia } from 'wagmi/chains';
@@ -8,38 +8,59 @@ import { getDefaultWallets, RainbowKitProvider, lightTheme } from '@rainbow-me/r
 import '@rainbow-me/rainbowkit/styles.css';
 import { http } from 'viem';
 import MousePositionProvider from '@/components/landing/MousePositionProvider';
+import { useWalletInit } from '@/providers';
 
-// Create chains configuration
-const chains = [baseSepolia, base]; // Add Base Sepolia (testnet) and Base Mainnet
-
-// Set up connectors
-const { connectors } = getDefaultWallets({
-  appName: 'GeneForge AI Studio',
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'default-project-id',
-  chains,
-});
-
-// Create config
-const wagmiConfig = createConfig({
-  chains,
-  transports: {
-    [baseSepolia.id]: http(),
-    [base.id]: http(),
-  },
-  connectors,
-});
-
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+// This providers file is deprecated and will be removed in a future update.
+// It's being maintained for backward compatibility.
+// Please use the main providers.tsx file in the src directory.
 
 export function Providers({ children }: { children: ReactNode }) {
+  const isInitialized = useWalletInit();
+  const [isClient, setIsClient] = useState(false);
+
+  // Only initialize on client side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // If WalletConnect is already initialized or we're on the server, just render children with MousePositionProvider
+  if (isInitialized || !isClient) {
+    return (
+      <MousePositionProvider>
+        {children}
+      </MousePositionProvider>
+    );
+  }
+
+  // Set up chains array for use (previously was causing type errors)
+  const chainsArray = [baseSepolia, base];
+
+  // Set up connectors - fixed type error by removing chains parameter
+  const { connectors } = getDefaultWallets({
+    appName: 'GeneForge AI Studio',
+    projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'default-project-id',
+  });
+
+  // Create config with proper chain typing
+  const wagmiConfig = createConfig({
+    chains: chainsArray,
+    transports: {
+      [baseSepolia.id]: http(),
+      [base.id]: http(),
+    },
+    connectors,
+  });
+
+  // Create a client
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
+
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>

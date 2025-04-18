@@ -10,14 +10,16 @@ export function useAuth(requireAuth: boolean = false) {
 
   // Check if user is authenticated when component mounts
   useEffect(() => {
-    // Skip the auth check if we're on the login page to prevent infinite loops
-    const isLoginPage = typeof window !== 'undefined' && window.location.pathname === '/login';
-    const isHomePage = typeof window !== 'undefined' && window.location.pathname === '/';
-    const isGoogleCallbackPage = typeof window !== 'undefined' && window.location.pathname.includes('/auth/google/callback');
-    const isRegisterPage = typeof window !== 'undefined' && window.location.pathname === '/register';
+    // Skip the auth check if we're on specific pages
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+    const isLoginPage = pathname === '/login';
+    const isHomePage = pathname === '/';
+    const isGoogleCallbackPage = pathname.includes('/auth/google/callback');
+    const isRegisterPage = pathname === '/register';
+    const isChainSightPage = pathname.includes('/chainSight');
     
-    // Don't auto-check auth on the login, register, home page, or google callback page unless specifically required
-    if ((isLoginPage || isHomePage || isGoogleCallbackPage || isRegisterPage) && !requireAuth) {
+    // Don't auto-check auth on these pages unless specifically required
+    if ((isLoginPage || isHomePage || isGoogleCallbackPage || isRegisterPage || isChainSightPage) && !requireAuth) {
       setIsInitialized(true);
       return;
     }
@@ -46,15 +48,13 @@ export function useAuth(requireAuth: boolean = false) {
         // Handle network errors gracefully
         if (!err.response) {
           console.log('Network error during authentication check - continuing as guest');
-          // Don't redirect on network errors unless on a protected route
-          if (requireAuth) {
-            router.push('/login');
-          }
+          // Never redirect on network errors
+          setError("Network error. Please check your connection.");
           return;
         }
         
         // Only redirect if auth is required for this route and it's not a network error
-        if (requireAuth) {
+        if (requireAuth && err.response) {
           console.log('Authentication required for this route, redirecting to login');
           router.push('/login');
         }
@@ -106,7 +106,12 @@ export function useAuth(requireAuth: boolean = false) {
       setUser(response.data.data.user);
       return response.data.data;
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Login failed';
+      let errorMessage = 'Login failed';
+      if (!err.response) {
+        errorMessage = 'Network error. Please check your connection.';
+      } else {
+        errorMessage = err.response?.data?.message || 'Login failed';
+      }
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

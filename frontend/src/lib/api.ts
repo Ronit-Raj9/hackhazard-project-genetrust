@@ -25,7 +25,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // Important for cookies
-  timeout: 10000, // Add a 10 second timeout to prevent hanging requests
+  timeout: 30000, // Increase timeout to 30 seconds
 });
 
 // Add request interceptor for auth token
@@ -34,7 +34,6 @@ api.interceptors.request.use(
     const token = getAuthToken();
     // Only add token header if token exists (fallback mechanism)
     if (token) {
-      console.log('Using token from localStorage as fallback to cookies');
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -57,15 +56,25 @@ api.interceptors.response.use(
     if (error.code === 'ECONNABORTED') {
       console.error('Request timeout:', error);
     } else if (!error.response) {
-      console.error('Network error:', error);
+      console.error('Network error - server may be unavailable:', error);
     }
     return Promise.reject(error);
   }
 );
 
-// Auth API
+// Auth API with error handling
 export const authAPI = {
-  // Email/password auth
+  // Login-related methods with improved error handling
+  getCurrentUser: () => {
+    try {
+      return api.get('/auth/me');
+    } catch (error) {
+      console.error('Error in getCurrentUser:', error);
+      return Promise.reject(error);
+    }
+  },
+  
+  // Other auth methods...
   login: (email: string, password: string) => api.post('/auth/login', { email, password }),
   register: (email: string, password: string, name: string) => 
     api.post('/auth/register', { email, password, name }),
@@ -99,7 +108,6 @@ export const authAPI = {
     localStorage.removeItem('auth_token');
     return api.post('/auth/logout');
   },
-  getCurrentUser: () => api.get('/auth/me'),
 };
 
 // Profile API
@@ -143,18 +151,26 @@ export const groqAPI = {
     api.get(`/groq/blockchain-guidance?dataType=${dataType}`),
 };
 
-// Interceptor for handling auth errors
+// Modify the interceptor for handling auth errors to prevent redirects on network errors
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // If 401 error, redirect to login page but only if not already on login page
+    // Skip redirect for network errors
+    if (!error.response) {
+      console.error('Network error detected, not redirecting');
+      return Promise.reject(error);
+    }
+    
+    // Only redirect on actual 401 responses (not network errors)
     if (error.response?.status === 401) {
       // Check if we're already on the login page or home page to prevent redirects
       const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
       const isLoginPage = pathname === '/login';
       const isHomePage = pathname === '/';
+      const isChainSightPage = pathname.includes('/chainSight');
       
-      if (!isLoginPage && !isHomePage) {
+      // Don't redirect for chainSight pages - they handle auth differently
+      if (!isLoginPage && !isHomePage && !isChainSightPage) {
         console.error('Authentication error. Redirecting to login.');
         window.location.href = '/login';
       }

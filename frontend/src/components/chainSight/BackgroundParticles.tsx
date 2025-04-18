@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
-import { Particles } from "react-particles";
-import { loadFull } from "tsparticles";
+import { useCallback, useState, useEffect, useMemo, memo } from "react";
+import Particles from "react-tsparticles";
+import { loadSlim } from "tsparticles-slim";
 import type { Engine, ISourceOptions } from "tsparticles-engine";
 import { motion } from "framer-motion";
 
-export const BackgroundParticles = () => {
+const BackgroundParticlesComponent = () => {
   const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {
@@ -20,11 +20,12 @@ export const BackgroundParticles = () => {
   }, []);
 
   const particlesInit = useCallback(async (engine: Engine) => {
-    // This loads the full tsparticles package with all plugins
-    await loadFull(engine);
+    // Use loadSlim instead of loadFull for better performance
+    await loadSlim(engine);
   }, []);
 
-  const options: ISourceOptions = {
+  // Memoize options to prevent recreating this object on each render
+  const options: ISourceOptions = useMemo(() => ({
     fullScreen: { enable: false },
     fpsLimit: 60,
     particles: {
@@ -80,9 +81,7 @@ export const BackgroundParticles = () => {
         direction: "none",
         random: true,
         straight: false,
-        outModes: {
-          default: "out"
-        },
+        outMode: "out",
         attract: {
           enable: true,
           rotateX: 600,
@@ -165,7 +164,7 @@ export const BackgroundParticles = () => {
           },
           move: {
             direction: "top",
-            outModes: {
+            outMode: {
               top: "none",
               left: "none",
               right: "none",
@@ -195,7 +194,7 @@ export const BackgroundParticles = () => {
           },
           move: {
             direction: "top",
-            outModes: {
+            outMode: {
               top: "none",
               left: "none",
               right: "none",
@@ -207,7 +206,7 @@ export const BackgroundParticles = () => {
       }
     ],
     detectRetina: true,
-  };
+  }), [isMobile]);
 
   return (
     <motion.div 
@@ -244,4 +243,7 @@ export const BackgroundParticles = () => {
       </motion.div>
     </motion.div>
   );
-}; 
+};
+
+// Wrap component with memo to prevent unnecessary re-renders
+export const BackgroundParticles = memo(BackgroundParticlesComponent); 

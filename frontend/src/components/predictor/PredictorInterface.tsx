@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Dna, Play, Check, X, ArrowRight, ClipboardCopy, Download, Terminal, AlertCircle } from 'lucide-react';
 import Lottie from 'lottie-react';
 import { toast } from 'sonner';
+import { fetchCrisprPrediction } from '@/lib/services/crisprService';
+import { SequenceInput } from './SequenceInput';
+import { PredictionResults } from './PredictionResults';
 
 // Types for DNA sequences
 interface Base {
@@ -17,10 +20,15 @@ interface Base {
 }
 
 interface PredictionResult {
-  originalSequence: Base[];
-  predictedSequence: Base[];
-  editCount: number;
-  editSites: number[];
+  originalSequence: string;
+  editedSequence: string;
+  changeIndicator: string;
+  efficiency: number;
+  changedPosition: number;
+  originalBase: string;
+  newBase: string;
+  message: string;
+  originalEfficiency: number;
 }
 
 // Lottie animation for DNA loading
@@ -223,9 +231,12 @@ export default function PredictorInterface() {
     setLogs(prev => [...prev, message]);
   };
   
-  // Simulate prediction process
+  // Run prediction using the API
   const runPrediction = async () => {
-    if (!isValidSequence || sequence.length < 10) return;
+    if (!isValidSequence || sequence.length < 10) {
+      toast.error('Please enter a valid DNA sequence (at least 10 bases)');
+      return;
+    }
     
     setIsLoading(true);
     setResult(null);
@@ -236,392 +247,334 @@ export default function PredictorInterface() {
     addLog(`[${new Date().toLocaleTimeString()}] Starting CRISPR prediction for sequence of length ${sequence.length}`);
     
     try {
-      // Simulate processing through each step
+      // Log each step with some delay to show progress
       for (let i = 0; i < processingSteps.length; i++) {
         setProcessingStep(i);
         addLog(`[${new Date().toLocaleTimeString()}] ${processingSteps[i]}...`);
         
-        // Simulate processing time between 1-2 seconds
-        await new Promise(resolve => 
-          setTimeout(resolve, 1000 + Math.random() * 1000)
-        );
+        // Add a small delay between steps to show progress
+        if (i < processingSteps.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       }
       
-      // Generate a mock result based on the input sequence
-      const mockResult = generateMockResult(sequence);
+      // Make the actual API call
+      const prediction = await fetchCrisprPrediction(sequence);
       
-      addLog(`[${new Date().toLocaleTimeString()}] Prediction complete: Found ${mockResult.editCount} potential edits`);
-      setResult(mockResult);
+      // Log success
+      addLog(`[${new Date().toLocaleTimeString()}] Prediction completed successfully!`);
+      addLog(`[${new Date().toLocaleTimeString()}] Editing efficiency: ${prediction.efficiency}%`);
+      addLog(`[${new Date().toLocaleTimeString()}] Changed position: ${prediction.changedPosition}`);
+      
+      // Set result
+      setResult(prediction);
+      
+      // Notify success
+      toast.success('CRISPR prediction completed successfully!');
+      
     } catch (error) {
-      console.error("Prediction error:", error);
-      addLog(`[${new Date().toLocaleTimeString()}] Error during prediction: ${error}`);
+      console.error('Error during prediction:', error);
+      
+      // Log error
+      addLog(`[${new Date().toLocaleTimeString()}] Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Notify error
+      toast.error(`Prediction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
-      setProcessingStep(processingSteps.length);
     }
   };
   
-  // Generate mock prediction result based on input
-  const generateMockResult = (seq: string): PredictionResult => {
-    // Convert raw sequence to Base array for original
-    const originalSequence: Base[] = seq.split('').map((letter, index) => ({
-      letter,
-      position: index,
-      isEdited: false
-    }));
-    
-    // Create a copy for predicted sequence
-    const predictedSequence: Base[] = JSON.parse(JSON.stringify(originalSequence));
-    
-    // Randomly select 1-3 positions to edit
-    const editCount = Math.floor(Math.random() * 3) + 1;
-    const potentialEditPositions = Array.from({ length: seq.length }, (_, i) => i);
-    
-    // Select random positions for edits
-    const editPositions: number[] = [];
-    for (let i = 0; i < editCount; i++) {
-      if (potentialEditPositions.length === 0) break;
-      
-      const randomIndex = Math.floor(Math.random() * potentialEditPositions.length);
-      const position = potentialEditPositions.splice(randomIndex, 1)[0];
-      editPositions.push(position);
-    }
-    
-    // Apply edits to predicted sequence
-    editPositions.forEach(position => {
-      const originalBase = originalSequence[position].letter;
-      let newBase: string;
-      
-      // Simple substitution logic (A→T, T→A, G→C, C→G)
-      switch (originalBase) {
-        case 'A': newBase = 'T'; break;
-        case 'T': newBase = 'A'; break;
-        case 'G': newBase = 'C'; break;
-        case 'C': newBase = 'G'; break;
-        default: newBase = originalBase;
-      }
-      
-      // Apply the edit
-      predictedSequence[position] = {
-        letter: newBase,
-        position,
-        isEdited: true,
-        editType: 'substitution',
-        originalBase,
-        confidence: 0.7 + Math.random() * 0.3 // Random confidence between 0.7-1.0
-      };
-    });
-    
-    return {
-      originalSequence,
-      predictedSequence,
-      editCount,
-      editSites: editPositions
-    };
-  };
-  
-  // Auto-scroll the console log
+  // Effect to scroll console to bottom when logs change
   useEffect(() => {
     if (consoleRef.current) {
       consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
     }
   }, [logs]);
   
-  // Copy result to clipboard
-  const copyToClipboard = () => {
-    if (!result) return;
-    
-    const predictedSequence = result.predictedSequence.map(base => base.letter).join('');
-    navigator.clipboard.writeText(predictedSequence)
-      .then(() => {
-        toast.success('Sequence copied to clipboard');
-      })
-      .catch(err => {
-        console.error('Failed to copy: ', err);
-        toast.error('Failed to copy sequence');
-      });
+  // Reset state for a new prediction
+  const handleNewPrediction = () => {
+    setSequence('');
+    setResult(null);
+    setLogs([]);
+    setProcessingStep(0);
   };
   
-  // Download result as JSON
-  const downloadJson = () => {
-    if (!result) return;
-    
-    const dataStr = JSON.stringify(result, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', 'crispr-prediction.json');
-    linkElement.click();
-  };
-  
+  // Render the interface
   return (
-    <div className="space-y-6">
-      {/* Main input console */}
-      <motion.div 
-        className="rounded-xl overflow-hidden backdrop-blur-md bg-gray-900/50 border border-indigo-900/30 p-5"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h2 className="text-xl font-semibold text-indigo-300 mb-4 flex items-center">
-          <Dna className="mr-2 h-5 w-5" />
-          <span>DNA Sequence Input</span>
-        </h2>
-        
-        <div className="space-y-4">
-          <div className="relative">
-            <textarea
-              value={sequence}
-              onChange={handleSequenceChange}
-              placeholder="Enter DNA sequence (A, T, G, C nucleotides only)..."
-              className={`w-full h-32 bg-gray-950 border ${isValidSequence ? 'border-gray-700 focus:border-indigo-500' : 'border-red-500'} rounded-lg p-3 text-gray-100 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all`}
-              spellCheck={false}
-              disabled={isLoading}
-            />
-            
-            {/* Error message */}
-            <AnimatePresence>
-              {errorMessage && (
-                <motion.div 
-                  className="mt-2 text-red-400 text-sm flex items-center" 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                >
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errorMessage}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          
-          {/* Sample buttons */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setSequence('ATGCTAGCTAGCTAGCTAGCTAGCTAGCTA')}
-              disabled={isLoading}
-              className="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-gray-300 transition-colors"
-            >
-              Sample DNA
-            </button>
-            <button
-              onClick={() => setSequence('ATGCCCAAATTTGGGCCCAAATTTGGGCCC')}
-              disabled={isLoading}
-              className="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-gray-300 transition-colors"
-            >
-              CRISPR Target
-            </button>
-            <button
-              onClick={() => setSequence('')}
-              disabled={isLoading}
-              className="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-gray-300 transition-colors"
-            >
-              Clear
-            </button>
-          </div>
-          
-          {/* Predict button */}
-          <motion.button
-            onClick={runPrediction}
-            disabled={!isValidSequence || sequence.length < 10 || isLoading}
-            className={`w-full py-3 rounded-lg flex items-center justify-center text-white font-medium transition-all ${
-              isValidSequence && sequence.length >= 10 && !isLoading
-                ? 'bg-gradient-to-r from-indigo-600 to-indigo-400 hover:from-indigo-500 hover:to-indigo-300 shadow-lg shadow-indigo-600/20'
-                : 'bg-gray-700 cursor-not-allowed'
-            }`}
-            whileHover={isValidSequence && sequence.length >= 10 && !isLoading ? { scale: 1.02 } : {}}
-            whileTap={isValidSequence && sequence.length >= 10 && !isLoading ? { scale: 0.98 } : {}}
-          >
-            {isLoading ? (
-              <span className="flex items-center">
-                Analyzing DNA
-                <span className="ml-2 inline-block w-5 h-5">
-                  <Lottie 
-                    animationData={dnaLoadingAnimation} 
-                    loop={true}
-                  />
-                </span>
-              </span>
-            ) : (
-              <span className="flex items-center">
-                <Play className="mr-2 h-5 w-5" />
-                Predict CRISPR Edits
-              </span>
-            )}
-          </motion.button>
-        </div>
-      </motion.div>
+    <div className="w-full max-w-6xl mx-auto">
+      {/* Header Section */}
+      <header className="mb-8 text-center">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
+        >
+          CRISPR Editing Predictor
+        </motion.h1>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-4 text-gray-300 max-w-2xl mx-auto text-lg"
+        >
+          Advanced genome editing prediction using AI to optimize your CRISPR experiments
+        </motion.p>
+      </header>
       
-      {/* Processing console */}
-      <AnimatePresence>
-        {(isLoading || logs.length > 0) && (
-          <motion.div 
-            className="rounded-xl overflow-hidden backdrop-blur-md bg-gray-900/50 border border-indigo-900/30 p-5"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <h2 className="text-xl font-semibold text-indigo-300 mb-4 flex items-center">
-              <Terminal className="mr-2 h-5 w-5" />
-              <span>Processing Log</span>
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Input Section */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-gray-900/50 p-6 rounded-xl border border-indigo-500/30 shadow-lg"
+        >
+          <div className="flex justify-between items-start mb-4">
+            <h2 className="text-xl font-bold text-indigo-300 flex items-center">
+              <Dna className="mr-2 h-5 w-5" />
+              Input DNA Sequence
             </h2>
-            
-            {/* Progress bar */}
-            <div className="h-1 w-full bg-gray-800 rounded-full mb-4 overflow-hidden">
-              <motion.div 
-                className="h-full bg-indigo-500"
-                initial={{ width: 0 }}
-                animate={{ width: `${(processingStep / processingSteps.length) * 100}%` }}
-                transition={{ duration: 0.5 }}
-              />
-            </div>
-            
-            {/* Console output */}
-            <div 
-              ref={consoleRef}
-              className="font-mono text-sm text-green-300 bg-gray-950 rounded-lg p-3 h-40 overflow-y-auto"
-            >
-              {logs.map((log, index) => (
-                <div key={index} className="mb-1">
-                  {log}
+          </div>
+          
+          {!result ? (
+            <>
+              <div className="mb-6">
+                <textarea
+                  value={sequence}
+                  onChange={handleSequenceChange}
+                  placeholder="Enter DNA sequence (A, T, G, C only)..."
+                  className={`w-full h-60 p-4 bg-black/30 rounded-lg border ${
+                    isValidSequence ? 'border-indigo-500/50' : 'border-red-500/50'
+                  } text-white font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50`}
+                  spellCheck={false}
+                />
+                
+                {errorMessage && (
+                  <div className="mt-2 text-red-400 text-sm flex items-start">
+                    <AlertCircle className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end">
+                <motion.button
+                  onClick={runPrediction}
+                  disabled={!isValidSequence || sequence.length < 10 || isLoading}
+                  className={`px-6 py-3 rounded-lg font-medium flex items-center ${
+                    !isValidSequence || sequence.length < 10 || isLoading
+                      ? 'bg-indigo-700/30 text-indigo-300/50 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  }`}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="h-5 w-5 mr-2 animate-spin">
+                        <div className="h-full w-full rounded-full border-2 border-t-transparent border-indigo-200"></div>
+                      </div>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      Run Prediction
+                      <Play className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="text-center mb-6"
+              >
+                <div className="bg-green-500/20 text-green-400 p-4 rounded-full inline-block mb-4">
+                  <Check className="h-8 w-8" />
                 </div>
-              ))}
-              {isLoading && (
-                <div className="animate-pulse">
-                  {'> '}<span className="text-gray-300 animate-blink">█</span>
-                </div>
-              )}
+                <h3 className="text-xl font-bold text-white mb-2">Prediction Complete</h3>
+                <p className="text-gray-400">View the results on the right panel</p>
+              </motion.div>
+              
+              <motion.button
+                onClick={handleNewPrediction}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Start New Prediction
+              </motion.button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* Results section */}
-      <AnimatePresence>
-        {result && (
-          <motion.div 
-            className="rounded-xl overflow-hidden backdrop-blur-md bg-gray-900/50 border border-indigo-900/30 p-5"
+          )}
+        </motion.div>
+        
+        {/* Results and Console Section */}
+        <div className="space-y-6">
+          {/* Console Section */}
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-gray-900/50 p-4 rounded-xl border border-indigo-500/30 shadow-lg"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-indigo-300 flex items-center">
-                <Check className="mr-2 h-5 w-5 text-green-400" />
-                <span>Prediction Results</span>
-              </h2>
-              
-              <div className="flex space-x-2">
-                <button
-                  onClick={copyToClipboard}
-                  className="p-2 bg-gray-800 hover:bg-gray-700 rounded-md text-gray-300 transition-colors"
-                  title="Copy sequence"
-                >
-                  <ClipboardCopy size={16} />
-                </button>
-                <button
-                  onClick={downloadJson}
-                  className="p-2 bg-gray-800 hover:bg-gray-700 rounded-md text-gray-300 transition-colors"
-                  title="Download as JSON"
-                >
-                  <Download size={16} />
-                </button>
-              </div>
+            <div className="flex items-center mb-2">
+              <Terminal className="h-4 w-4 mr-2 text-indigo-400" />
+              <h3 className="text-sm font-medium text-indigo-300">Prediction Console</h3>
             </div>
             
-            {/* Edit count badge */}
-            <div className="mb-6">
-              <motion.div 
-                className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-900/50 border border-indigo-500/30 text-indigo-300"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              >
-                <Dna className="mr-2 h-4 w-4" />
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  {result.editCount} Edit{result.editCount !== 1 ? 's' : ''} Found
-                </motion.span>
-              </motion.div>
-            </div>
-            
-            {/* Sequences comparison */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Original sequence */}
-              <div className="rounded-lg bg-gray-950 border border-gray-800 p-3">
-                <h3 className="text-gray-400 text-sm font-medium mb-2">Original Sequence</h3>
-                <div className="font-mono text-sm overflow-x-auto whitespace-nowrap pb-2">
-                  {result.originalSequence.map((base, index) => (
-                    <motion.span
-                      key={index}
-                      className="inline-block px-0.5 rounded"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.01, duration: 0.2 }}
-                    >
-                      {base.letter}
-                    </motion.span>
-                  ))}
+            <div
+              ref={consoleRef}
+              className="bg-black/60 rounded-lg p-3 h-32 overflow-y-auto font-mono text-xs text-gray-400 whitespace-pre-wrap"
+            >
+              {logs.length > 0 ? (
+                logs.map((log, index) => (
+                  <div key={index} className="mb-1">
+                    {log}
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-600 italic">
+                  Waiting for prediction to start...
                 </div>
-              </div>
+              )}
               
-              {/* Predicted sequence */}
-              <div className="rounded-lg bg-gray-950 border border-indigo-900/30 p-3">
-                <h3 className="text-indigo-400 text-sm font-medium mb-2">Predicted Sequence</h3>
-                <div className="font-mono text-sm overflow-x-auto whitespace-nowrap pb-2">
-                  {result.predictedSequence.map((base, index) => (
-                    <motion.span
-                      key={index}
-                      className={`inline-block px-0.5 rounded ${
-                        base.isEdited ? 'bg-red-900/50 text-red-300' : ''
-                      }`}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 + index * 0.01, duration: 0.2 }}
-                      title={base.isEdited ? `Changed from ${base.originalBase} (${Math.round(base.confidence! * 100)}% confidence)` : ''}
-                    >
-                      {base.letter}
-                    </motion.span>
-                  ))}
+              {isLoading && (
+                <div className="flex items-center text-indigo-400 mt-2">
+                  <div className="h-2 w-2 bg-indigo-500 rounded-full mr-2 animate-pulse"></div>
+                  Processing...
                 </div>
-              </div>
-            </div>
-            
-            {/* Edits explanation */}
-            <div className="mt-6 rounded-lg bg-gray-900 p-4 border border-gray-800">
-              <h3 className="text-gray-300 font-medium mb-3">Detected Edits</h3>
-              <ul className="space-y-2">
-                {result.editSites.map((position, index) => {
-                  const baseInfo = result.predictedSequence[position];
-                  return (
-                    <motion.li 
-                      key={index}
-                      className="flex items-center text-sm"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + index * 0.1 }}
-                    >
-                      <ArrowRight className="h-4 w-4 text-indigo-400 mr-2 flex-shrink-0" />
-                      <span>
-                        Position {position + 1}: 
-                        <span className="text-red-400 mx-1">{baseInfo.originalBase}</span> 
-                        →
-                        <span className="text-green-400 mx-1">{baseInfo.letter}</span>
-                        ({Math.round(baseInfo.confidence! * 100)}% confidence)
-                      </span>
-                    </motion.li>
-                  );
-                })}
-              </ul>
+              )}
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
+          
+          {/* Results Section */}
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="bg-gray-900/50 p-8 rounded-xl border border-indigo-500/30 shadow-lg h-80 flex flex-col items-center justify-center"
+              >
+                <div className="h-32 w-32 mb-4">
+                  <Lottie animationData={dnaLoadingAnimation} loop={true} />
+                </div>
+                <h3 className="text-lg font-medium text-indigo-300 mb-2">
+                  Analyzing DNA Sequence
+                </h3>
+                <p className="text-gray-400 text-center max-w-md">
+                  Our AI is scanning for optimal edit positions for CRISPR-Cas9...
+                </p>
+                <div className="mt-4 w-48 h-1 bg-gray-800 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                    initial={{ width: 0 }}
+                    animate={{ 
+                      width: `${(processingStep / (processingSteps.length - 1)) * 100}%` 
+                    }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-indigo-300">
+                  {Math.round((processingStep / (processingSteps.length - 1)) * 100)}% Complete
+                </p>
+              </motion.div>
+            ) : result ? (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-gray-900/50 p-6 rounded-xl border border-indigo-500/30 shadow-lg"
+              >
+                <h3 className="text-lg font-bold text-indigo-300 mb-4 flex items-center">
+                  <ArrowRight className="mr-2 h-5 w-5 text-green-500" />
+                  Prediction Results
+                </h3>
+                
+                <div className="space-y-6">
+                  {/* Original Sequence */}
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-white">Original Sequence</h4>
+                    <div className="bg-gray-900 p-3 rounded-lg border border-gray-800 overflow-x-auto">
+                      <code className="text-red-400 font-mono text-sm whitespace-nowrap">
+                        {result.originalSequence}
+                      </code>
+                    </div>
+                  </div>
+                  
+                  {/* Edited Sequence */}
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-white">Edited Sequence</h4>
+                    <div className="bg-gray-900 p-3 rounded-lg border border-gray-800 overflow-x-auto">
+                      <code className="text-green-400 font-mono text-sm whitespace-nowrap">
+                        {result.editedSequence}
+                      </code>
+                    </div>
+                  </div>
+                  
+                  {/* Modifications */}
+                  <div className="bg-indigo-900/20 p-4 rounded-lg border border-indigo-900/30">
+                    <h4 className="text-sm font-medium text-white mb-2">Edit Information</h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-gray-400">Position:</span>
+                        <span className="ml-2 text-indigo-300 font-mono">{result.changedPosition}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Change:</span>
+                        <span className="ml-2 font-mono">
+                          <span className="text-red-400">{result.originalBase}</span>
+                          {" → "}
+                          <span className="text-green-400">{result.newBase}</span>
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Original Efficiency:</span>
+                        <span className="ml-2 text-yellow-300 font-mono">{result.originalEfficiency}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">New Efficiency:</span>
+                        <span className="ml-2 text-green-300 font-mono">{result.efficiency}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 text-sm">
+                      <span className="text-gray-400">Message:</span>
+                      <p className="mt-1 text-white">{result.message}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-gray-900/50 p-8 rounded-xl border border-indigo-500/30 shadow-lg h-80 flex flex-col items-center justify-center"
+              >
+                <div className="text-center">
+                  <div className="bg-indigo-900/30 p-4 rounded-full inline-block mb-4">
+                    <Dna className="h-8 w-8 text-indigo-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-indigo-300 mb-2">
+                    Enter a DNA Sequence
+                  </h3>
+                  <p className="text-gray-400 max-w-md">
+                    Input a valid DNA sequence on the left panel and run the prediction to see results here.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 } 

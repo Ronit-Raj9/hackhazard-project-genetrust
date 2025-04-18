@@ -1,59 +1,66 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence, MotionValue, useMotionValue, useTransform, useSpring } from 'framer-motion';
-import { Info, AlertTriangle, ChevronDown, ChevronUp, Zap, ExternalLink } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { Info, AlertTriangle, ChevronDown, ChevronUp, Zap, ExternalLink, Check, Wallet } from 'lucide-react';
 import { DNA_COLORS } from '@/lib/constants/designTokens';
+import { getWalletClient, getAccount, signMessage, connect, disconnect } from 'wagmi/actions';
+import { useWalletAccount } from '@/lib/hooks/use-wallet-account';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useChainSightStore } from '@/lib/stores/chainSightStore';
+import { useChainId } from 'wagmi';
+import { PersistentConnectButton } from './PersistentConnectButton';
 
-export const WalletConnector = () => {
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<string | null>('info');
-  const [connectionSuccess, setConnectionSuccess] = useState(false);
+// Component animations
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
+const sectionVariants = {
+  expanded: { height: 'auto', opacity: 1 },
+  collapsed: { height: 0, opacity: 0 }
+};
+
+export function WalletConnector() {
+  const { address, isConnected } = useWalletAccount();
+  const chainId = useChainId();
+  const { setWalletConnected } = useChainSightStore();
   
-  // Mouse position for interactive effects
+  const [isConnectReasonExpanded, setIsConnectReasonExpanded] = useState(false);
+  const [isSecurityInfoExpanded, setIsSecurityInfoExpanded] = useState(false);
+  
+  // Ref for the container element
+  const containerRef = useRef(null);
+  
+  // Mouse movement tracking for 3D effect
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   
-  // Handle mouse movement for background effect
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const rotateX = useTransform(mouseY, [0, 300], [5, -5]);
+  const rotateY = useTransform(mouseX, [0, 300], [-5, 5]);
+  
+  useEffect(() => {
+    if (address && isConnected) {
+      setWalletConnected(true);
+    } else {
+      setWalletConnected(false);
+    }
+  }, [address, isConnected, setWalletConnected]);
+
+  // Handle mouse movement for 3D card effect
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    mouseX.set(e.clientX - rect.left);
-    mouseY.set(e.clientY - rect.top);
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    mouseX.set(x);
+    mouseY.set(y);
   };
   
   const toggleSection = (section: string) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
-
-  // Mock function to simulate wallet connection
-  const connectWallet = async (walletType: 'metamask' | 'coinbase') => {
-    setIsConnecting(true);
-    try {
-      // Simulate connection delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      console.log(`Connecting to ${walletType} wallet`);
-      
-      // Make sure we don't use undefined or null properties that would cause Object.values() errors
-      const walletData = {
-        address: '0x' + Math.random().toString(16).substring(2, 42),
-        walletType,
-      };
-      
-      // Handle successful connection - useWalletState hook will catch this
-      window.dispatchEvent(new CustomEvent('wallet-connected', { 
-        detail: walletData
-      }));
-      
-      // Show success animation
-      setConnectionSuccess(true);
-      setTimeout(() => setConnectionSuccess(false), 2000);
-      
-    } catch (error) {
-      console.error('Error connecting wallet:', error);
-    } finally {
-      setIsConnecting(false);
-    }
+    setIsConnectReasonExpanded(section === 'why');
+    setIsSecurityInfoExpanded(section === 'security');
   };
 
   // Card container variants for animation
@@ -71,567 +78,206 @@ export const WalletConnector = () => {
     }
   };
 
-  // Content item variants
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        type: "spring",
-        stiffness: 100,
-        damping: 10
-      }
-    }
-  };
-
-  // Section variant animations
-  const sectionVariants = {
-    collapsed: { 
-      height: 0, 
-      opacity: 0,
-      transition: { 
-        duration: 0.3,
-        ease: "easeInOut" 
-      }
-    },
-    expanded: { 
-      height: "auto", 
-      opacity: 1,
-      transition: { 
-        duration: 0.4,
-        ease: "easeInOut",
-        when: "beforeChildren",
-        staggerChildren: 0.05
-      }
-    }
-  };
-
   return (
-    <div 
-      className="w-full mx-auto px-2 sm:px-0 sm:max-w-3xl"
-      onMouseMove={handleMouseMove}
-    >
+    <div className="p-3 md:p-6">
       <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="relative p-5 sm:p-8 rounded-xl overflow-hidden"
-        style={{
-          background: 'rgba(6, 6, 32, 0.8)',
-          backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(79, 70, 229, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+        ref={containerRef}
+        className="max-w-md mx-auto bg-black/70 border border-indigo-900/40 rounded-2xl p-6 md:p-8 overflow-hidden"
+        style={{ 
+          rotateX: rotateX, 
+          rotateY: rotateY,
+          transformPerspective: 1000,
+          boxShadow: '0 25px 50px -12px rgba(79, 70, 229, 0.15)'
+        }}
+        whileHover={{ scale: 1.02 }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 300, 
+          damping: 20 
         }}
       >
-        {/* Animated gradient background effect */}
-        <motion.div 
-          className="absolute inset-0 -z-10 opacity-40 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-cyan-500/20"
-          animate={{ 
-            background: [
-              'radial-gradient(circle at var(--x) var(--y), rgba(79, 70, 229, 0.25) 0%, rgba(6, 6, 32, 0) 50%)',
-              'radial-gradient(circle at var(--x) var(--y), rgba(139, 92, 246, 0.25) 0%, rgba(6, 6, 32, 0) 50%)',
-              'radial-gradient(circle at var(--x) var(--y), rgba(79, 70, 229, 0.25) 0%, rgba(6, 6, 32, 0) 50%)'
-            ],
-          }}
-          transition={{ duration: 8, repeat: Infinity }}
-          style={{ 
-            '--x': useTransform(mouseX, val => `${val}px`),
-            '--y': useTransform(mouseY, val => `${val}px`),
-          } as any}
-        />
-        
-        {/* Connection success overlay */}
-        <AnimatePresence>
-          {connectionSuccess && (
+        {/* Main Card Content - Always visible */}
+        <div 
+          onMouseMove={handleMouseMove}
+          className="relative"
+        >
+          <motion.div 
+            className="flex flex-col"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              staggerChildren: 0.1,
+              delayChildren: 0.1
+            }}
+          >
+            {/* Section Title */}
             <motion.div 
+              variants={itemVariants}
+              className="mb-6 flex items-center"
+            >
+              <Zap className="text-indigo-500 mr-2 h-5 w-5" />
+              <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                Connect to Base Network
+              </h2>
+            </motion.div>
+
+          {/* Wallet Status - Show when connected */}
+          {isConnected && address && (
+            <motion.div 
+              variants={itemVariants}
+              className="mb-6 p-4 bg-gradient-to-r from-indigo-900/30 to-purple-900/30 rounded-lg border border-indigo-500/30"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-indigo-900/70 backdrop-blur-sm flex flex-col items-center justify-center z-50"
             >
-              <motion.div 
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.8 }}
-                className="bg-black/40 p-8 rounded-2xl flex flex-col items-center"
-              >
-                <motion.div 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: [0, 1.2, 1] }}
-                  transition={{ type: "spring", stiffness: 200, damping: 10 }}
-                  className="w-20 h-20 rounded-full bg-green-500/30 flex items-center justify-center mb-4"
-                >
-                  <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="text-green-400">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </motion.div>
-                <motion.h2 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-xl font-bold text-white mb-2"
-                >
-                  Wallet Connected!
-                </motion.h2>
-                <motion.p 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-gray-300 text-center"
-                >
-                  You now have access to the GENEForge platform
-                </motion.p>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        <motion.div variants={itemVariants}>
-          <motion.h1 
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 sm:mb-6"
-            style={{
-              background: 'linear-gradient(to right, #4F46E5, #B16CEA, #00CCFF)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundSize: '200% 100%'
-            }}
-            animate={{
-              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: 'linear'
-            }}
-          >
-            Connect Wallet
-          </motion.h1>
-        </motion.div>
-        
-        <motion.p 
-          variants={itemVariants}
-          className="text-center text-gray-300 mb-8 max-w-xl mx-auto text-sm sm:text-base"
-        >
-          Connect your wallet to interact with the GENEForge CRISPR platform
-        </motion.p>
-
-        {/* Information Section - Collapsible */}
-        <motion.div 
-          variants={itemVariants}
-          className="mb-6 rounded-lg overflow-hidden bg-black/20 border border-indigo-600/20"
-        >
-          <button 
-            className="w-full flex items-center justify-between p-4 bg-indigo-900/20 text-left transition-colors hover:bg-indigo-900/30"
-            onClick={() => toggleSection('info')}
-          >
-            <div className="flex items-center gap-2">
-              <Info size={16} className="text-cyan-400 flex-shrink-0" />
-              <h2 className="text-base sm:text-lg font-semibold text-white">
-                How Your Data is Stored on the Blockchain
-              </h2>
-            </div>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-            >
-              {expandedSection === 'info' ? (
-                <ChevronUp size={18} className="text-indigo-400" />
-              ) : (
-                <ChevronDown size={18} className="text-indigo-400" />
-              )}
-            </motion.div>
-          </button>
-          
-          <AnimatePresence initial={false}>
-            {expandedSection === 'info' && (
-              <motion.div
-                variants={sectionVariants}
-                initial="collapsed"
-                animate="expanded"
-                exit="collapsed"
-                className="overflow-hidden"
-              >
-                <div className="p-4">
-                  <motion.p 
-                    variants={itemVariants}
-                    className="text-sm text-gray-300 mb-4"
-                  >
-                    Your genomic research data is securely stored on the Base blockchain, providing immutable, permanent records with the following benefits:
-                  </motion.p>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                    <motion.div 
-                      variants={itemVariants}
-                      whileHover={{ scale: 1.02, boxShadow: '0 0 15px rgba(0, 204, 255, 0.3)' }}
-                      className="p-3 rounded bg-gradient-to-br from-black/50 to-cyan-950/30 border border-cyan-600/30 transition-all"
-                    >
-                      <h3 className="text-sm font-medium text-cyan-400 mb-1">Immutability</h3>
-                      <p className="text-xs text-gray-300">
-                        Once recorded, data cannot be altered or deleted, ensuring research integrity.
-                      </p>
-                    </motion.div>
-                    <motion.div 
-                      variants={itemVariants}
-                      whileHover={{ scale: 1.02, boxShadow: '0 0 15px rgba(177, 108, 234, 0.3)' }}
-                      className="p-3 rounded bg-gradient-to-br from-black/50 to-fuchsia-950/30 border border-fuchsia-600/30 transition-all"
-                    >
-                      <h3 className="text-sm font-medium text-fuchsia-400 mb-1">Security</h3>
-                      <p className="text-xs text-gray-300">
-                        Cryptographic security protects data authenticity and researcher attribution.
-                      </p>
-                    </motion.div>
-                    <motion.div 
-                      variants={itemVariants}
-                      whileHover={{ scale: 1.02, boxShadow: '0 0 15px rgba(0, 204, 255, 0.3)' }}
-                      className="p-3 rounded bg-gradient-to-br from-black/50 to-cyan-950/30 border border-cyan-600/30 transition-all"
-                    >
-                      <h3 className="text-sm font-medium text-cyan-400 mb-1">Traceability</h3>
-                      <p className="text-xs text-gray-300">
-                        Full audit trail of all genomic research activities with timestamps.
-                      </p>
-                    </motion.div>
-                    <motion.div 
-                      variants={itemVariants}
-                      whileHover={{ scale: 1.02, boxShadow: '0 0 15px rgba(177, 108, 234, 0.3)' }}
-                      className="p-3 rounded bg-gradient-to-br from-black/50 to-fuchsia-950/30 border border-fuchsia-600/30 transition-all"
-                    >
-                      <h3 className="text-sm font-medium text-fuchsia-400 mb-1">Collaboration</h3>
-                      <p className="text-xs text-gray-300">
-                        Access controls allow secure collaboration while maintaining data ownership.
-                      </p>
-                    </motion.div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
+                    <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse-slow"></div>
+                  </div>
+                  <div>
+                    <div className="text-green-400 font-medium">Wallet Connected</div>
+                    <div className="text-xs text-gray-400">Base Sepolia Network</div>
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-        
-        {/* Network Information Section - Collapsible */}
-        <motion.div 
-          variants={itemVariants}
-          className="mb-6 rounded-lg overflow-hidden bg-black/20 border border-amber-600/20"
-        >
-          <button 
-            className="w-full flex items-center justify-between p-4 bg-amber-900/20 text-left transition-colors hover:bg-amber-900/30"
-            onClick={() => toggleSection('network')}
-          >
-            <div className="flex items-center gap-2">
-              <AlertTriangle size={16} className="text-amber-400 flex-shrink-0" />
-              <h2 className="text-base font-semibold text-amber-400">
-                Network Information
-              </h2>
-            </div>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-            >
-              {expandedSection === 'network' ? (
-                <ChevronUp size={18} className="text-amber-400" />
-              ) : (
-                <ChevronDown size={18} className="text-amber-400" />
-              )}
-            </motion.div>
-          </button>
-          
-          <AnimatePresence initial={false}>
-            {expandedSection === 'network' && (
-              <motion.div
-                variants={sectionVariants}
-                initial="collapsed"
-                animate="expanded"
-                exit="collapsed"
-                className="overflow-hidden"
-              >
-                <div className="p-4 bg-amber-950/30 border-t border-amber-900/30">
-                  <motion.p 
-                    variants={itemVariants}
-                    className="text-xs text-gray-300 mb-2"
-                  >
-                    This platform stores data on the <span className="text-amber-400 font-medium">Base Sepolia Testnet</span> (Chain ID: 84532). Your wallet may prompt you to switch networks when submitting data.
-                  </motion.p>
-                  <motion.p 
-                    variants={itemVariants}
-                    className="text-xs text-gray-300 flex items-center gap-1"
-                  >
-                    <AlertTriangle size={12} className="text-amber-400 flex-shrink-0" />
-                    <span>Need testnet ETH? Get it from the <a href="https://sepoliafaucet.com/" target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:underline">Base Sepolia Faucet</a></span>
-                  </motion.p>
+                
+                <div className="text-indigo-300 font-mono text-sm bg-indigo-950/50 px-3 py-1 rounded-md">
+                  {address.substring(0, 6)}...{address.substring(address.length - 4)}
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-        
-        {/* How it works Section - Collapsible */}
-        <motion.div 
-          variants={itemVariants}
-          className="mb-8 rounded-lg overflow-hidden bg-black/20 border border-indigo-600/20"
-        >
-          <button 
-            className="w-full flex items-center justify-between p-4 bg-indigo-900/20 text-left transition-colors hover:bg-indigo-900/30"
-            onClick={() => toggleSection('howItWorks')}
-          >
-            <div className="flex items-center gap-2">
-              <Info size={16} className="text-indigo-400 flex-shrink-0" />
-              <h2 className="text-base font-semibold text-white">
-                How it works
-              </h2>
-            </div>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-            >
-              {expandedSection === 'howItWorks' ? (
-                <ChevronUp size={18} className="text-indigo-400" />
-              ) : (
-                <ChevronDown size={18} className="text-indigo-400" />
-              )}
+              </div>
             </motion.div>
-          </button>
-          
-          <AnimatePresence initial={false}>
-            {expandedSection === 'howItWorks' && (
+          )}
+
+          {/* RainbowKit Connect Button - Always show */}
+          <motion.div 
+            variants={itemVariants}
+            className="flex justify-center mb-6"
+          >
+            <PersistentConnectButton />
+          </motion.div>
+
+            {/* Info Section: About Base Network */}
+            <motion.div variants={itemVariants} className="mb-6">
+              <div className="flex items-start space-x-3 mb-3">
+                <div className="flex-shrink-0 mt-1">
+                  <Info className="h-4 w-4 text-indigo-400" />
+                </div>
+                <div>
+                  <h3 className="text-indigo-300 text-sm font-medium mb-2">About Base Network</h3>
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    Base is a secure, low-cost, developer-friendly Ethereum L2 built on Optimism's OP Stack. For this hackathon, we're using the <span className="text-indigo-300">Base Sepolia Testnet</span>.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Why Connect */}
+            <motion.div 
+              variants={itemVariants}
+              className="border border-indigo-500/20 rounded-lg overflow-hidden"
+            >
+              <button 
+                onClick={() => toggleSection('why')}
+                className="w-full p-4 flex justify-between items-center bg-indigo-900/20 hover:bg-indigo-900/30 transition-colors"
+              >
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5 text-indigo-400" />
+                  <span className="font-medium">Why Connect?</span>
+                </div>
+                {isConnectReasonExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-indigo-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-indigo-400" />
+                )}
+              </button>
+              
               <motion.div
                 variants={sectionVariants}
                 initial="collapsed"
-                animate="expanded"
-                exit="collapsed"
+                animate={isConnectReasonExpanded ? "expanded" : "collapsed"}
                 className="overflow-hidden"
               >
                 <div className="p-4 bg-indigo-900/10">
-                  <ol className="text-xs text-gray-300 space-y-2 list-none">
-                    {[
-                      'Fill out the required information in the forms below',
-                      'Submit by clicking the register button',
-                      'Approve the transaction in your connected wallet',
-                      'Switch to Base network if prompted by your wallet',
-                      'Your data is permanently stored on the Base blockchain',
-                      'A transaction receipt confirms successful storage'
-                    ].map((step, index) => (
-                      <motion.li 
-                        key={index}
-                        variants={itemVariants}
-                        className="flex items-start gap-3"
-                      >
-                        <div className="flex-shrink-0 mt-0.5">
-                          <div className="w-5 h-5 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/50 text-xs font-medium text-indigo-400">
-                            {index + 1}
+                  <motion.p variants={itemVariants} className="text-gray-300 mb-3">
+                    Connecting your wallet enables you to:
+                  </motion.p>
+                  <ul className="space-y-2">
+                    <motion.li variants={itemVariants} className="flex items-start gap-2">
+                      <div className="min-w-5 pt-0.5">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS[0] }}></div>
+                      </div>
+                      <span className="text-gray-300">Authorize blockchain interactions with our smart contracts</span>
+                    </motion.li>
+                    <motion.li variants={itemVariants} className="flex items-start gap-2">
+                      <div className="min-w-5 pt-0.5">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS[1] }}></div>
                           </div>
+                      <span className="text-gray-300">Access secure genomic data management features</span>
+                    </motion.li>
+                    <motion.li variants={itemVariants} className="flex items-start gap-2">
+                      <div className="min-w-5 pt-0.5">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS[2] }}></div>
                         </div>
-                        <span>{step}</span>
+                      <span className="text-gray-300">Sign transactions and verify your identity</span>
                       </motion.li>
-                    ))}
-                  </ol>
+                  </ul>
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        <motion.p 
-          variants={itemVariants}
-          className="text-center text-sm mb-4 text-indigo-200"
-        >
-          Choose a wallet to connect
-        </motion.p>
-        
-        {/* Wallet connection buttons - Full width on mobile, side by side on larger screens */}
-        <motion.div 
-          variants={itemVariants}
-          className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8"
-        >
-          <motion.button
-            whileHover={{ scale: 1.03, boxShadow: '0 0 25px rgba(79, 70, 229, 0.5)' }}
-            whileTap={{ scale: 0.97 }}
-            className="relative overflow-hidden px-6 py-4 rounded-lg flex items-center justify-center gap-3 text-white font-medium bg-gradient-to-r from-indigo-600 to-indigo-700 border border-indigo-500/30"
-            onClick={() => connectWallet('metamask')}
-            disabled={isConnecting}
-          >
-            {/* Button glow effect */}
-            <motion.div 
-              className="absolute inset-0 -z-10"
-              animate={{
-                background: [
-                  'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.4) 0%, rgba(0, 0, 0, 0) 50%)',
-                  'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.6) 0%, rgba(0, 0, 0, 0) 70%)',
-                  'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.4) 0%, rgba(0, 0, 0, 0) 50%)',
-                ]
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            
-            {isConnecting ? (
-              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <motion.div 
-                animate={{ y: [0, -2, 0] }} 
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" 
-                  alt="MetaMask" 
-                  className="w-6 h-6"
-                />
-              </motion.div>
-            )}
-            <span>Connect MetaMask</span>
-          </motion.button>
-          
-          <motion.button
-            whileHover={{ scale: 1.03, boxShadow: '0 0 25px rgba(29, 78, 216, 0.5)' }}
-            whileTap={{ scale: 0.97 }}
-            className="relative overflow-hidden px-6 py-4 rounded-lg flex items-center justify-center gap-3 text-white font-medium bg-gradient-to-r from-blue-600 to-blue-700 border border-blue-500/30"
-            onClick={() => connectWallet('coinbase')}
-            disabled={isConnecting}
-          >
-            {/* Button glow effect */}
-            <motion.div 
-              className="absolute inset-0 -z-10"
-              animate={{
-                background: [
-                  'radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.4) 0%, rgba(0, 0, 0, 0) 50%)',
-                  'radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.6) 0%, rgba(0, 0, 0, 0) 70%)',
-                  'radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.4) 0%, rgba(0, 0, 0, 0) 50%)',
-                ]
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            
-            {isConnecting ? (
-              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <motion.div 
-                animate={{ y: [0, -2, 0] }} 
-                transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-              >
-                <img 
-                  src="https://static.alchemyapi.io/images/cw3d/Icon/coinbase-wallet.svg" 
-                  alt="Coinbase Wallet" 
-                  className="w-6 h-6"
-                />
-              </motion.div>
-            )}
-            <span>Connect Coinbase Wallet</span>
-          </motion.button>
-        </motion.div>
-        
-        {/* Testnet ETH section - Collapsible */}
-        <motion.div 
-          variants={itemVariants}
-          className="rounded-lg overflow-hidden bg-black/20 border border-orange-600/20"
-        >
-          <button 
-            className="w-full flex items-center justify-between p-4 bg-orange-900/20 text-left transition-colors hover:bg-orange-900/30"
-            onClick={() => toggleSection('testnetEth')}
-          >
-            <div className="flex items-center gap-2">
-              <Zap size={16} className="text-orange-400 flex-shrink-0" />
-              <h2 className="text-base font-semibold text-orange-400">
-                Get Testnet ETH
-              </h2>
-            </div>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-            >
-              {expandedSection === 'testnetEth' ? (
-                <ChevronUp size={18} className="text-orange-400" />
-              ) : (
-                <ChevronDown size={18} className="text-orange-400" />
-              )}
             </motion.div>
-          </button>
-          
-          <AnimatePresence initial={false}>
-            {expandedSection === 'testnetEth' && (
+            
+            {/* Security Info */}
+            <motion.div 
+              variants={itemVariants}
+              className="border border-indigo-500/20 rounded-lg overflow-hidden"
+            >
+              <button 
+                onClick={() => toggleSection('security')}
+                className="w-full p-4 flex justify-between items-center bg-indigo-900/20 hover:bg-indigo-900/30 transition-colors"
+              >
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                  <span className="font-medium">Security Information</span>
+                </div>
+                {isSecurityInfoExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-indigo-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-indigo-400" />
+                )}
+              </button>
+              
               <motion.div
                 variants={sectionVariants}
                 initial="collapsed"
-                animate="expanded"
-                exit="collapsed"
+                animate={isSecurityInfoExpanded ? "expanded" : "collapsed"}
                 className="overflow-hidden"
               >
-                <div className="p-4 bg-orange-950/20 border-t border-orange-900/30">
-                  <motion.p 
-                    variants={itemVariants}
-                    className="text-xs text-gray-300 mb-2"
-                  >
-                    You'll need testnet ETH to submit transactions
+                <div className="p-4 bg-indigo-900/10">
+                  <motion.p variants={itemVariants} className="text-gray-300 mb-3">
+                    When connecting your wallet, we:
                   </motion.p>
-                  <motion.p 
-                    variants={itemVariants}
-                    className="text-xs text-gray-300 mb-4"
-                  >
-                    To interact with the blockchain, you need Base Sepolia testnet ETH. Follow these steps to get free test ETH:
-                  </motion.p>
-                  <motion.ol 
-                    variants={itemVariants}
-                    className="text-xs text-gray-300 space-y-2 list-none mb-4"
-                  >
-                    {[
-                      'Connect your wallet using the option above',
-                      'Visit the Base Sepolia Faucet',
-                      'Connect the same wallet on the faucet site',
-                      'Complete the verification and request testnet ETH',
-                      'Return to this site and start submitting data!'
-                    ].map((step, index) => (
-                      <motion.li 
-                        key={index}
-                        variants={itemVariants}
-                        className="flex items-start gap-3"
-                      >
-                        <div className="flex-shrink-0 mt-0.5">
-                          <div className="w-5 h-5 rounded-full bg-orange-900/50 flex items-center justify-center border border-orange-500/50 text-xs font-medium text-orange-400">
-                            {index + 1}
-                          </div>
-                        </div>
-                        <span>{step}</span>
-                      </motion.li>
-                    ))}
-                  </motion.ol>
-                  
-                  <motion.div 
-                    variants={itemVariants}
-                    className="mt-2"
-                  >
-                    <motion.a 
-                      href="https://sepoliafaucet.com/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="block w-full py-3 px-4 bg-gradient-to-r from-orange-600 to-amber-600 rounded-lg text-white font-medium text-center transition-all"
-                      whileHover={{ 
-                        scale: 1.02, 
-                        boxShadow: '0 0 25px rgba(234, 88, 12, 0.5)' 
-                      }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <Zap size={16} />
-                        <span>Get Free Testnet ETH</span>
-                        <ExternalLink size={14} />
-                      </div>
-                    </motion.a>
-                  </motion.div>
+                  <motion.ul variants={itemVariants} className="space-y-2 text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-400">✓</span>
+                      <span>Only request read access to your public address</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-400">✓</span>
+                      <span>Request approval for each transaction</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400">✗</span>
+                      <span>Never access your private keys</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400">✗</span>
+                      <span>Never auto-authorize transactions</span>
+                    </li>
+                  </motion.ul>
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-        
-        {/* Footer note */}
-        <motion.p 
-          variants={itemVariants} 
-          className="text-center text-xs text-gray-500 mt-8"
-        >
-          ChainSight: Verifiable Science on an Immutable Foundation
-        </motion.p>
+            </motion.div>
+          </motion.div>
+        </div>
       </motion.div>
     </div>
   );
-}; 
+} 

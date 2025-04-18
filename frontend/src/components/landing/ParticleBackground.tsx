@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
-import Particles from "react-particles"
+import Particles from "react-tsparticles"
 import { loadSlim } from "tsparticles-slim"
 import type { Engine, ISourceOptions } from "tsparticles-engine"
 
@@ -56,9 +56,7 @@ const particlesConfig: ISourceOptions = {
     move: {
       direction: "none",
       enable: true,
-      outModes: {
-        default: "out",
-      },
+      outMode: "out",
       random: true,
       speed: 0.3,
       straight: false,

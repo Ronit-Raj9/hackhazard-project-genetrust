@@ -67,7 +67,7 @@ export default function LandingPage() {
     
     return () => {
       // Clean up ScrollTrigger instances when component unmounts
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+      ScrollTrigger.getAll().forEach((trigger: any) => trigger.kill())
     }
   }, [])
   

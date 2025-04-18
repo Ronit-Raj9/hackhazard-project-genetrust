@@ -1,123 +1,139 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Check, AlertCircle, FileSymlink } from 'lucide-react';
+import { Send, Check, AlertCircle, FileSymlink, Info, Wallet } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { registerGenomeSample } from '../../../contracts/contract-service';
+import { useChainSightStore, Transaction } from '@/lib/stores/chainSightStore';
 
 interface SampleData {
   sampleId: string;
-  sampleName: string;
-  sourceOrganism: string;
-  geneSequence: string;
-  targetGene: string;
-  collectionDate: string;
-  storageLocation: string;
-  qualityScore: string;
+  sampleType: string;
+  description: string;
+  qualityLevel: 'Low' | 'Medium' | 'High' | 'Critical';
 }
 
 export const RegisterSample = () => {
+  const { address, isConnected } = useAccount();
+  const { wallet, addTransaction } = useChainSightStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [txHash, setTxHash] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<SampleData>({
     sampleId: '',
-    sampleName: '',
-    sourceOrganism: '',
-    geneSequence: '',
-    targetGene: '',
-    collectionDate: '',
-    storageLocation: '',
-    qualityScore: '98',
+    sampleType: '',
+    description: '',
+    qualityLevel: 'Low',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const effectivelyConnected = isConnected || wallet.isConnected;
+
+  useEffect(() => {
+    setError(null);
+  }, [isConnected, wallet.isConnected]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleRadioChange = (value: 'Low' | 'Medium' | 'High' | 'Critical') => {
+    setFormData(prev => ({ ...prev, qualityLevel: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!effectivelyConnected) {
+      setError("Please connect your wallet first.");
+      return;
+    }
     setIsSubmitting(true);
+    setError(null);
     
-    // Simulate blockchain transaction
     try {
-      // In real implementation, this would be a call to a blockchain transaction
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setTxHash('0x' + Math.random().toString(16).substring(2, 34));
-      setSuccess(true);
-    } catch (error) {
-      console.error('Error registering sample:', error);
+      const importance = formData.qualityLevel;
+      
+      const txHash = await registerGenomeSample(
+        formData.sampleId,
+        formData.sampleType,
+        formData.description,
+        importance
+      );
+      
+      console.log("Transaction successful:", txHash);
+      
+      // Add to global transaction history
+      const newTransaction: Transaction = {
+        hash: txHash,
+        timestamp: Date.now(),
+        description: `Registered Sample: ${formData.sampleId}`,
+        type: 'sample',
+        status: 'pending'
+      };
+      
+      addTransaction(newTransaction);
+      
+      setFormData({
+        sampleId: '',
+        sampleType: '',
+        description: '',
+        qualityLevel: 'Low',
+      });
+    } catch (err) {
+      console.error('Error registering sample:', err);
+      if (err instanceof Error) {
+        if (err.message.includes('wallet') && err.message.includes('connect')) {
+          console.log('Wallet connection prompt already visible');
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError('An unknown error occurred while registering the sample');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (success) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-center py-10"
-      >
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 mb-4">
-          <Check className="w-8 h-8 text-green-500" />
-        </div>
-        <h3 className="text-xl font-semibold text-white mb-2">Sample Successfully Registered</h3>
-        <p className="text-gray-400 mb-6">Your CRISPR sample has been securely registered on the blockchain</p>
-        
-        <div className="bg-black/30 rounded-lg p-4 mx-auto max-w-md mb-6 border border-gray-800">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-gray-500">Transaction Hash</span>
-            <div className="flex items-center gap-1">
-              <a 
-                href={`https://etherscan.io/tx/${txHash}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-indigo-400 hover:text-indigo-300 text-xs"
-              >
-                View on Explorer
-              </a>
-              <FileSymlink className="w-3 h-3 text-indigo-400" />
-            </div>
-          </div>
-          <p className="text-gray-300 font-mono text-sm truncate">{txHash}</p>
-        </div>
-        
-        <button 
-          onClick={() => {
-            setSuccess(false);
-            setFormData({
-              sampleId: '',
-              sampleName: '',
-              sourceOrganism: '',
-              geneSequence: '',
-              targetGene: '',
-              collectionDate: '',
-              storageLocation: '',
-              qualityScore: '98',
-            });
-          }}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white transition-colors"
-        >
-          Register Another Sample
-        </button>
-      </motion.div>
-    );
-  }
-
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-white mb-1">Register CRISPR Sample</h2>
+        <h2 className="text-2xl font-bold text-white mb-1">Register New CRISPR Sample</h2>
         <p className="text-gray-400 text-sm">
-          All sample data will be cryptographically signed and stored on the blockchain for integrity verification
+          Record gene editing samples with immutable blockchain verification
         </p>
       </div>
       
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {!effectivelyConnected && (
+        <div className="bg-indigo-900/30 border border-indigo-800 rounded-lg p-4 mb-6">
+          <div className="flex flex-col items-center space-y-4 py-8">
+            <Wallet className="h-12 w-12 text-indigo-400 mb-2" />
+            <h3 className="text-xl font-semibold text-white">Connect Your Wallet</h3>
+            <p className="text-gray-400 text-center mb-4">Please connect your wallet to register CRISPR samples on the blockchain</p>
+            <ConnectButton />
+          </div>
+        </div>
+      )}
+      
+      {error && (
+        <div className="bg-red-900/30 border border-red-800 rounded-lg p-4 mb-6">
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+            <p className="text-red-300 text-sm">{error}</p>
+          </div>
+        </div>
+      )}
+      
+      {effectivelyConnected && (
+        <form onSubmit={handleSubmit} className="space-y-6 mb-8">
           <div>
-            <label htmlFor="sampleId" className="block text-sm font-medium text-gray-400 mb-1">Sample ID</label>
+            <div className="flex items-center mb-1">
+              <label htmlFor="sampleId" className="text-sm font-medium text-gray-400">Sample ID</label>
+              <div className="ml-2 text-gray-500">
+                <Info className="h-4 w-4" />
+              </div>
+            </div>
             <input
               type="text"
               id="sampleId"
@@ -125,148 +141,138 @@ export const RegisterSample = () => {
               required
               value={formData.sampleId}
               onChange={handleChange}
-              placeholder="CRISPR-2023-001"
+              placeholder="e.g. GEN-2023-001"
               className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
           
           <div>
-            <label htmlFor="sampleName" className="block text-sm font-medium text-gray-400 mb-1">Sample Name</label>
+            <div className="flex items-center mb-1">
+              <label htmlFor="sampleType" className="text-sm font-medium text-gray-400">Sample Type</label>
+              <div className="ml-2 text-gray-500">
+                <Info className="h-4 w-4" />
+              </div>
+            </div>
             <input
               type="text"
-              id="sampleName"
-              name="sampleName"
+              id="sampleType"
+              name="sampleType"
               required
-              value={formData.sampleName}
+              value={formData.sampleType}
               onChange={handleChange}
-              placeholder="Human CRISPR Cas9 Sample A"
+              placeholder="Enter sample type (e.g., DNA, RNA, Blood)"
               className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
           
           <div>
-            <label htmlFor="sourceOrganism" className="block text-sm font-medium text-gray-400 mb-1">Source Organism</label>
-            <input
-              type="text"
-              id="sourceOrganism"
-              name="sourceOrganism"
+            <div className="flex items-center mb-1">
+              <label htmlFor="description" className="text-sm font-medium text-gray-400">Description</label>
+              <div className="ml-2 text-gray-500">
+                <Info className="h-4 w-4" />
+              </div>
+            </div>
+            <textarea
+              id="description"
+              name="description"
               required
-              value={formData.sourceOrganism}
+              value={formData.description}
               onChange={handleChange}
-              placeholder="Homo sapiens"
+              rows={3}
+              placeholder="Detailed description including source, collection methods, and any special characteristics"
               className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
           
           <div>
-            <label htmlFor="targetGene" className="block text-sm font-medium text-gray-400 mb-1">Target Gene</label>
-            <input
-              type="text"
-              id="targetGene"
-              name="targetGene"
-              required
-              value={formData.targetGene}
-              onChange={handleChange}
-              placeholder="BRCA1"
-              className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
+            <label className="text-sm font-medium text-gray-400 mb-2 block">Quality Level</label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="qualityLow"
+                  name="qualityLevel"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2"
+                  checked={formData.qualityLevel === 'Low'}
+                  onChange={() => handleRadioChange('Low')}
+                />
+                <label htmlFor="qualityLow" className="text-white">Low</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="qualityMedium"
+                  name="qualityLevel"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2"
+                  checked={formData.qualityLevel === 'Medium'}
+                  onChange={() => handleRadioChange('Medium')}
+                />
+                <label htmlFor="qualityMedium" className="text-white">Medium</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="qualityHigh"
+                  name="qualityLevel"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2"
+                  checked={formData.qualityLevel === 'High'}
+                  onChange={() => handleRadioChange('High')}
+                />
+                <label htmlFor="qualityHigh" className="text-white">High</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="qualityCritical"
+                  name="qualityLevel"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-2"
+                  checked={formData.qualityLevel === 'Critical'}
+                  onChange={() => handleRadioChange('Critical')}
+                />
+                <label htmlFor="qualityCritical" className="text-white">Critical</label>
+              </div>
+            </div>
           </div>
           
-          <div>
-            <label htmlFor="collectionDate" className="block text-sm font-medium text-gray-400 mb-1">Collection Date</label>
-            <input
-              type="date"
-              id="collectionDate"
-              name="collectionDate"
-              required
-              value={formData.collectionDate}
-              onChange={handleChange}
-              className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
+          <div className="bg-indigo-900/20 rounded-lg p-4 border border-indigo-900/50">
+            <div className="flex items-center">
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-900/30 flex-shrink-0 mr-4">
+                <AlertCircle className="h-5 w-5 text-indigo-400" />
+              </div>
+              <p className="text-sm text-gray-300">
+                This will create an immutable record of your CRISPR gene editing sample on the Base blockchain. Your wallet will be recorded as the registrant.
+              </p>
+            </div>
           </div>
           
-          <div>
-            <label htmlFor="storageLocation" className="block text-sm font-medium text-gray-400 mb-1">Storage Location</label>
-            <input
-              type="text"
-              id="storageLocation"
-              name="storageLocation"
-              required
-              value={formData.storageLocation}
-              onChange={handleChange}
-              placeholder="Lab B, Freezer 3, Shelf 2"
-              className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`flex items-center px-6 py-3 rounded-lg font-medium transition-colors ${
+                isSubmitting 
+                  ? 'bg-indigo-700/50 text-white/70 cursor-not-allowed' 
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Register CRISPR Sample
+                  <Send className="h-4 w-4 ml-2" />
+                </>
+              )}
+            </button>
           </div>
-        </div>
-        
-        <div>
-          <label htmlFor="geneSequence" className="block text-sm font-medium text-gray-400 mb-1">Gene Sequence</label>
-          <textarea
-            id="geneSequence"
-            name="geneSequence"
-            required
-            value={formData.geneSequence}
-            onChange={handleChange}
-            rows={4}
-            placeholder="ATCGATCGATCGATCG..."
-            className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="qualityScore" className="block text-sm font-medium text-gray-400 mb-1">
-            Quality Score: {formData.qualityScore}
-          </label>
-          <input
-            type="range"
-            id="qualityScore"
-            name="qualityScore"
-            min="50"
-            max="100"
-            value={formData.qualityScore}
-            onChange={handleChange}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Low Quality</span>
-            <span>High Quality</span>
-          </div>
-        </div>
-        
-        <div className="flex items-center">
-          <div className="flex items-center justify-center h-12 w-12 rounded-full bg-indigo-900/30 flex-shrink-0 mr-4">
-            <AlertCircle className="h-6 w-6 text-indigo-400" />
-          </div>
-          <p className="text-sm text-gray-400">
-            By registering this sample, you confirm that you have the necessary rights to store this genomic data and agree to our data handling policies.
-          </p>
-        </div>
-        
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`flex items-center px-6 py-3 rounded-lg font-medium transition-colors ${
-              isSubmitting 
-                ? 'bg-indigo-800/50 text-gray-300 cursor-not-allowed' 
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-            }`}
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-5 h-5 border-t-2 border-r-2 border-white rounded-full animate-spin mr-2" />
-                Processing...
-              </>
-            ) : (
-              <>
-                Register Sample
-                <Send className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+        </form>
+      )}
     </div>
   );
 }; 
