@@ -28,8 +28,11 @@ export const verifyJWT = asyncHandler(
     const headerToken = req.header('Authorization')?.replace('Bearer ', '');
     const token = cookieToken || headerToken;
     
+    // Log token details for debugging
+    console.log(`Auth middleware executing for path: ${req.path}`);
     console.log('Auth middleware - Cookie token exists:', !!cookieToken);
     console.log('Auth middleware - Header token exists:', !!headerToken);
+    console.log('Auth middleware - Final token being used:', !!token);
     
     if (!token) {
       console.log('No authentication token found in request (cookies or Authorization header)');
@@ -44,6 +47,11 @@ export const verifyJWT = asyncHandler(
         email?: string;
         walletAddress?: string;
         role?: string;
+      }
+      
+      // Log token for debugging in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Token to verify (first 15 chars):', token.substring(0, 15) + '...');
       }
       
       const decodedToken = jwt.verify(token, config.JWT_SECRET) as JwtPayload;
@@ -68,6 +76,9 @@ export const verifyJWT = asyncHandler(
       if (error instanceof jwt.JsonWebTokenError) {
         console.error('JWT verification failed:', error.message);
         throw new ApiError(401, `Invalid token: ${error.message}`);
+      } else if (error instanceof jwt.TokenExpiredError) {
+        console.error('JWT expired:', error.message);
+        throw new ApiError(401, 'Your session has expired. Please login again.');
       } else if (error instanceof ApiError) {
         throw error; // Re-throw our custom API errors
       }

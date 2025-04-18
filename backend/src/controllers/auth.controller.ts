@@ -26,6 +26,7 @@ const cookieOptions: CookieOptions = {
   // But 'none' requires 'secure: true', so we need to handle differently for dev
   sameSite: config.NODE_ENV === 'development' ? 'lax' : 'none',
   maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  path: '/',
 };
 
 // When clearing cookies on logout, use the same settings
@@ -33,6 +34,7 @@ const clearCookieOptions: CookieOptions = {
   httpOnly: true,
   secure: config.NODE_ENV === 'production',
   sameSite: config.NODE_ENV === 'development' ? 'lax' : 'none',
+  path: '/',
 };
 
 /**
@@ -180,6 +182,16 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   // Generate access token
   const accessToken = user.generateAccessToken();
 
+  // Log cookie settings
+  console.log(`Setting auth cookie with options:`, {
+    httpOnly: cookieOptions.httpOnly,
+    secure: cookieOptions.secure,
+    sameSite: cookieOptions.sameSite,
+    maxAge: cookieOptions.maxAge,
+    path: cookieOptions.path,
+    domain: cookieOptions.domain || 'not set'
+  });
+  
   // Set cookie
   res.cookie('accessToken', accessToken, cookieOptions);
 
@@ -197,7 +209,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
           preferences: user.preferences,
           profileImageUrl: user.profileImageUrl,
         },
-        accessToken,
+        accessToken, // Include token in response body as fallback
       },
       'User logged in successfully'
     )

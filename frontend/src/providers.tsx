@@ -6,6 +6,7 @@ import { WagmiProvider, createConfig, http } from 'wagmi';
 import { baseSepolia } from 'wagmi/chains';
 import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
+import { AuthProvider } from '@/lib/contexts/AuthProvider';
 
 // Create a context to track if WalletConnect has been initialized
 const WalletInitContext = createContext(false);
@@ -73,7 +74,9 @@ export function Providers({ children }: { children: ReactNode }) {
       <WagmiProvider config={wagmiConfig}>
         <QueryClientProvider client={queryClient}>
           <RainbowKitProvider>
-            {children}
+            <AuthProvider>
+              {children}
+            </AuthProvider>
           </RainbowKitProvider>
         </QueryClientProvider>
       </WagmiProvider>

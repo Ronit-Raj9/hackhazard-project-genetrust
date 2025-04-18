@@ -52,15 +52,14 @@ export default function GoogleCallbackPage() {
         try {
           // Send the code to our backend
           const response = await authAPI.handleGoogleCallback(code);
-          console.log('Google authentication successful');
+          console.log('Google authentication successful:', response.data.message);
           
           // Check if we have a token in the response
           const token = response?.data?.data?.accessToken;
           if (token) {
-            console.log('Token received from backend, saving to localStorage as fallback');
-            // Token is saved in the interceptor, but we log it here for clarity
+            console.log('Token received from backend, saved to localStorage as fallback');
           } else {
-            console.warn('No token found in Google callback response');
+            console.warn('No token found in Google callback response, relying on HTTP cookies');
           }
           
           // Manually check authentication after Google login
@@ -68,18 +67,28 @@ export default function GoogleCallbackPage() {
             const userResponse = await authAPI.getCurrentUser();
             console.log('Authentication verification successful');
             
+            // Get onboarding status - safely access properties
+            const isOnboarded = userResponse?.data?.data?.user?.onboardingCompleted;
+            
             // Redirect based on onboarding status
-            if (userResponse?.data?.data?.user?.onboardingCompleted) {
+            if (isOnboarded) {
               setStatus('Success! Redirecting to dashboard...');
               setTimeout(() => router.push('/dashboard'), 1000);
             } else {
               setStatus('Success! Redirecting to onboarding...');
               setTimeout(() => router.push('/onboarding'), 1000);
             }
-          } catch (verifyErr) {
+          } catch (verifyErr: any) {
             console.error('Failed to verify authentication after Google login:', verifyErr);
+            
+            // Log more details about the error
+            if (verifyErr.response) {
+              console.error('Response status:', verifyErr.response.status);
+              console.error('Response data:', verifyErr.response.data);
+            }
+            
             setStatus('Authentication verification failed');
-            setError('Could not verify your login status. Please try again.');
+            setError(verifyErr.response?.data?.message || 'Could not verify your login status. Please try again.');
             setTimeout(() => router.push('/login?error=Authentication%20verification%20failed'), 3000);
           }
         } catch (err: any) {
@@ -101,7 +110,7 @@ export default function GoogleCallbackPage() {
           // Redirect after showing the error
           setTimeout(() => router.push(`/login?error=${encodeURIComponent(errorMessage)}`), 3000);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error in callback processing:', err);
         setStatus('Authentication processing failed');
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -124,13 +133,13 @@ export default function GoogleCallbackPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center max-w-md mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Google Authentication</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="text-center max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
+        <h1 className="text-2xl font-bold mb-4 text-white">Google Authentication</h1>
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
-        <p className="mt-4 text-gray-600">{status}</p>
+        <p className="mt-4 text-gray-300">{status}</p>
         {error && (
-          <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-md">
+          <div className="mt-4 p-3 bg-red-900/30 text-red-300 rounded-md border border-red-800">
             {error}
           </div>
         )}

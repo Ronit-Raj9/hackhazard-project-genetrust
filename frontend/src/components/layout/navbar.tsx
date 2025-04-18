@@ -2,23 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, ChevronDown, User, LogOut, Settings, Dna } from 'lucide-react';
+import { Menu, X, Dna } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuthState } from '@/lib/hooks/useAuth';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
+import { UserInfo } from '../auth/UserInfo';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, logout, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthState();
   const pathname = usePathname();
   const isHomePage = pathname === '/';
 
@@ -96,39 +90,8 @@ export function Navbar() {
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {isAuthenticated && user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 text-gray-200 hover:text-white hover:bg-indigo-900/50 focus:bg-indigo-900/50">
-                    <Avatar className="h-8 w-8 border border-indigo-600/50">
-                      <AvatarImage src={user.profileImageUrl} alt={user.name || "User"} />
-                      <AvatarFallback className="bg-indigo-900 text-indigo-200">
-                        {user.name ? user.name[0].toUpperCase() : 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{user.name || "User"}</span>
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-gray-900 border border-indigo-900/50 text-gray-200">
-                  <DropdownMenuItem asChild className="hover:bg-indigo-900/50 hover:text-indigo-300 focus:bg-indigo-900/50">
-                    <Link href="/dashboard" className="flex items-center">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Dashboard</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="hover:bg-indigo-900/50 hover:text-indigo-300 focus:bg-indigo-900/50">
-                    <Link href="/dashboard" className="flex items-center">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={logout} className="text-red-400 hover:bg-red-900/30 hover:text-red-300 focus:bg-red-900/30">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            {isAuthenticated ? (
+              <UserInfo />
             ) : (
               <>
                 <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-indigo-900/50 focus:bg-indigo-900/50 mr-2" asChild>
@@ -184,51 +147,21 @@ export function Navbar() {
               </Link>
             ))}
           </div>
+          
           <div className="pt-4 pb-3 border-t border-indigo-900/30">
-            {isAuthenticated && user ? (
-              <div>
-                <div className="flex items-center px-4">
-                  <div className="flex-shrink-0">
-                    <Avatar className="h-10 w-10 border border-indigo-600/50">
-                      <AvatarImage src={user.profileImageUrl} alt={user.name || "User"} />
-                      <AvatarFallback className="bg-indigo-900 text-indigo-200">
-                        {user.name ? user.name[0].toUpperCase() : 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <div className="ml-3">
-                    <div className="text-base font-medium text-gray-200">{user.name || "User"}</div>
-                    <div className="text-sm font-medium text-gray-400">{user.email}</div>
-                  </div>
-                </div>
-                <div className="mt-3 space-y-1">
-                  <Link href="/dashboard" className="block px-4 py-2 text-base font-medium text-gray-300 hover:text-indigo-300 hover:bg-gray-800">
-                    Dashboard
-                  </Link>
-                  <Link href="/dashboard" className="block px-4 py-2 text-base font-medium text-gray-300 hover:text-indigo-300 hover:bg-gray-800">
-                    Settings
-                  </Link>
-                  <button 
-                    onClick={logout}
-                    className="block w-full text-left px-4 py-2 text-base font-medium text-red-400 hover:text-red-300 hover:bg-red-900/30"
-                  >
-                    Sign out
-                  </button>
-                </div>
+            {isAuthenticated ? (
+              <div className="px-4">
+                <UserInfo />
               </div>
             ) : (
-              <>
-                <div className="flex items-center px-4">
-                  <Button variant="ghost" className="text-gray-300 hover:text-white w-full text-left px-4 py-2 text-base font-medium" asChild>
-                    <Link href="/login">Sign In</Link>
-                  </Button>
-                </div>
-                <div className="mt-3 px-4 pb-4">
-                  <Button className="bg-indigo-600 hover:bg-indigo-500 text-white w-full border border-indigo-500/50" asChild>
-                    <Link href="/login">Get Started</Link>
-                  </Button>
-                </div>
-              </>
+              <div className="mt-3 space-y-1 px-4">
+                <Link href="/login" className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-indigo-300">
+                  Sign In
+                </Link>
+                <Link href="/login" className="block px-3 py-2 text-base font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-md mb-2">
+                  Get Started
+                </Link>
+              </div>
             )}
           </div>
         </motion.div>

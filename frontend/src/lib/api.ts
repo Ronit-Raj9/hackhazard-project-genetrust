@@ -48,6 +48,9 @@ api.interceptors.response.use(
     const token = response.data?.data?.accessToken;
     if (token) {
       saveAuthToken(token);
+      // Set token in axios default headers
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      console.log('Token saved and set in default headers');
     }
     return response;
   },
@@ -64,6 +67,16 @@ api.interceptors.response.use(
 
 // Auth API with error handling
 export const authAPI = {
+  // Token helper function
+  setToken: (token: string) => {
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      console.log('Token set in API headers manually');
+      return true;
+    }
+    return false;
+  },
+
   // Login-related methods with improved error handling
   getCurrentUser: () => {
     try {
@@ -75,7 +88,19 @@ export const authAPI = {
   },
   
   // Other auth methods...
-  login: (email: string, password: string) => api.post('/auth/login', { email, password }),
+  login: (email: string, password: string) => {
+    return api.post('/auth/login', { email, password })
+      .then(response => {
+        // Explicitly handle token from login response
+        const token = response?.data?.data?.accessToken;
+        if (token) {
+          console.log('Received accessToken from login, saving and setting in headers');
+          saveAuthToken(token);
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        }
+        return response;
+      });
+  },
   register: (email: string, password: string, name: string) => 
     api.post('/auth/register', { email, password, name }),
   forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),

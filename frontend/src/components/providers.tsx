@@ -9,6 +9,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { http } from 'viem';
 import MousePositionProvider from '@/components/landing/MousePositionProvider';
 import { useWalletInit } from '@/providers';
+import { AuthProvider } from '@/lib/contexts/AuthProvider';
 
 // This providers file is deprecated and will be removed in a future update.
 // It's being maintained for backward compatibility.
@@ -27,7 +28,9 @@ export function Providers({ children }: { children: ReactNode }) {
   if (isInitialized || !isClient) {
     return (
       <MousePositionProvider>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </MousePositionProvider>
     );
   }
@@ -74,7 +77,9 @@ export function Providers({ children }: { children: ReactNode }) {
           })}
         >
           <MousePositionProvider>
-            {children}
+            <AuthProvider>
+              {children}
+            </AuthProvider>
           </MousePositionProvider>
         </RainbowKitProvider>
       </QueryClientProvider>

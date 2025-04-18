@@ -284,12 +284,21 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       setError(null);
-      await login(values.email, values.password);
+      const response = await login(values.email, values.password);
       setSuccess('Login successful. Redirecting...');
       
-      // Redirect based on onboarding status
-      const redirectPath = completed ? '/dashboard' : '/onboarding';
-      setTimeout(() => router.push(redirectPath), 1000);
+      // Get redirect URL from query parameters or use default
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectTo = searchParams.get('redirect') || '/dashboard';
+      
+      // Ensure route exists before navigating
+      const redirectPath = redirectTo.startsWith('/') ? redirectTo : `/${redirectTo}`;
+      
+      // Use a delay to ensure the token is properly set before redirect
+      setTimeout(() => {
+        console.log('Redirecting to:', redirectPath);
+        router.push(redirectPath);
+      }, 1500);
     } catch (err: any) {
       console.error('Login error:', err);
       const errorInfo = getUserFriendlyErrorMessage(err.message);

@@ -1,7 +1,34 @@
-import { useEffect, useState } from 'react';
+'use client';
+
+/**
+ * Main Authentication Hooks File
+ * 
+ * This file contains all authentication-related hooks and functionality.
+ * It supports multiple authentication methods:
+ * - Context-based authentication (useAuthState, useAuthDispatch, useAuthMethods)
+ * - Store-based authentication (useAuth)
+ * - Wallet authentication
+ * - Google OAuth authentication
+ * - Email/password authentication
+ * 
+ * All components should import authentication hooks from this file using:
+ * import { useAuth } from '@/lib/hooks/useAuth';
+ * or
+ * import { useAuthState, useAuthMethods } from '@/lib/hooks/useAuth';
+ */
+
+import { useEffect, useState, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { authAPI } from '../api';
 import { useUserStore } from '../store';
+import { 
+  AuthState, 
+  AuthAction,
+  AuthContextMethods,
+  AuthStateContext, 
+  AuthDispatchContext,
+  AuthMethodsContext
+} from '../contexts/AuthContext';
 
 export function useAuth(requireAuth: boolean = false) {
   const router = useRouter();
@@ -231,4 +258,118 @@ export function useAuth(requireAuth: boolean = false) {
     logout,
     isInitialized,
   };
-} 
+}
+
+// Custom hook to access auth state directly from context
+export const useAuthState = (): AuthState => {
+  try {
+    const context = useContext(AuthStateContext);
+    
+    if (context === undefined) {
+      // If used outside AuthProvider, fallback to store-based auth
+      console.warn('useAuthState used outside AuthProvider, falling back to store-based auth');
+      const storeAuth = useUserStore();
+      return {
+        user: storeAuth.user,
+        isAuthenticated: !!storeAuth.user,
+        isLoading: storeAuth.isLoading,
+        error: storeAuth.error
+      };
+    }
+    
+    return context;
+  } catch (error) {
+    // If context is not available at all, fallback to store-based auth
+    console.warn('AuthContext not available, falling back to store-based auth');
+    const storeAuth = useUserStore();
+    return {
+      user: storeAuth.user,
+      isAuthenticated: !!storeAuth.user,
+      isLoading: storeAuth.isLoading,
+      error: storeAuth.error
+    };
+  }
+};
+
+// Custom hook to access auth dispatch
+export const useAuthDispatch = (): React.Dispatch<AuthAction> => {
+  try {
+    const context = useContext(AuthDispatchContext);
+    
+    if (context === undefined) {
+      // If used outside AuthProvider, return a no-op dispatch function
+      console.warn('useAuthDispatch used outside AuthProvider, returning no-op dispatch');
+      // Return a no-op function that matches the dispatch signature
+      return () => {};
+    }
+    
+    return context;
+  } catch (error) {
+    // If context is not available at all, return a no-op dispatch function
+    console.warn('AuthDispatchContext not available, returning no-op dispatch');
+    return () => {};
+  }
+};
+
+// Custom hook to access auth methods
+export const useAuthMethods = (): AuthContextMethods => {
+  try {
+    const context = useContext(AuthMethodsContext);
+    
+    if (context === undefined) {
+      // If used outside AuthProvider, fallback to store-based auth methods
+      console.warn('useAuthMethods used outside AuthProvider, falling back to store-based auth methods');
+      
+      // Create a standalone instance of the useAuth hook's methods
+      const {
+        login,
+        loginWithWallet,
+        loginWithGoogle,
+        register,
+        forgotPassword,
+        resetPassword,
+        changePassword,
+        logout
+      } = useAuth();
+      
+      return {
+        login,
+        loginWithWallet,
+        loginWithGoogle,
+        register,
+        forgotPassword,
+        resetPassword,
+        changePassword,
+        logout
+      };
+    }
+    
+    return context;
+  } catch (error) {
+    // If context is not available at all, fallback to store-based auth methods
+    console.warn('AuthMethodsContext not available, falling back to store-based auth methods');
+    
+    // Create a standalone instance of the useAuth hook's methods
+    const {
+      login,
+      loginWithWallet,
+      loginWithGoogle,
+      register,
+      forgotPassword,
+      resetPassword,
+      changePassword,
+      logout
+    } = useAuth();
+    
+    return {
+      login,
+      loginWithWallet,
+      loginWithGoogle,
+      register,
+      forgotPassword,
+      resetPassword,
+      changePassword,
+      logout
+    };
+  }
+}; 
