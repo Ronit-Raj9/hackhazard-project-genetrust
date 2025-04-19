@@ -26,6 +26,22 @@ const queryClient = new QueryClient({
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c86f23da1913707381b31528a79c3e23';
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '356405303441-ge8ghhld339vnmm627o414b6fa0aiger.apps.googleusercontent.com';
 
+// Log Google client ID (truncated for security)
+if (typeof window !== 'undefined') {
+  // Only log on client side
+  const truncatedClientId = googleClientId ? 
+    `${googleClientId.substring(0, 8)}...${googleClientId.substring(googleClientId.length - 6)}` : 
+    'not found';
+  
+  console.log(`Google OAuth Provider initializing with client ID: ${truncatedClientId}`);
+  
+  // Validate client ID format (should be in format: numbers-letters.apps.googleusercontent.com)
+  const isValidClientIdFormat = /^\d+-[a-z0-9]+\.apps\.googleusercontent\.com$/.test(googleClientId);
+  if (!isValidClientIdFormat) {
+    console.warn('Google Client ID may be invalid. Expected format: NUMBERS-ALPHANUMERIC.apps.googleusercontent.com');
+  }
+}
+
 // Configure chains
 const chains = [baseSepolia];
 

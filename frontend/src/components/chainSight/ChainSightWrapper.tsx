@@ -59,28 +59,40 @@ export default function ChainSightWrapper() {
         // If explicitly logged out, update UI immediately
         if (data && data.isAuthenticated === false) {
           console.log('User logged out - updating ChainSight UI');
+          setRefreshKey(prev => prev + 1);
+          return;
         }
-        
-        // Increment key to force re-render of children
-        setRefreshKey(prev => prev + 1);
         
         // Check auth state from localStorage/cookies
         const token = localStorage.getItem('auth_token');
         const guestId = localStorage.getItem('guestId');
         const isGuestActive = localStorage.getItem('isGuestSessionActive') === 'true';
         
-        console.log('ChainSight refresh with auth state:', {
-          hasToken: !!token,
-          isGuestSession: !!guestId && isGuestActive,
-          event,
-          data
-        });
+        // Only refresh if there's a state mismatch to avoid unnecessary rerenders
+        const localAuthState = !!token || (!!guestId && isGuestActive);
+        if (localAuthState !== isAuthenticated) {
+          console.log('ChainSight refresh with auth state:', {
+            hasToken: !!token,
+            isGuestSession: !!guestId && isGuestActive,
+            event,
+            data
+          });
+          
+          // Increment key to force re-render of children
+          setRefreshKey(prev => prev + 1);
+        }
       }
     });
     
-    // Check auth state on mount
+    // Check auth state on mount - but limit frequency of checks
+    let checkCount = 0;
     const checkAuthInterval = setInterval(() => {
       if (document.hidden) return; // Don't check if tab is not visible
+      
+      // Gradually reduce check frequency
+      checkCount++;
+      if (checkCount > 10 && checkCount % 3 !== 0) return; // After 10 checks, only check every 3rd time
+      if (checkCount > 30 && checkCount % 5 !== 0) return; // After 30 checks, only check every 5th time
       
       // Check if user is logged in based on local storage values
       const token = localStorage.getItem('auth_token');
@@ -94,24 +106,13 @@ export default function ChainSightWrapper() {
         // Force rerender by updating key
         setRefreshKey(prev => prev + 1);
       }
-      
-      // Log the current authentication state
-      console.log('Current auth state in ChainSight:', {
-        isAuthenticated,
-        userType,
-        isLoading,
-        walletConnected: wallet.isConnected,
-        walletAddress: wallet.address,
-        token: !!token,
-        guestSession: !!guestId && isGuestActive
-      });
     }, 3000);
     
     return () => {
       unsubscribe();
       clearInterval(checkAuthInterval);
     };
-  }, [isAuthenticated, userType, isLoading, wallet]);
+  }, [isAuthenticated]); // Add isAuthenticated as dependency so the effect reruns when it changes
 
   // On mount - check container size and set global scaling if needed
   useEffect(() => {
@@ -155,9 +156,14 @@ export default function ChainSightWrapper() {
         <SettingsButton />
       </div>
       
-      <div className="absolute top-4 left-4 z-20 text-xs text-indigo-400/70">
-        {isAuthenticated ? 'Authenticated: Yes' : isLoading ? 'Checking auth...' : 'Authenticated: No'}
-        {userType && ` - User type: ${userType}`}
+      <div className="absolute top-4 left-4 z-20 px-3 py-1.5 bg-indigo-900/50 backdrop-blur-sm rounded-md border border-indigo-500/30 shadow-md">
+        <div className="flex items-center gap-2">
+          <div className={`h-2 w-2 rounded-full ${isAuthenticated ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
+          <span className="text-sm font-medium text-white">
+            {isAuthenticated ? 'Authenticated: Yes' : isLoading ? 'Checking auth...' : 'Authenticated: No'}
+            {userType && <span className="ml-1 text-indigo-200">- {userType}</span>}
+          </span>
+        </div>
       </div>
       
       {/* Main content container */}
@@ -178,17 +184,20 @@ export default function ChainSightWrapper() {
               background: 'linear-gradient(to right, #4F46E5, #B16CEA, #00CCFF)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              textShadow: '0 0 40px rgba(79, 70, 229, 0.3)'
+              textShadow: '0 0 40px rgba(79, 70, 229, 0.5)'
             }}
           >
             GeneTrust Genomic Platform
           </motion.h1>
           
           <motion.p 
-            className="text-center text-gray-300 mt-6 max-w-2xl mx-auto text-sm sm:text-base md:text-lg"
+            className="text-center text-white mt-6 max-w-2xl mx-auto text-sm sm:text-base md:text-lg font-medium"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
+            style={{
+              textShadow: '0 0 20px rgba(79, 70, 229, 0.4)'
+            }}
           >
             Secure your genomic research data on the blockchain with immutable storage 
             <br />and controlled access

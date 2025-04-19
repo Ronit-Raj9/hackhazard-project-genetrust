@@ -134,44 +134,42 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
         // If logout event, update component immediately
         if (data && data.isAuthenticated === false) {
           console.log('WalletConnector: Logout event detected');
-        }
-        
-        // Instead of manipulating state directly, force a re-check of auth state
-        // This ensures we have the latest state from cookies/localStorage/API
-        const api = authAPI as any;
-        const token = localStorage.getItem('auth_token');
-        if (token && api.setToken) {
-          api.setToken(token);
-        }
-        
-        // Delay check to ensure any async operations have completed
-        setTimeout(() => {
-          // Check if user is in guest mode
-          const guestId = getGuestId();
-          const isGuestActive = isGuestSessionActive();
+          // No need to trigger another event here - just respond to the existing one
+        } else {
+          // Only check for mismatches occasionally to prevent loops
+          // We rely on debouncing in the auth events system, but add this check as an extra safeguard
+          const shouldCheckState = Math.random() < 0.2; // Only check ~20% of the time
           
-          // Check if our auth state matches local storage
-          const localAuthState = !!token || (!!guestId && isGuestActive);
+          if (shouldCheckState) {
+            // Instead of manipulating state directly, force a re-check of auth state
+            // This ensures we have the latest state from cookies/localStorage/API
+            const api = authAPI as any;
+            const token = localStorage.getItem('auth_token');
+            if (token && api.setToken) {
+              api.setToken(token);
+            }
           
-          if (localAuthState !== isAuthenticated) {
-            console.log('WalletConnector: Auth state mismatch - refreshing');
-            // Force refresh via refreshKey in parent component
-            authEvents.emit('refresh_requested');
+            // Check if user is in guest mode
+            const guestId = getGuestId();
+            const isGuestActive = isGuestSessionActive();
+            
+            // Check if our auth state matches local storage
+            const localAuthState = !!token || (!!guestId && isGuestActive);
+            
+            if (localAuthState !== isAuthenticated) {
+              console.log('WalletConnector: Auth state mismatch - refreshing');
+              // Force refresh via refreshKey in parent component
+              authEvents.emit('refresh_requested');
+            }
           }
-          
-          if (guestId && isGuestActive) {
-            console.log('WalletConnector: Guest session is active');
-          } else {
-            console.log('WalletConnector: Checking backend auth state');
-          }
-        }, 100);
+        }
       }
     });
     
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [isAuthenticated]); // Add isAuthenticated as dependency to prevent stale closures
   
   // Load guest wallet data on mount
   useEffect(() => {
@@ -223,7 +221,7 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
           
           setGuestWalletAddress(address);
           setIsGuestWalletConnected(true);
-          setWalletConnected(true);
+      setWalletConnected(true);
           
           // Notify about wallet connection status change
           authEvents.emit('auth_state_changed', { isAuthenticated, walletConnected: true });
@@ -359,11 +357,11 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
     <div className={cn("p-3 md:p-6", containerClassName)}>
       <AnimatePresence mode="wait">
         {isAuthenticated ? (
-          <motion.div
+      <motion.div
             ref={containerRef}
             key={`authenticated-3d-card-${authStateKey}`}
             className="max-w-md mx-auto bg-black/70 backdrop-blur-md border border-indigo-900/40 rounded-2xl overflow-hidden"
-            style={{ 
+        style={{
               rotateX: rotateX, 
               rotateY: rotateY,
               transformPerspective: 1000,
@@ -454,12 +452,12 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
                   </div>
                 </motion.div>
               ) : (
-                <motion.div 
-                  variants={itemVariants}
+          <motion.div 
+            variants={itemVariants}
                   className="flex justify-center mb-6"
-                >
-                  <PersistentConnectButton />
-                </motion.div>
+          >
+            <PersistentConnectButton />
+          </motion.div>
               )}
 
               {/* Info Section: About Base Network */}
@@ -475,115 +473,115 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
                     </p>
                   </div>
                 </div>
-              </motion.div>
-
-              {/* Why Connect */}
-              <motion.div 
-                variants={itemVariants}
+        </motion.div>
+        
+            {/* Why Connect */}
+        <motion.div 
+          variants={itemVariants}
                 className="border border-indigo-500/20 rounded-lg overflow-hidden mb-4"
+        >
+          <button 
+                onClick={() => toggleSection('why')}
+                className="w-full p-4 flex justify-between items-center bg-indigo-900/20 hover:bg-indigo-900/30 transition-colors"
               >
-                <button 
-                  onClick={() => toggleSection('why')}
-                  className="w-full p-4 flex justify-between items-center bg-indigo-900/20 hover:bg-indigo-900/30 transition-colors"
-                >
-                  <div className="flex items-center space-x-2">
-                    <Zap className="w-5 h-5 text-indigo-400" />
-                    <span className="font-medium">Why Connect?</span>
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5 text-indigo-400" />
+                  <span className="font-medium">Why Connect?</span>
+            </div>
                   {isConnectReasonExpanded ? (
-                    <ChevronUp className="w-5 h-5 text-indigo-400" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-indigo-400" />
-                  )}
-                </button>
-                
-                <motion.div
-                  variants={sectionVariants}
-                  initial="collapsed"
+                  <ChevronUp className="w-5 h-5 text-indigo-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-indigo-400" />
+                )}
+          </button>
+          
+              <motion.div
+                variants={sectionVariants}
+                initial="collapsed"
                   animate={isConnectReasonExpanded ? "expanded" : "collapsed"}
-                  className="overflow-hidden"
-                >
-                  <div className="p-4 bg-indigo-900/10">
-                    <motion.p variants={itemVariants} className="text-gray-300 mb-3">
-                      Connecting your wallet enables you to:
-                    </motion.p>
-                    <ul className="space-y-2">
-                      <motion.li variants={itemVariants} className="flex items-start gap-2">
-                        <div className="min-w-5 pt-0.5">
+                className="overflow-hidden"
+              >
+                <div className="p-4 bg-indigo-900/10">
+                  <motion.p variants={itemVariants} className="text-gray-300 mb-3">
+                    Connecting your wallet enables you to:
+                  </motion.p>
+                  <ul className="space-y-2">
+                    <motion.li variants={itemVariants} className="flex items-start gap-2">
+                      <div className="min-w-5 pt-0.5">
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: typeof DNA_COLORS === 'object' ? DNA_COLORS.primary : '#6366f1' }}></div>
-                        </div>
-                        <span className="text-gray-300">Authorize blockchain interactions with our smart contracts</span>
-                      </motion.li>
-                      <motion.li variants={itemVariants} className="flex items-start gap-2">
-                        <div className="min-w-5 pt-0.5">
+                      </div>
+                      <span className="text-gray-300">Authorize blockchain interactions with our smart contracts</span>
+                    </motion.li>
+                    <motion.li variants={itemVariants} className="flex items-start gap-2">
+                      <div className="min-w-5 pt-0.5">
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: typeof DNA_COLORS === 'object' ? DNA_COLORS.secondary : '#8b5cf6' }}></div>
-                        </div>
-                        <span className="text-gray-300">Access secure genomic data management features</span>
-                      </motion.li>
-                      <motion.li variants={itemVariants} className="flex items-start gap-2">
-                        <div className="min-w-5 pt-0.5">
+                          </div>
+                      <span className="text-gray-300">Access secure genomic data management features</span>
+                    </motion.li>
+                    <motion.li variants={itemVariants} className="flex items-start gap-2">
+                      <div className="min-w-5 pt-0.5">
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: typeof DNA_COLORS === 'object' ? DNA_COLORS.tertiary : '#ec4899' }}></div>
                         </div>
-                        <span className="text-gray-300">Sign transactions and verify your identity</span>
+                      <span className="text-gray-300">Sign transactions and verify your identity</span>
                       </motion.li>
-                    </ul>
-                  </div>
-                </motion.div>
+                  </ul>
+                </div>
               </motion.div>
-              
-              {/* Security Info */}
-              <motion.div 
-                variants={itemVariants}
-                className="border border-indigo-500/20 rounded-lg overflow-hidden"
+        </motion.div>
+            
+            {/* Security Info */}
+        <motion.div 
+          variants={itemVariants}
+              className="border border-indigo-500/20 rounded-lg overflow-hidden"
+        >
+          <button 
+                onClick={() => toggleSection('security')}
+                className="w-full p-4 flex justify-between items-center bg-indigo-900/20 hover:bg-indigo-900/30 transition-colors"
               >
-                <button 
-                  onClick={() => toggleSection('security')}
-                  className="w-full p-4 flex justify-between items-center bg-indigo-900/20 hover:bg-indigo-900/30 transition-colors"
-                >
-                  <div className="flex items-center space-x-2">
-                    <AlertTriangle className="w-5 h-5 text-yellow-400" />
-                    <span className="font-medium">Security Information</span>
-                  </div>
-                  {isSecurityInfoExpanded ? (
-                    <ChevronUp className="w-5 h-5 text-indigo-400" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-indigo-400" />
-                  )}
-                </button>
-                
-                <motion.div
-                  variants={sectionVariants}
-                  initial="collapsed"
-                  animate={isSecurityInfoExpanded ? "expanded" : "collapsed"}
-                  className="overflow-hidden"
-                >
-                  <div className="p-4 bg-indigo-900/10">
-                    <motion.p variants={itemVariants} className="text-gray-300 mb-3">
-                      When connecting your wallet, we:
-                    </motion.p>
-                    <motion.ul variants={itemVariants} className="space-y-2 text-gray-300">
-                      <li className="flex items-start gap-2">
-                        <span className="text-green-400">✓</span>
-                        <span>Only request read access to your public address</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-green-400">✓</span>
-                        <span>Request approval for each transaction</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-red-400">✗</span>
-                        <span>Never access your private keys</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-red-400">✗</span>
-                        <span>Never auto-authorize transactions</span>
-                      </li>
-                    </motion.ul>
-                  </div>
-                </motion.div>
-              </motion.div>
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                  <span className="font-medium">Security Information</span>
             </div>
-          </motion.div>
+                  {isSecurityInfoExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-indigo-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-indigo-400" />
+                )}
+          </button>
+          
+              <motion.div
+                variants={sectionVariants}
+                initial="collapsed"
+                  animate={isSecurityInfoExpanded ? "expanded" : "collapsed"}
+                className="overflow-hidden"
+              >
+                <div className="p-4 bg-indigo-900/10">
+                  <motion.p variants={itemVariants} className="text-gray-300 mb-3">
+                    When connecting your wallet, we:
+                  </motion.p>
+                  <motion.ul variants={itemVariants} className="space-y-2 text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-400">✓</span>
+                      <span>Only request read access to your public address</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-400">✓</span>
+                      <span>Request approval for each transaction</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400">✗</span>
+                      <span>Never access your private keys</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400">✗</span>
+                      <span>Never auto-authorize transactions</span>
+                    </li>
+                  </motion.ul>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </motion.div>
         ) : (
           <motion.div
             key={`unauthenticated-${authStateKey}`}
@@ -593,31 +591,31 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
             exit="exit"
           >
             <Card className="bg-black/70 backdrop-blur-md border border-indigo-900/40 shadow-lg shadow-indigo-500/10 max-w-md mx-auto">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center">
-                  <LogIn className="h-4 w-4 mr-2 text-indigo-400" />
+              <CardHeader className="pb-2 border-b border-indigo-500/20">
+                <CardTitle className="text-base font-medium flex items-center text-white">
+                  <LogIn className="h-5 w-5 mr-2 text-indigo-400" />
                   Authentication Required
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground mb-4">
+              <CardContent className="pt-4">
+                <p className="text-sm text-white mb-4 font-medium">
                   Please sign in or continue as guest to connect your wallet
                 </p>
                 <Button
                   variant="default"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-5 text-base shadow-lg shadow-indigo-500/30 transition-all hover:scale-105"
                   onClick={navigateToLogin}
                 >
                   Sign In or Continue as Guest
                 </Button>
               </CardContent>
             </Card>
-          </motion.div>
+      </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
-};
+}; 
 
 const getRecommendedWallets = (connectors: any) => {
   if (!connectors || connectors.length === 0) return [];

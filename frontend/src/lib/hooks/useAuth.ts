@@ -40,6 +40,9 @@ declare global {
 // Create a simple event system to broadcast auth state changes
 class AuthEventEmitter {
   private listeners: Function[] = [];
+  private lastData: Record<string, any> = {};
+  private debounceTimers: Record<string, NodeJS.Timeout> = {};
+  private debounceInterval = 300; // ms
 
   subscribe(listener: Function) {
     this.listeners.push(listener);
@@ -49,9 +52,30 @@ class AuthEventEmitter {
   }
 
   emit(event: string, data?: any) {
-    this.listeners.forEach(listener => {
-      listener(event, data);
-    });
+    // Clear any pending timer for this event
+    if (this.debounceTimers[event]) {
+      clearTimeout(this.debounceTimers[event]);
+    }
+
+    // Create a new debounced event
+    this.debounceTimers[event] = setTimeout(() => {
+      // Compare with last emitted data - only emit if data has changed
+      const lastEventData = this.lastData[event];
+      
+      // Check if the data is actually different using shallow comparison
+      const isDataChanged = !lastEventData || !data || 
+        JSON.stringify(lastEventData) !== JSON.stringify(data);
+      
+      if (isDataChanged) {
+        // Store the data for future comparison
+        this.lastData[event] = JSON.parse(JSON.stringify(data || {}));
+        
+        // Notify listeners
+        this.listeners.forEach(listener => {
+          listener(event, data);
+        });
+      }
+    }, this.debounceInterval);
   }
 }
 
@@ -189,15 +213,69 @@ export function useAuth(requireAuth: boolean = false) {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('Starting Google login process in useAuth hook', { emailProvided: !!email });
+      
+      // Input validation
+      if (!idToken) {
+        throw new Error('Google ID token is required');
+      }
+      
+      if (!email) {
+        throw new Error('Email is required for Google authentication');
+      }
+      
+      // Call API
       const response = await authAPI.loginWithGoogle(idToken, email, name);
-      setUser(response.data.data.user);
+      console.log('Google authentication successful', { userId: response.data.data.user?.id });
+      
+      // Handle success
+      const userData = response.data.data.user;
+      if (!userData) {
+        throw new Error('User data missing from authentication response');
+      }
+      
+      setUser(userData);
+      
       // Broadcast auth state change
-      authEvents.emit('auth_state_changed', { isAuthenticated: true });
+      authEvents.emit('auth_state_changed', { 
+        isAuthenticated: true,
+        authProvider: 'google',
+        user: { id: userData.id, email: userData.email }
+      });
+      
       return response.data.data;
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Google login failed';
+      console.error('Google login failed in useAuth hook:', err);
+      
+      // Format error message based on the error type
+      let errorMessage = 'Google login failed';
+      
+      if (!err.response) {
+        // Network error with no response
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (err.response?.status === 400) {
+        // Validation or request format errors
+        errorMessage = err.response.data?.message || 'Invalid authentication data';
+      } else if (err.response?.status === 401 || err.response?.status === 403) {
+        // Authentication or authorization errors
+        errorMessage = err.response.data?.message || 'Authentication failed. You may not have permission to access this account.';
+      } else if (err.response?.status >= 500) {
+        // Server errors
+        errorMessage = 'Server error. Please try again later.';
+      } else if (err.message) {
+        // Other errors with message
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
-      throw new Error(errorMessage);
+      console.error('Setting error state:', errorMessage);
+      
+      // Rethrow with improved error
+      const enhancedError = new Error(errorMessage);
+      (enhancedError as any).originalError = err;
+      (enhancedError as any).responseData = err.response?.data;
+      throw enhancedError;
     } finally {
       setLoading(false);
     }

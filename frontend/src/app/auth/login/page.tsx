@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-indigo-950/90 to-gray-900 py-20">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-indigo-950/90 to-gray-900 flex items-center justify-center">
+      <div className="container mx-auto px-4 flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -25,6 +25,7 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
+          className="w-full max-w-md"
         >
           <LoginForm />
         </motion.div>

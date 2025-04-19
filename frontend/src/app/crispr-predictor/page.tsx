@@ -13,6 +13,7 @@ import { Dna, CheckCircle, AlertCircle, ChevronRight, Lightbulb, RotateCw, Info,
 import { crisprAPI } from '@/lib/api';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 // Define the structure of the prediction result
 interface PredictionResult {
@@ -65,6 +66,9 @@ export default function CrisprPredictorPage() {
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
+      {/* Show the loading screen when making predictions */}
+      {isLoading && <LoadingScreen text="Analyzing DNA sequence..." />}
+      
       {/* DNA helix background animation */}
       <div className="absolute inset-0 overflow-hidden opacity-10">
         <div className="absolute left-1/4 top-0 w-1 h-screen bg-indigo-500 animate-pulse" style={{ animationDuration: '5s' }}></div>
@@ -158,12 +162,8 @@ export default function CrisprPredictorPage() {
                       disabled={isLoading || sequence.length !== 20}
                       className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all h-12 px-6"
                     >
-                      {isLoading ? (
-                        <RotateCw className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Dna className="mr-2 h-4 w-4" />
-                      )}
-                      {isLoading ? "Processing..." : "Predict Edit"}
+                      <Dna className="mr-2 h-4 w-4" />
+                      Predict Edit
                     </Button>
                   </div>
                   <div className="flex justify-between mt-2">

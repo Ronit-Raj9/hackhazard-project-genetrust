@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthState } from '@/lib/hooks/useAuth';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -37,9 +38,9 @@ export default function PrivateRoute({ children }: PrivateRouteProps) {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Show loading spinner while checking authentication
+  // Show loading screen while checking authentication
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingScreen text="Verifying authentication..." />;
   }
 
   // Only render children if authenticated

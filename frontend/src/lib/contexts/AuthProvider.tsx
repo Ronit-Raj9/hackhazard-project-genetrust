@@ -21,17 +21,7 @@ import {
   loadGuestData,
   saveGuestData
 } from '@/lib/utils/guestStorage';
-
-// Create a loading spinner component
-const FullPageLoader = () => (
-  <div className="fixed inset-0 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm z-50">
-    <div className="relative w-20 h-20 mx-auto">
-      <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-indigo-500 animate-spin"></div>
-      <div className="absolute inset-4 rounded-full border-t-2 border-l-2 border-cyan-400 animate-spin-slow"></div>
-    </div>
-    <p className="text-indigo-300 mt-20">Loading...</p>
-  </div>
-);
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -234,22 +224,41 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         dispatch({ type: 'SET_LOADING', payload: true });
         dispatch({ type: 'CLEAR_ERROR' });
         
-        console.log(`Attempting to login with Google`);
+        console.log(`Attempting to login with Google`, { emailProvided: !!email, nameProvided: !!name });
+        
+        if (!idToken) {
+          throw new Error('Google ID token is required');
+        }
+
+        if (!email) {
+          throw new Error('Email is required for Google authentication');
+        }
         
         const response = await authAPI.loginWithGoogle(idToken, email, name);
-        console.log('Successfully authenticated with Google');
+        console.log('Successfully authenticated with Google', { status: response.status });
         
         // Save token from Google auth response
         const token = response?.data?.data?.accessToken;
         if (token) {
+          console.log('Received access token from Google auth', { tokenLength: token.length });
           localStorage.setItem('auth_token', token);
+        } else {
+          console.warn('No access token found in Google auth response');
         }
         
         // Clear any existing guest session data when formally logging in
         clearGuestSession();
         
+        // Make sure we have user data
+        if (!response?.data?.data?.user) {
+          console.error('No user data in Google auth response', response?.data);
+          throw new Error('Authentication successful but user data is missing');
+        }
+        
         dispatch({ type: 'LOGIN_SUCCESS', payload: response.data.data.user });
-        return Promise.resolve();
+        
+        // Return the response data for the calling component to use
+        return response.data.data;
       } catch (err: any) {
         console.error('Google login error:', err);
         let errorMessage = 'Login failed';
@@ -260,15 +269,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           errorMessage = 'Unauthorized. Please check your Google account.';
         } else if (err.response.status === 403) {
           errorMessage = 'Access denied. You may not have permission to login with this Google account.';
+        } else if (err.response.status === 400) {
+          errorMessage = err.response?.data?.message || 'Invalid Google authentication data';
         } else {
           errorMessage = err.response?.data?.message || 'Login failed';
         }
+        
+        console.error('Google login failed with message:', errorMessage);
         
         // Clear any existing guest session data when formally logging in
         clearGuestSession();
         
         dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
-        return Promise.reject(err);
+        
+        // Add error as property to the error object for more context when rethrowing
+        const error = new Error(errorMessage);
+        (error as any).originalError = err;
+        (error as any).responseData = err.response?.data;
+        
+        throw error;
       } finally {
         dispatch({ type: 'SET_LOADING', payload: false });
       }
@@ -543,7 +562,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // While checking auth status on initial load, show a loader
   if (!isInitialized) {
-    return <FullPageLoader />;
+    return <LoadingScreen />;
   }
 
   return (
