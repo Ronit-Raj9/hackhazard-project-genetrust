@@ -46,6 +46,7 @@ api.interceptors.response.use(
     // Check for token in response data
     const token = response.data?.data?.accessToken;
     if (token) {
+      console.log('Received auth token in response - saving to localStorage');
       saveAuthToken(token);
       // Set token in axios default headers
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -67,7 +68,14 @@ export const authAPI = {
   },
 
   // Login-related methods
-  getCurrentUser: () => api.get('/auth/me'),
+  getCurrentUser: () => {
+    // Always try to set token from localStorage before getCurrentUser call
+    const token = getAuthToken();
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+    return api.get('/auth/me');
+  },
   
   // Email/password authentication
   login: (email: string, password: string) => {
@@ -76,12 +84,28 @@ export const authAPI = {
         // Explicitly handle token from login response
         const token = response?.data?.data?.accessToken;
         if (token) {
+          console.log('Login successful - saving auth token');
           saveAuthToken(token);
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         }
         return response;
       });
   },
+  
+  // Guest authentication
+  loginAsGuest: () => {
+    return api.post('/auth/login/guest')
+      .then(response => {
+        // Handle token from guest login response
+        const token = response?.data?.data?.accessToken;
+        if (token) {
+          saveAuthToken(token);
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        }
+        return response;
+      });
+  },
+  
   register: (email: string, password: string, name: string) => 
     api.post('/auth/register', { email, password, name }),
   verifyEmail: (token: string) => {
@@ -109,8 +133,32 @@ export const authAPI = {
   
   // Common
   logout: () => {
-    localStorage.removeItem('auth_token');
-    return api.post('/auth/logout');
+    // Safely clean up localStorage
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token');
+      }
+    } catch (error) {
+      console.warn('Failed to clear localStorage on logout:', error);
+    }
+    
+    // Safely clean up auth headers
+    try {
+      if (api.defaults?.headers?.common?.Authorization) {
+        delete api.defaults.headers.common.Authorization;
+      } else if (api.defaults?.headers?.common && api.defaults.headers.common['Authorization']) {
+        delete api.defaults.headers.common['Authorization'];
+      }
+    } catch (error) {
+      console.warn('Failed to clear auth headers on logout:', error);
+    }
+    
+    // Call the backend logout API
+    return api.post('/auth/logout').catch(err => {
+      console.warn('Backend logout API call failed:', err);
+      // Return a resolved promise so that frontend logout flow can continue
+      return Promise.resolve({ status: 'ok', data: { message: 'Logged out locally' } });
+    });
   },
 };
 
@@ -199,19 +247,33 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
     
-    // Only redirect on actual 401 responses (not network errors)
+    // Only handle 401 responses (not network errors)
     if (error.response?.status === 401) {
-      // Check if we're already on the login page or home page to prevent redirects
-      const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-      const isLoginPage = pathname === '/login';
-      const isHomePage = pathname === '/';
-      const isChainSightPage = pathname.includes('/chainSight');
+      // Don't immediately redirect - let the component decide based on requireAuth
+      console.warn('Authentication required for this request');
       
-      // Don't redirect for chainSight pages - they handle auth differently
-      if (!isLoginPage && !isHomePage && !isChainSightPage) {
-        window.location.href = '/login';
+      // Check if this is a second request with the same error
+      // This helps prevent infinite loops
+      const isRetry = error.config.__isRetryRequest;
+      
+      if (!isRetry) {
+        // Check if token exists in localStorage
+        const token = localStorage.getItem('auth_token');
+        
+        if (token) {
+          console.warn('Auth token exists but request was unauthorized. Token may be invalid.');
+          
+          // Clear the invalid token
+          localStorage.removeItem('auth_token');
+          
+          // Notify about auth state change for components to update
+          if (typeof window !== 'undefined' && window.authEvents) {
+            window.authEvents.emit('auth_state_changed', { isAuthenticated: false, reason: '401_response' });
+          }
+        }
       }
     }
+    
     return Promise.reject(error);
   }
 );

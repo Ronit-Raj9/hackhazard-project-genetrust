@@ -4,13 +4,16 @@ import { persist } from 'zustand/middleware';
 // User profile type
 interface UserProfile {
   id: string;
-  walletAddress: string;
-  role: 'user' | 'admin';
-  preferences: {
+  name?: string;
+  email?: string;
+  walletAddress?: string;
+  role: 'user' | 'admin' | 'guest';
+  preferences?: {
     theme?: 'light' | 'dark';
     aiVoice?: string;
   };
   profileImageUrl?: string;
+  isGuest?: boolean;
 }
 
 // User state interface

@@ -1,40 +1,86 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useChainSightStore } from '@/lib/stores/chainSightStore';
 import { useWalletAccount } from '@/lib/hooks/use-wallet-account';
 import { useAuthState } from '@/lib/hooks/useAuth';
-import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Wallet, LogIn } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 export function PersistentConnectButton() {
   const { address, isConnected } = useWalletAccount();
   const { setWalletConnected } = useChainSightStore();
-  const { isAuthenticated } = useAuthState();
+  const { isAuthenticated, userType } = useAuthState();
   const router = useRouter();
+  const { toast } = useToast();
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  
+  const isGuest = userType === 'guest';
+  
+  // Handle client-side mounting
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   useEffect(() => {
-    if (address && isConnected) {
-      setWalletConnected(true);
-    } else {
-      setWalletConnected(false);
+    if (!isMounted) return;
+    
+    try {
+      if (address && isConnected) {
+        setWalletConnected(true);
+      } else {
+        setWalletConnected(false);
+      }
+    } catch (error) {
+      console.error('Error updating wallet connection state:', error);
     }
-  }, [address, isConnected, setWalletConnected]);
+  }, [address, isConnected, setWalletConnected, isMounted]);
 
   const handleSignIn = () => {
     router.push('/login');
   };
 
+  // Handle errors in the ConnectButton for guest users
+  const handleOnError = (error) => {
+    console.error('Wallet connection error:', error);
+    toast({
+      title: "Connection Error",
+      description: "Failed to connect wallet. Please try again.",
+      variant: "destructive",
+    });
+    setIsConnecting(false);
+  };
+
+  // Return a placeholder during SSR or before mounting
+  if (!isMounted) {
+    return (
+      <div className="w-full">
+        <div className="h-10 bg-indigo-600/30 rounded-md animate-pulse"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       {isAuthenticated ? (
-        // Show wallet connect button only when authenticated
-        <ConnectButton 
-          label="Connect Wallet" 
-          accountStatus="address"
-        />
+        // Show wallet connect button for authenticated users (including guests)
+        <div className="relative">
+          <ConnectButton 
+            label="Connect Wallet" 
+            accountStatus="address"
+            showBalance={!isGuest}
+            chainStatus={!isGuest ? "icon" : "none"}
+          />
+          {isGuest && (
+            <div className="text-xs text-amber-400 mt-1 text-center">
+              Connected as guest — data stored locally
+            </div>
+          )}
+        </div>
       ) : (
         // Show sign in button and message when not authenticated
         <div className="space-y-2">

@@ -11,6 +11,7 @@ import {
   verifyEmail,
   resendVerificationEmail,
   googleAuth,
+  loginAsGuest,
 } from '../../controllers/auth.controller';
 import { verifyJWT } from '../../middleware/auth';
 import config from '../../config';
@@ -32,6 +33,7 @@ const cookieOptions: CookieOptions = {
 router.post('/login', login);
 router.post('/login/wallet', loginWithWallet);
 router.post('/login/google', googleAuth);
+router.post('/login/guest', loginAsGuest);
 router.post('/register', register);
 router.post('/logout', logout);
 router.post('/verify-email', verifyEmail);

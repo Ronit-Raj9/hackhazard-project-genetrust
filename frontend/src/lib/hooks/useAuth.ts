@@ -16,7 +16,7 @@
  * import { useAuthState, useAuthMethods } from '@/lib/hooks/useAuth';
  */
 
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { authAPI } from '../api';
 import { useUserStore } from '../store';
@@ -28,6 +28,14 @@ import {
   AuthDispatchContext,
   AuthMethodsContext
 } from '../contexts/AuthContext';
+import { getGuestId, isGuestSessionActive, loadGuestData } from '../utils/guestStorage';
+
+// Extend Window interface to include our custom event emitter
+declare global {
+  interface Window {
+    authEvents?: any;
+  }
+}
 
 // Create a simple event system to broadcast auth state changes
 class AuthEventEmitter {
@@ -47,114 +55,19 @@ class AuthEventEmitter {
   }
 }
 
-// Create a unique ID for guest users
-const generateGuestId = (): string => {
-  return 'guest_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-};
-
-// Guest user type
-interface GuestUser {
-  id: string;
-  name: string;
-  email?: string;
-  walletAddress?: string;
-  role: string;
-  isGuest: true;
-  guestId: string;
-  createdAt: number;
-  preferences?: {
-    theme?: string;
-    aiVoice?: string;
-  };
-  profileImageUrl?: string;
-  authProvider?: string;
-  isVerified?: boolean;
-}
-
-// Guest user storage management
-const guestStorage = {
-  setGuestUser: (guestUser: GuestUser) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('guest_user', JSON.stringify(guestUser));
-    }
-  },
-  
-  getGuestUser: (): GuestUser | null => {
-    if (typeof window !== 'undefined') {
-      const guestUserJson = localStorage.getItem('guest_user');
-      if (guestUserJson) {
-        try {
-          return JSON.parse(guestUserJson);
-        } catch (e) {
-          console.error('Failed to parse guest user from localStorage:', e);
-        }
-      }
-    }
-    return null;
-  },
-  
-  clearGuestUser: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('guest_user');
-    }
-  },
-  
-  // Store data for guest users
-  storeGuestData: (key: string, data: any) => {
-    if (typeof window !== 'undefined') {
-      const guestUser = guestStorage.getGuestUser();
-      if (guestUser) {
-        const storageKey = `guest_data_${guestUser.guestId}_${key}`;
-        localStorage.setItem(storageKey, JSON.stringify(data));
-      }
-    }
-  },
-  
-  // Get data for guest users
-  getGuestData: (key: string): any => {
-    if (typeof window !== 'undefined') {
-      const guestUser = guestStorage.getGuestUser();
-      if (guestUser) {
-        const storageKey = `guest_data_${guestUser.guestId}_${key}`;
-        const data = localStorage.getItem(storageKey);
-        if (data) {
-          try {
-            return JSON.parse(data);
-          } catch (e) {
-            console.error(`Failed to parse guest data for key "${key}":`, e);
-          }
-        }
-      }
-    }
-    return null;
-  },
-  
-  // Clear all guest data
-  clearAllGuestData: (guestId: string) => {
-    if (typeof window !== 'undefined') {
-      // Find all localStorage keys associated with this guest
-      const keysToRemove = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith(`guest_data_${guestId}_`)) {
-          keysToRemove.push(key);
-        }
-      }
-      
-      // Remove each key
-      keysToRemove.forEach(key => {
-        localStorage.removeItem(key);
-      });
-    }
-  }
-};
-
 export const authEvents = new AuthEventEmitter();
+
+// Make authEvents available globally for use in interceptors
+if (typeof window !== 'undefined') {
+  window.authEvents = authEvents;
+}
 
 export function useAuth(requireAuth: boolean = false) {
   const router = useRouter();
   const { user, setUser, isLoading, setLoading, error, setError } = useUserStore();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [userType, setUserType] = useState<'registered' | 'guest' | null>(null);
+  const [guestId, setGuestId] = useState<string | null>(null);
 
   // Subscribe to auth events
   useEffect(() => {
@@ -170,19 +83,8 @@ export function useAuth(requireAuth: boolean = false) {
 
   // Check if user is authenticated when component mounts
   useEffect(() => {
-    // Skip the auth check if we're on specific pages
-    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-    const isLoginPage = pathname === '/login';
-    const isHomePage = pathname === '/';
-    const isRegisterPage = pathname === '/register';
-    const isChainSightPage = pathname.includes('/chainSight');
-    
-    // Don't auto-check auth on these pages unless specifically required
-    if ((isLoginPage || isHomePage || isRegisterPage || isChainSightPage) && !requireAuth) {
-      setIsInitialized(true);
-      return;
-    }
-    
+    // Always check authentication status regardless of the page
+    // This ensures consistent auth state across all routes
     checkAuth();
   }, [requireAuth, router, setError, setLoading, setUser]);
   
@@ -190,23 +92,50 @@ export function useAuth(requireAuth: boolean = false) {
     try {
       setLoading(true);
       
-      // Check for guest login first
-      const guestUser = guestStorage.getGuestUser();
-      if (guestUser) {
-        console.log('Found guest user session:', guestUser.id);
-        setUser(guestUser);
+      // Check for guest session first
+      const guestId = getGuestId();
+      if (guestId && isGuestSessionActive()) {
+        // Restore guest session
+        setUserType('guest');
+        setGuestId(guestId);
+        
+        // Load guest data if needed
+        const guestData = loadGuestData(guestId);
+        
+        // Set dummy user for guest
+        setUser({
+          id: guestId,
+          name: `Guest-${guestId.substring(0, 8)}`,
+          role: 'guest',
+          isGuest: true
+        });
+        
         setError(null);
         setLoading(false);
         setIsInitialized(true);
         return;
       }
       
-      // If not a guest, attempt to get current user (this will use cookies or token header)
+      // Check if token exists in localStorage
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        // Set token for API calls
+        const api = authAPI as any;
+        if (api.setToken) {
+          api.setToken(token);
+        }
+      }
+      
+      // If no guest session, attempt to get current user (this will use cookies or token header)
       const response = await authAPI.getCurrentUser();
       setUser(response.data.data.user);
+      setUserType('registered');
+      setGuestId(null);
       setError(null);
     } catch (err: any) {
       setUser(null);
+      setUserType(null);
+      setGuestId(null);
       
       // Handle network errors gracefully
       if (!err.response) {
@@ -215,82 +144,20 @@ export function useAuth(requireAuth: boolean = false) {
       }
       
       // Only redirect if auth is required for this route and it's not a network error
-      if (requireAuth && err.response) {
-        router.push('/login');
+      if (requireAuth && err.response && err.response.status === 401) {
+        // Check if we're on ChainSight page - don't redirect there
+        const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+        const isChainSightPage = pathname.includes('/chainSight');
+        
+        // Don't redirect from ChainSight page even if auth fails
+        if (!isChainSightPage) {
+          router.push('/login');
+        }
       }
     } finally {
       setLoading(false);
       setIsInitialized(true);
     }
-  };
-
-  // Login as guest
-  const loginAsGuest = () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Generate a unique guest ID
-      const guestId = generateGuestId();
-      
-      // Create guest user object
-      const guestUser: GuestUser = {
-        id: guestId,
-        name: 'Guest User',
-        isGuest: true,
-        guestId,
-        createdAt: Date.now(),
-        role: 'user',
-        email: undefined,
-        walletAddress: undefined,
-        preferences: {
-          theme: 'dark',
-          aiVoice: 'default'
-        },
-        profileImageUrl: undefined,
-        authProvider: 'guest',
-        isVerified: true
-      };
-      
-      // Store guest user info in localStorage
-      guestStorage.setGuestUser(guestUser);
-      
-      // Set user in state
-      setUser(guestUser as any);
-      
-      // Broadcast auth state change
-      authEvents.emit('auth_state_changed', { isAuthenticated: true, isGuest: true });
-      
-      return guestUser;
-    } catch (err: any) {
-      const errorMessage = 'Failed to create guest session';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Continue from login/register as guest to complete profile later
-  const continueAsGuest = () => {
-    loginAsGuest();
-    // Navigate to dashboard
-    router.push('/dashboard');
-  };
-
-  // Check if current user is a guest
-  const isGuest = () => {
-    return !!user && 'isGuest' in user && user.isGuest === true;
-  };
-
-  // Get guest data by key
-  const getGuestData = (key: string) => {
-    return guestStorage.getGuestData(key);
-  };
-  
-  // Store guest data by key
-  const storeGuestData = (key: string, data: any) => {
-    guestStorage.storeGuestData(key, data);
   };
 
   // Login with wallet
@@ -342,14 +209,6 @@ export function useAuth(requireAuth: boolean = false) {
       setLoading(true);
       setError(null);
       const response = await authAPI.login(email, password);
-      
-      // Clear any guest data if we're transitioning from guest to logged in
-      const guestUser = guestStorage.getGuestUser();
-      if (guestUser) {
-        guestStorage.clearGuestUser();
-        guestStorage.clearAllGuestData(guestUser.guestId);
-      }
-      
       setUser(response.data.data.user);
       // Broadcast auth state change
       authEvents.emit('auth_state_changed', { isAuthenticated: true });
@@ -363,20 +222,55 @@ export function useAuth(requireAuth: boolean = false) {
     }
   };
 
+  // Login as guest
+  const loginAsGuest = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await authAPI.loginAsGuest();
+      setUser(response.data.data.user);
+      setUserType('guest');
+      setGuestId(response.data.data.user?.id || null);
+      // Broadcast auth state change
+      authEvents.emit('auth_state_changed', { isAuthenticated: true, isGuest: true });
+      return response.data.data;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Guest login failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Start a guest session (simpler method for components that don't need the full login flow)
+  const startGuestSession = async () => {
+    try {
+      const userData = await loginAsGuest();
+      return userData;
+    } catch (error) {
+      console.error('Failed to start guest session:', error);
+      return null;
+    }
+  };
+  
+  // End a guest session
+  const endGuestSession = async () => {
+    try {
+      await logout();
+      setUserType(null);
+      setGuestId(null);
+    } catch (error) {
+      console.error('Failed to end guest session:', error);
+    }
+  };
+
   // Register with email and password
   const register = async (email: string, password: string, name: string) => {
     try {
       setLoading(true);
       setError(null);
       const response = await authAPI.register(email, password, name);
-      
-      // Clear any guest data if we're transitioning from guest to registered
-      const guestUser = guestStorage.getGuestUser();
-      if (guestUser) {
-        guestStorage.clearGuestUser();
-        guestStorage.clearAllGuestData(guestUser.guestId);
-      }
-      
       setUser(response.data.data.user);
       // Broadcast auth state change
       authEvents.emit('auth_state_changed', { isAuthenticated: true });
@@ -443,26 +337,55 @@ export function useAuth(requireAuth: boolean = false) {
     try {
       setLoading(true);
       
-      // Check if guest user
-      if (isGuest()) {
-        // For guest users, just clear local storage data
-        const guestUser = guestStorage.getGuestUser();
-        if (guestUser) {
-          guestStorage.clearGuestUser();
-          guestStorage.clearAllGuestData(guestUser.guestId);
+      // First clear all authentication data in memory and storage
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('guestId');
+      localStorage.removeItem('isGuestSessionActive');
+      
+      // Clear user data
+      setUser(null);
+      setUserType(null);
+      setGuestId(null);
+      
+      // Safely attempt to clear auth headers if they exist
+      try {
+        // Get the API instance
+        const api = authAPI as any;
+        
+        // Only try to modify headers if api and its properties exist
+        if (api && typeof api === 'object') {
+          // Clear Authorization header directly from axios defaults if possible
+          if (api.defaults?.headers?.common?.Authorization) {
+            delete api.defaults.headers.common.Authorization;
+          }
+          
+          // Also try the string format if that's being used
+          if (api.defaults?.headers?.common && api.defaults.headers.common['Authorization']) {
+            delete api.defaults.headers.common['Authorization'];
+          }
         }
-        setUser(null);
-        // Broadcast auth state change
-        authEvents.emit('auth_state_changed', { isAuthenticated: false });
-        router.push('/login');
-        return;
+      } catch (headerError) {
+        // Log but continue with logout even if headers can't be cleared
+        console.warn('Failed to clear auth headers:', headerError);
       }
       
-      // For regular users, call API logout
-      await authAPI.logout();
-      setUser(null);
-      // Broadcast auth state change
+      // Then call backend logout API
+      try {
+        await authAPI.logout();
+      } catch (err) {
+        console.warn('Backend logout API call failed, but proceeding with local logout');
+      }
+      
+      // Broadcast auth state change to all components
       authEvents.emit('auth_state_changed', { isAuthenticated: false });
+      
+      // Complete current state updates before navigation
+      await new Promise(resolve => {
+        // Let React finish its current update cycle
+        setTimeout(resolve, 100);
+      });
+      
+      // Navigate to login page
       router.push('/login');
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Logout failed';
@@ -519,12 +442,12 @@ export function useAuth(requireAuth: boolean = false) {
     logout,
     resendVerification,
     verifyEmail,
-    loginAsGuest,
-    continueAsGuest,
-    isGuest,
-    getGuestData,
-    storeGuestData,
     isInitialized,
+    loginAsGuest,
+    startGuestSession,
+    endGuestSession,
+    userType,
+    guestId,
   };
 }
 
@@ -552,7 +475,9 @@ export const useAuthState = (): AuthState => {
         user: storeAuth.user,
         isAuthenticated: !!storeAuth.user,
         isLoading: storeAuth.isLoading,
-        error: storeAuth.error
+        error: storeAuth.error,
+        userType: null,
+        guestId: null
       };
     }
     
@@ -564,7 +489,9 @@ export const useAuthState = (): AuthState => {
       user: storeAuth.user,
       isAuthenticated: !!storeAuth.user,
       isLoading: storeAuth.isLoading,
-      error: storeAuth.error
+      error: storeAuth.error,
+      userType: null,
+      guestId: null
     };
   }
 };
@@ -595,7 +522,11 @@ export const useAuthMethods = (): AuthContextMethods => {
       forgotPassword,
       resetPassword,
       changePassword,
-      logout
+      logout,
+      verifyEmail,
+      resendVerification,
+      startGuestSession,
+      endGuestSession
     } = useAuth();
     
     // Return with required methods to match AuthContextMethods interface
@@ -608,15 +539,10 @@ export const useAuthMethods = (): AuthContextMethods => {
       resetPassword,
       changePassword,
       logout,
-      // Add the missing methods to satisfy the interface
-      verifyEmail: async (token: string) => {
-        console.warn('verifyEmail called from fallback implementation');
-        return false;
-      },
-      resendVerification: async (email: string) => {
-        console.warn('resendVerification called from fallback implementation');
-        return false;
-      }
+      verifyEmail,
+      resendVerification,
+      startGuestSession,
+      endGuestSession
     };
   }
   

@@ -2,6 +2,9 @@
 
 import { createContext } from 'react';
 
+// Define UserType enum
+export type UserType = 'registered' | 'guest' | null;
+
 // Define the User type based on your application's requirements
 export interface User {
   id: string;
@@ -21,6 +24,8 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  userType: UserType;
+  guestId: string | null;
 }
 
 // Define the authentication actions/dispatch
@@ -29,7 +34,9 @@ export type AuthAction =
   | { type: 'LOGOUT_SUCCESS' }
   | { type: 'AUTH_ERROR'; payload: string }
   | { type: 'CLEAR_ERROR' }
-  | { type: 'SET_LOADING'; payload: boolean };
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'START_GUEST_SESSION'; payload: { guestId: string } }
+  | { type: 'END_GUEST_SESSION' };
 
 // Define the authentication methods that will be exposed via the context
 export interface AuthContextMethods {
@@ -43,11 +50,14 @@ export interface AuthContextMethods {
   forgotPassword: (email: string) => Promise<boolean>;
   resetPassword: (token: string, password: string) => Promise<boolean>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  startGuestSession: () => void;
+  endGuestSession: () => void;
 }
 
 // Define the combined interface for the state context
 export interface AuthContextInterface extends AuthState, AuthContextMethods {
   isInitialized: boolean;
+  isGuest: boolean;
 }
 
 // Create the initial state
@@ -56,6 +66,8 @@ export const initialAuthState: AuthState = {
   isAuthenticated: false,
   isLoading: true,
   error: null,
+  userType: null,
+  guestId: null,
 };
 
 // Create contexts
@@ -73,6 +85,8 @@ export const authReducer = (state: AuthState, action: AuthAction): AuthState => 
         user: action.payload,
         isLoading: false,
         error: null,
+        userType: 'registered',
+        guestId: null, // Clear any guest ID when logging in
       };
     case 'LOGOUT_SUCCESS':
       return {
@@ -81,6 +95,8 @@ export const authReducer = (state: AuthState, action: AuthAction): AuthState => 
         user: null,
         isLoading: false,
         error: null,
+        userType: null,
+        guestId: null,
       };
     case 'AUTH_ERROR':
       return {
@@ -97,6 +113,26 @@ export const authReducer = (state: AuthState, action: AuthAction): AuthState => 
       return {
         ...state,
         isLoading: action.payload,
+      };
+    case 'START_GUEST_SESSION':
+      return {
+        ...state,
+        isAuthenticated: true,
+        user: null,
+        isLoading: false,
+        error: null,
+        userType: 'guest',
+        guestId: action.payload.guestId,
+      };
+    case 'END_GUEST_SESSION':
+      return {
+        ...state,
+        isAuthenticated: false,
+        user: null,
+        isLoading: false,
+        error: null,
+        userType: null,
+        guestId: null,
       };
     default:
       return state;

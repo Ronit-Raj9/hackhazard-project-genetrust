@@ -21,6 +21,10 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
+import React from 'react';
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { PersistentConnectButton } from './chainSight/PersistentConnectButton';
 
 // Animation variants
 const fadeIn = {
@@ -47,6 +51,12 @@ const staggerContainer = {
   }
 };
 
+// Fix the dynamic import with a proper client-side loading approach
+const GuestDataExample = dynamic(() => import('./GuestDataExample'), {
+  loading: () => <div className="text-center py-4 animate-pulse">Loading guest data...</div>,
+  ssr: false, // Disable SSR to avoid hydration issues
+});
+
 export default function DashboardClient() {
   const { user, logout, changePassword, isLoading: authLoading } = useAuth(true);
   const [profile, setProfile] = useState<any>(null);
@@ -58,6 +68,12 @@ export default function DashboardClient() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Add a useEffect to handle client-side mounting
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   // Wagmi hooks for wallet connection
   const { address, isConnected } = useAccount();
@@ -101,27 +117,50 @@ export default function DashboardClient() {
   // Handle wallet connection
   const connectWallet = async () => {
     try {
-      const metaMaskConnector = connectors.find(connector => connector.name === 'MetaMask');
-      if (metaMaskConnector) {
-        await connect({ connector: metaMaskConnector });
+      // For guest users, just show a success toast and don't try to connect via Wagmi
+      if (user?.role === 'guest') {
+        toast.success('Wallet connected in guest mode');
+        return;
+      }
+      
+      // Check if connectors are available
+      if (!connectors || connectors.length === 0) {
+        toast.error('Wallet connectors not available');
+        return;
+      }
+      
+      // Find a suitable connector, preferring MetaMask if available
+      const metaMaskConnector = connectors.find(connector => connector?.name === 'MetaMask');
+      const anyConnector = connectors[0];
+      
+      const selectedConnector = metaMaskConnector || anyConnector;
+      
+      if (selectedConnector) {
+        await connect({ connector: selectedConnector });
         toast.success('Wallet connected successfully');
       } else {
-        toast.error('MetaMask connector not found');
+        toast.error('No wallet connectors found');
       }
     } catch (error) {
       console.error('Failed to connect wallet:', error);
-      toast.error('Failed to connect wallet');
+      toast.error(error.message || 'Failed to connect wallet');
     }
   };
 
   // Handle wallet disconnection
   const disconnectWallet = () => {
     try {
+      // For guest users, just show a success toast
+      if (user?.role === 'guest') {
+        toast.success('Wallet disconnected in guest mode');
+        return;
+      }
+      
       disconnect();
       toast.success('Wallet disconnected');
     } catch (error) {
       console.error('Failed to disconnect wallet:', error);
-      toast.error('Failed to disconnect wallet');
+      toast.error(error.message || 'Failed to disconnect wallet');
     }
   };
 
@@ -228,6 +267,32 @@ export default function DashboardClient() {
             initial="hidden"
             animate="visible"
           >
+          {/* Guest Data Example - For demonstration */}
+          {isMounted && user?.role === 'guest' && (
+            <motion.div variants={fadeIn} custom={-1} className="md:col-span-3 mb-6">
+              <Card className="backdrop-blur-sm bg-gray-900/30 border-amber-500/20 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-900/10 via-transparent to-amber-900/10 rounded-lg"></div>
+                <CardHeader className="relative pb-4 border-b border-amber-500/10">
+                  <CardTitle className="text-amber-100">Guest Mode Active</CardTitle>
+                  <CardDescription className="text-amber-300/70">
+                    You are currently using a guest account. Your data is stored locally in this browser.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6 relative">
+                  <div className="mb-6">
+                    <p className="text-white mb-4">This example demonstrates how your data is handled in guest mode:</p>
+                    <div className="mt-4">
+                      {/* Import and use the GuestDataExample component */}
+                      <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
+                        <GuestDataExample />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+          
           {/* User Profile Card */}
             <motion.div variants={fadeIn} custom={0}>
               <Card className="backdrop-blur-sm bg-gray-900/30 border-indigo-500/20 overflow-hidden">

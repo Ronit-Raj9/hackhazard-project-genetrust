@@ -3498,3 +3498,520 @@
     at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
     at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
     at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 10:09:08 error: Uncaught Exception: listen EADDRINUSE: address already in use :::8000
+2025-04-19 16:58:54 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 16:58:54 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 16:58:54 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 16:58:54 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 16:58:55 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 16:58:55 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 16:58:55 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 16:58:55 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 16:58:58 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 16:58:58 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 16:59:12 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 16:59:12 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 16:59:12 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 16:59:12 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 16:59:12 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 16:59:12 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:00:18 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:00:18 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:00:18 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:00:18 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:00:18 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:00:18 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:00:45 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:00:45 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:00:45 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:00:45 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:00:45 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:00:45 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:02:06 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:02:06 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:02:06 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:02:06 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:02:06 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:02:06 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:02:29 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:02:29 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:02:29 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:02:29 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:02:30 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:02:30 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:02:30 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:02:30 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:06:47 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:06:47 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:06:47 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:06:47 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:06:49 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:06:49 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:06:53 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:06:53 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:08:56 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:08:56 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:08:56 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:08:56 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:08:58 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:08:58 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:08:58 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:08:58 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:09:36 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:09:36 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:09:36 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:09:36 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:09:37 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:09:37 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:09:41 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:09:41 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:10:09 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:10:09 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:10:56 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:10:56 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:10:56 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:10:56 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:10:57 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:10:57 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:11:05 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:11:05 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:11:08 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:11:08 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:11:30 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:11:30 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:11:30 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:11:30 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:11:31 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:11:31 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 17:11:34 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 17:11:34 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)

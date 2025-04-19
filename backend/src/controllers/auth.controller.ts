@@ -8,6 +8,7 @@ import config from '../config';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import emailService from '../utils/email';
+import { v4 as uuidv4 } from 'uuid';
 
 // Extended request with typed user property
 interface AuthenticatedRequest extends Request {
@@ -39,6 +40,54 @@ const clearCookieOptions: CookieOptions = {
   sameSite: config.NODE_ENV === 'development' ? 'lax' : 'none',
   path: '/',
 };
+
+/**
+ * Login as a guest user
+ */
+export const loginAsGuest = asyncHandler(async (req: Request, res: Response) => {
+  // Generate a unique ID for the guest
+  const guestId = uuidv4();
+  
+  // Create a temporary guest user
+  const guestUser = await User.create({
+    name: `Guest-${guestId.substring(0, 8)}`,
+    role: 'guest',
+    authProvider: 'guest',
+    isVerified: true, // Guest users are auto-verified
+    guestId: guestId,
+  });
+
+  // Create profile
+  await Profile.create({
+    userId: guestUser._id,
+    onboardingCompleted: false,
+  });
+
+  // Generate access token
+  const accessToken = guestUser.generateAccessToken();
+
+  // Set cookie
+  res.cookie('accessToken', accessToken, cookieOptions);
+
+  // Return response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user: {
+          id: guestUser._id,
+          name: guestUser.name,
+          role: guestUser.role,
+          isGuest: true,
+          guestId: guestId,
+          preferences: guestUser.preferences,
+        },
+        accessToken,
+      },
+      'Guest login successful'
+    )
+  );
+});
 
 /**
  * Login or register user with wallet address

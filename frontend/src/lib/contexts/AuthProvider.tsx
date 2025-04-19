@@ -8,9 +8,19 @@ import {
   AuthMethodsContext,
   authReducer, 
   initialAuthState,
-  AuthContextMethods
+  AuthContextMethods,
+  User,
+  AuthAction
 } from './AuthContext';
 import { authAPI } from '@/lib/api';
+import { authEvents } from '@/lib/hooks/useAuth';
+import { 
+  createGuestSession, 
+  endGuestSession as clearGuestSession, 
+  getGuestId, 
+  loadGuestData,
+  saveGuestData
+} from '@/lib/utils/guestStorage';
 
 // Create a loading spinner component
 const FullPageLoader = () => (
@@ -46,6 +56,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           localStorage.setItem('auth_token', response.data.data.accessToken);
         }
         
+        // Clear any existing guest session data when formally logging in
+        clearGuestSession();
+        
         dispatch({ type: 'LOGIN_SUCCESS', payload: response.data.data.user });
         return Promise.resolve(response.data.data);
       } catch (err: any) {
@@ -62,6 +75,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         dispatch({ type: 'CLEAR_ERROR' });
         
         const response = await authAPI.register(email, password, name);
+        
+        // Clear any existing guest session data when registering
+        clearGuestSession();
+        
         dispatch({ type: 'LOGIN_SUCCESS', payload: response.data.data.user });
         return Promise.resolve();
       } catch (err: any) {
@@ -75,15 +92,61 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     logout: async () => {
       try {
         dispatch({ type: 'SET_LOADING', payload: true });
-        await authAPI.logout();
+        
+        // First clear all authentication storage in browser
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('guestId');
+        localStorage.removeItem('isGuestSessionActive');
+        
+        // Safely attempt to clear auth headers if they exist
+        try {
+          // Get the API instance
+          const api = authAPI as any;
+          
+          // Only try to modify headers if api and its properties exist
+          if (api && typeof api === 'object') {
+            // Clear Authorization header directly from axios defaults if possible
+            if (api.defaults?.headers?.common?.Authorization) {
+              delete api.defaults.headers.common.Authorization;
+            }
+            
+            // Also try the string format if that's being used
+            if (api.defaults?.headers?.common && api.defaults.headers.common['Authorization']) {
+              delete api.defaults.headers.common['Authorization'];
+            }
+          }
+        } catch (headerError) {
+          // Log but continue with logout even if headers can't be cleared
+          console.warn('Failed to clear auth headers:', headerError);
+        }
+        
+        // Then call backend logout
+        try {
+          await authAPI.logout();
+        } catch (err) {
+          console.warn('Backend logout API call failed, but proceeding with local logout');
+        }
+        
+        // Update auth state
         dispatch({ type: 'LOGOUT_SUCCESS' });
-        router.push('/login');
+        
+        // Broadcast auth state change to all components
+        // This needs to come after the dispatch so components get the latest state
+        authEvents.emit('auth_state_changed', { isAuthenticated: false });
+        
+        // Delay redirect slightly to allow state updates to propagate
+        setTimeout(() => {
+          router.push('/login');
+        }, 50);
+        
         return Promise.resolve();
       } catch (err: any) {
         console.error('Logout error:', err);
         const errorMessage = err.response?.data?.message || 'Logout failed';
         dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
         return Promise.reject(err);
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     },
 
@@ -104,6 +167,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           if (token) {
             localStorage.setItem('auth_token', token);
           }
+          
+          // Clear any existing guest session data when formally logging in
+          clearGuestSession();
           
           dispatch({ type: 'LOGIN_SUCCESS', payload: response.data.data.user });
           return Promise.resolve();
@@ -129,6 +195,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             // Save a mock token for development
             localStorage.setItem('auth_token', 'dev_wallet_auth_token');
             
+            // Clear any existing guest session data when formally logging in
+            clearGuestSession();
+            
             dispatch({ type: 'LOGIN_SUCCESS', payload: mockUser });
             return Promise.resolve();
           } else {
@@ -149,6 +218,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         } else {
           errorMessage = err.response?.data?.message || 'Login failed';
         }
+        
+        // Clear any existing guest session data when formally logging in
+        clearGuestSession();
         
         dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
         return Promise.reject(err);
@@ -173,6 +245,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           localStorage.setItem('auth_token', token);
         }
         
+        // Clear any existing guest session data when formally logging in
+        clearGuestSession();
+        
         dispatch({ type: 'LOGIN_SUCCESS', payload: response.data.data.user });
         return Promise.resolve();
       } catch (err: any) {
@@ -188,6 +263,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         } else {
           errorMessage = err.response?.data?.message || 'Login failed';
         }
+        
+        // Clear any existing guest session data when formally logging in
+        clearGuestSession();
         
         dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
         return Promise.reject(err);
@@ -274,6 +352,94 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
         return false;
       }
+    },
+
+    startGuestSession: async () => {
+      try {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        dispatch({ type: 'CLEAR_ERROR' });
+        
+        // Try to get a guest ID from the guestStorage utility if available
+        let guestId = getGuestId();
+        
+        // If no guest ID exists, create a new guest session with the backend
+        if (!guestId) {
+          try {
+            // Try the backend first to get a consistent guest ID
+            const response = await authAPI.loginAsGuest();
+            guestId = response.data.data.user.guestId || '';
+            
+            // Store the guest ID in localStorage if it wasn't returned properly
+            if (!guestId) {
+              guestId = createGuestSession();
+            } else {
+              // Save the backend-provided guestId to localStorage
+              localStorage.setItem('guestId', guestId);
+              localStorage.setItem('isGuestSessionActive', 'true');
+              saveGuestData(guestId, {});
+            }
+            
+            // Update auth state with guest user from backend
+            dispatch({ 
+              type: 'START_GUEST_SESSION', 
+              payload: { guestId }
+            });
+            
+            return Promise.resolve(guestId);
+          } catch (err) {
+            console.warn('Backend guest login failed, falling back to local-only guest session');
+            // Fall back to client-side guest session if backend fails
+            guestId = createGuestSession();
+          }
+        }
+        
+        // Update auth state with guest session
+        dispatch({ 
+          type: 'START_GUEST_SESSION', 
+          payload: { guestId: guestId || '' }
+        });
+        
+        return Promise.resolve(guestId || '');
+      } catch (err: any) {
+        console.error('Failed to start guest session:', err);
+        dispatch({ type: 'AUTH_ERROR', payload: 'Failed to start guest session' });
+        return Promise.reject(err);
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
+    },
+
+    endGuestSession: async () => {
+      try {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        dispatch({ type: 'CLEAR_ERROR' });
+        
+        // Get the current guest ID
+        const guestId = getGuestId();
+        
+        // Clear guest session data from localStorage
+        if (guestId) {
+          clearGuestSession();
+        }
+        
+        // Try to logout from backend
+        try {
+          await authAPI.logout();
+        } catch (err) {
+          console.warn('Backend logout failed, but guest session was cleared locally');
+        }
+        
+        // Update auth state
+        dispatch({ type: 'END_GUEST_SESSION' });
+        
+        return Promise.resolve();
+      } catch (err: any) {
+        console.error('Failed to end guest session:', err);
+        dispatch({ type: 'AUTH_ERROR', payload: 'Failed to end guest session' });
+        return Promise.reject(err);
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
     }
   };
 
@@ -281,22 +447,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        // Check if we're on specific pages where auth check isn't necessary
-        if (typeof window !== 'undefined') {
-          const pathname = window.location.pathname;
-          const isLoginPage = pathname === '/login' || pathname.includes('/login');
-          const isHomePage = pathname === '/';
-          const isRegisterPage = pathname === '/register';
-          const isChainSightPage = pathname.includes('/chainSight');
-
-          // Don't check auth on these pages to avoid unnecessary redirects
-          if (isLoginPage || isHomePage || isRegisterPage || isChainSightPage) {
-            dispatch({ type: 'SET_LOADING', payload: false });
-            setIsInitialized(true);
-            return;
-          }
-        }
-
+        // Always check auth status regardless of the page
+        // This ensures consistent auth state across all routes
+        
         // First check if we have a token in localStorage as fallback
         const token = localStorage.getItem('auth_token');
         if (token) {
@@ -305,6 +458,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           const api = authAPI as any;
           if (api.setToken) {
             api.setToken(token);
+          }
+        }
+
+        // Check for guest session
+        const guestId = localStorage.getItem('guestId');
+        const isGuest = localStorage.getItem('isGuestSessionActive') === 'true';
+        
+        if (guestId && isGuest) {
+          // Load guest data
+          try {
+            const guestData = JSON.parse(localStorage.getItem(`guest_data_${guestId}`) || '{}');
+            // Create a mock guest user
+            const mockUser = {
+              id: guestId,
+              name: `Guest-${guestId.substring(0, 8)}`,
+              role: 'guest',
+              isGuest: true
+            };
+            dispatch({ 
+              type: 'START_GUEST_SESSION', 
+              payload: { guestId }
+            });
+            dispatch({ type: 'SET_LOADING', payload: false });
+            setIsInitialized(true);
+            
+            // Skip API call if we're in guest mode
+            return;
+          } catch (err) {
+            console.warn('Failed to load guest data, will try standard auth', err);
           }
         }
 
@@ -321,14 +503,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             localStorage.removeItem('auth_token');
             dispatch({ type: 'LOGOUT_SUCCESS' });
             
-            // Check if current route requires authentication
-            const pathname = window.location.pathname;
-            const protectedRoutes = ['/dashboard', '/profile', '/settings', '/projects'];
-            const requiresAuth = protectedRoutes.some(route => pathname.startsWith(route));
-            
-            if (requiresAuth) {
-              console.log('Protected route. Redirecting to login');
-              router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+            // Check if we're on a page where auth check isn't necessary
+            if (typeof window !== 'undefined') {
+              const pathname = window.location.pathname;
+              const isLoginPage = pathname === '/login' || pathname.includes('/login');
+              const isHomePage = pathname === '/';
+              const isRegisterPage = pathname === '/register';
+              
+              // For ChainSight page, we want to stay there even if not authenticated
+              // to allow users to see the anonymous view
+              const isChainSightPage = pathname.includes('/chainSight');
+              
+              // Check if current route requires authentication
+              const protectedRoutes = ['/dashboard', '/profile', '/settings', '/projects'];
+              const requiresAuth = protectedRoutes.some(route => pathname.startsWith(route));
+              
+              if (requiresAuth && !isChainSightPage) {
+                console.log('Protected route. Redirecting to login');
+                router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+              }
             }
           } else {
             // For network errors or unexpected errors, we show a message but don't redirect

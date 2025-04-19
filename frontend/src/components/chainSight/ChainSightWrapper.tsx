@@ -12,6 +12,7 @@ import { GenomicRecord } from '@/lib/stores/chainSightStore';
 import { GenomicDashboard } from '@/components/chainSight/genomic/Dashboard';
 import { TransactionHistory } from './TransactionHistory';
 import { useChainSightStore } from '@/lib/stores/chainSightStore';
+import { useAuthState, authEvents } from '@/lib/hooks/useAuth';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -42,10 +43,75 @@ export default function ChainSightWrapper() {
   const [isClient, setIsClient] = useState(false);
   const { wallet } = useChainSightStore();
   
+  // Key state to force refresh of child components
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { isAuthenticated, userType, isLoading } = useAuthState();
+  
   // Only run on client side
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    
+    // Subscribe to auth events to force refresh of components
+    const unsubscribe = authEvents.subscribe((event: string, data?: any) => {
+      if (event === 'auth_state_changed' || event === 'refresh_requested') {
+        console.log(`ChainSight: ${event} event received`, data);
+        
+        // If explicitly logged out, update UI immediately
+        if (data && data.isAuthenticated === false) {
+          console.log('User logged out - updating ChainSight UI');
+        }
+        
+        // Increment key to force re-render of children
+        setRefreshKey(prev => prev + 1);
+        
+        // Check auth state from localStorage/cookies
+        const token = localStorage.getItem('auth_token');
+        const guestId = localStorage.getItem('guestId');
+        const isGuestActive = localStorage.getItem('isGuestSessionActive') === 'true';
+        
+        console.log('ChainSight refresh with auth state:', {
+          hasToken: !!token,
+          isGuestSession: !!guestId && isGuestActive,
+          event,
+          data
+        });
+      }
+    });
+    
+    // Check auth state on mount
+    const checkAuthInterval = setInterval(() => {
+      if (document.hidden) return; // Don't check if tab is not visible
+      
+      // Check if user is logged in based on local storage values
+      const token = localStorage.getItem('auth_token');
+      const guestId = localStorage.getItem('guestId');
+      const isGuestActive = localStorage.getItem('isGuestSessionActive') === 'true';
+      
+      // If local auth state doesn't match component state, force refresh
+      const localAuthState = !!token || (!!guestId && isGuestActive);
+      if (localAuthState !== isAuthenticated) {
+        console.log('Auth state mismatch detected - refreshing UI');
+        // Force rerender by updating key
+        setRefreshKey(prev => prev + 1);
+      }
+      
+      // Log the current authentication state
+      console.log('Current auth state in ChainSight:', {
+        isAuthenticated,
+        userType,
+        isLoading,
+        walletConnected: wallet.isConnected,
+        walletAddress: wallet.address,
+        token: !!token,
+        guestSession: !!guestId && isGuestActive
+      });
+    }, 3000);
+    
+    return () => {
+      unsubscribe();
+      clearInterval(checkAuthInterval);
+    };
+  }, [isAuthenticated, userType, isLoading, wallet]);
 
   // On mount - check container size and set global scaling if needed
   useEffect(() => {
@@ -87,6 +153,11 @@ export default function ChainSightWrapper() {
       {/* Settings button with enhanced positioning */}
       <div className="absolute top-4 right-4 z-20">
         <SettingsButton />
+      </div>
+      
+      <div className="absolute top-4 left-4 z-20 text-xs text-indigo-400/70">
+        {isAuthenticated ? 'Authenticated: Yes' : isLoading ? 'Checking auth...' : 'Authenticated: No'}
+        {userType && ` - User type: ${userType}`}
       </div>
       
       {/* Main content container */}
@@ -135,17 +206,24 @@ export default function ChainSightWrapper() {
         ) : (
           <AnimatePresence>
             <motion.div
+              key={`auth-container-${refreshKey}`}
               variants={containerVariants}
               initial="hidden"
               animate="visible"
               className="space-y-12"
             >
-              {/* Always show the WalletConnector */}
+              {/* Always show the WalletConnector - with force refresh key */}
               <motion.div 
                 variants={itemVariants}
                 className="max-w-md mx-auto"
+                key={`wallet-connector-${refreshKey}`}
               >
-                <WalletConnector />
+                <WalletConnector 
+                  // Explicitly pass auth state to ensure component has latest values
+                  forceAuthenticated={isAuthenticated}
+                  forceUserType={userType}
+                  forceAuthLoading={isLoading}
+                />
               </motion.div>
               
               {/* Only show genomic tools when wallet is connected */}

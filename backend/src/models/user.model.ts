@@ -8,10 +8,11 @@ export interface IUser extends Document {
   password?: string;
   name?: string;
   walletAddress?: string;
-  role: 'user' | 'admin';
-  authProvider?: 'email' | 'wallet' | 'google';
+  role: 'user' | 'admin' | 'guest';
+  authProvider?: 'email' | 'wallet' | 'google' | 'guest';
   isVerified: boolean;
   googleId?: string;
+  guestId?: string;
   verificationToken?: string;
   verificationExpire?: Date;
   preferences: {
@@ -57,12 +58,12 @@ const userSchema = new Schema<IUser>(
     },
     authProvider: {
       type: String,
-      enum: ['email', 'wallet', 'google'],
+      enum: ['email', 'wallet', 'google', 'guest'],
       default: 'email',
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
+      enum: ['user', 'admin', 'guest'],
       default: 'user',
     },
     isVerified: {
@@ -70,6 +71,11 @@ const userSchema = new Schema<IUser>(
       default: false,
     },
     googleId: {
+      type: String,
+      sparse: true,
+      index: true,
+    },
+    guestId: {
       type: String,
       sparse: true,
       index: true,
