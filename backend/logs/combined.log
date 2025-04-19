@@ -4105,3 +4105,9 @@
     at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
     at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
     at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 07:25:56 debug: Using MAILTRAP_API_TOKEN for Mailtrap API
+2025-04-19 07:25:57 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 07:25:57 info: Mailtrap API client initialized with token
+2025-04-19 07:25:57 info: Socket.IO initialized
+2025-04-19 07:25:57 info: Server running on port 8000
+2025-04-19 07:25:57 info: Sensor simulation started

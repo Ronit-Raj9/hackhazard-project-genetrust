@@ -47,6 +47,108 @@ class AuthEventEmitter {
   }
 }
 
+// Create a unique ID for guest users
+const generateGuestId = (): string => {
+  return 'guest_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
+// Guest user type
+interface GuestUser {
+  id: string;
+  name: string;
+  email?: string;
+  walletAddress?: string;
+  role: string;
+  isGuest: true;
+  guestId: string;
+  createdAt: number;
+  preferences?: {
+    theme?: string;
+    aiVoice?: string;
+  };
+  profileImageUrl?: string;
+  authProvider?: string;
+  isVerified?: boolean;
+}
+
+// Guest user storage management
+const guestStorage = {
+  setGuestUser: (guestUser: GuestUser) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('guest_user', JSON.stringify(guestUser));
+    }
+  },
+  
+  getGuestUser: (): GuestUser | null => {
+    if (typeof window !== 'undefined') {
+      const guestUserJson = localStorage.getItem('guest_user');
+      if (guestUserJson) {
+        try {
+          return JSON.parse(guestUserJson);
+        } catch (e) {
+          console.error('Failed to parse guest user from localStorage:', e);
+        }
+      }
+    }
+    return null;
+  },
+  
+  clearGuestUser: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('guest_user');
+    }
+  },
+  
+  // Store data for guest users
+  storeGuestData: (key: string, data: any) => {
+    if (typeof window !== 'undefined') {
+      const guestUser = guestStorage.getGuestUser();
+      if (guestUser) {
+        const storageKey = `guest_data_${guestUser.guestId}_${key}`;
+        localStorage.setItem(storageKey, JSON.stringify(data));
+      }
+    }
+  },
+  
+  // Get data for guest users
+  getGuestData: (key: string): any => {
+    if (typeof window !== 'undefined') {
+      const guestUser = guestStorage.getGuestUser();
+      if (guestUser) {
+        const storageKey = `guest_data_${guestUser.guestId}_${key}`;
+        const data = localStorage.getItem(storageKey);
+        if (data) {
+          try {
+            return JSON.parse(data);
+          } catch (e) {
+            console.error(`Failed to parse guest data for key "${key}":`, e);
+          }
+        }
+      }
+    }
+    return null;
+  },
+  
+  // Clear all guest data
+  clearAllGuestData: (guestId: string) => {
+    if (typeof window !== 'undefined') {
+      // Find all localStorage keys associated with this guest
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(`guest_data_${guestId}_`)) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      // Remove each key
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+      });
+    }
+  }
+};
+
 export const authEvents = new AuthEventEmitter();
 
 export function useAuth(requireAuth: boolean = false) {
@@ -88,7 +190,18 @@ export function useAuth(requireAuth: boolean = false) {
     try {
       setLoading(true);
       
-      // Attempt to get current user (this will use cookies or token header)
+      // Check for guest login first
+      const guestUser = guestStorage.getGuestUser();
+      if (guestUser) {
+        console.log('Found guest user session:', guestUser.id);
+        setUser(guestUser);
+        setError(null);
+        setLoading(false);
+        setIsInitialized(true);
+        return;
+      }
+      
+      // If not a guest, attempt to get current user (this will use cookies or token header)
       const response = await authAPI.getCurrentUser();
       setUser(response.data.data.user);
       setError(null);
@@ -109,6 +222,75 @@ export function useAuth(requireAuth: boolean = false) {
       setLoading(false);
       setIsInitialized(true);
     }
+  };
+
+  // Login as guest
+  const loginAsGuest = () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Generate a unique guest ID
+      const guestId = generateGuestId();
+      
+      // Create guest user object
+      const guestUser: GuestUser = {
+        id: guestId,
+        name: 'Guest User',
+        isGuest: true,
+        guestId,
+        createdAt: Date.now(),
+        role: 'user',
+        email: undefined,
+        walletAddress: undefined,
+        preferences: {
+          theme: 'dark',
+          aiVoice: 'default'
+        },
+        profileImageUrl: undefined,
+        authProvider: 'guest',
+        isVerified: true
+      };
+      
+      // Store guest user info in localStorage
+      guestStorage.setGuestUser(guestUser);
+      
+      // Set user in state
+      setUser(guestUser as any);
+      
+      // Broadcast auth state change
+      authEvents.emit('auth_state_changed', { isAuthenticated: true, isGuest: true });
+      
+      return guestUser;
+    } catch (err: any) {
+      const errorMessage = 'Failed to create guest session';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Continue from login/register as guest to complete profile later
+  const continueAsGuest = () => {
+    loginAsGuest();
+    // Navigate to dashboard
+    router.push('/dashboard');
+  };
+
+  // Check if current user is a guest
+  const isGuest = () => {
+    return !!user && 'isGuest' in user && user.isGuest === true;
+  };
+
+  // Get guest data by key
+  const getGuestData = (key: string) => {
+    return guestStorage.getGuestData(key);
+  };
+  
+  // Store guest data by key
+  const storeGuestData = (key: string, data: any) => {
+    guestStorage.storeGuestData(key, data);
   };
 
   // Login with wallet
@@ -160,6 +342,14 @@ export function useAuth(requireAuth: boolean = false) {
       setLoading(true);
       setError(null);
       const response = await authAPI.login(email, password);
+      
+      // Clear any guest data if we're transitioning from guest to logged in
+      const guestUser = guestStorage.getGuestUser();
+      if (guestUser) {
+        guestStorage.clearGuestUser();
+        guestStorage.clearAllGuestData(guestUser.guestId);
+      }
+      
       setUser(response.data.data.user);
       // Broadcast auth state change
       authEvents.emit('auth_state_changed', { isAuthenticated: true });
@@ -179,6 +369,14 @@ export function useAuth(requireAuth: boolean = false) {
       setLoading(true);
       setError(null);
       const response = await authAPI.register(email, password, name);
+      
+      // Clear any guest data if we're transitioning from guest to registered
+      const guestUser = guestStorage.getGuestUser();
+      if (guestUser) {
+        guestStorage.clearGuestUser();
+        guestStorage.clearAllGuestData(guestUser.guestId);
+      }
+      
       setUser(response.data.data.user);
       // Broadcast auth state change
       authEvents.emit('auth_state_changed', { isAuthenticated: true });
@@ -244,6 +442,23 @@ export function useAuth(requireAuth: boolean = false) {
   const logout = async () => {
     try {
       setLoading(true);
+      
+      // Check if guest user
+      if (isGuest()) {
+        // For guest users, just clear local storage data
+        const guestUser = guestStorage.getGuestUser();
+        if (guestUser) {
+          guestStorage.clearGuestUser();
+          guestStorage.clearAllGuestData(guestUser.guestId);
+        }
+        setUser(null);
+        // Broadcast auth state change
+        authEvents.emit('auth_state_changed', { isAuthenticated: false });
+        router.push('/login');
+        return;
+      }
+      
+      // For regular users, call API logout
       await authAPI.logout();
       setUser(null);
       // Broadcast auth state change
@@ -304,6 +519,11 @@ export function useAuth(requireAuth: boolean = false) {
     logout,
     resendVerification,
     verifyEmail,
+    loginAsGuest,
+    continueAsGuest,
+    isGuest,
+    getGuestData,
+    storeGuestData,
     isInitialized,
   };
 }
