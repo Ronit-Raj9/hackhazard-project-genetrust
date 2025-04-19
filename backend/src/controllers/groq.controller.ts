@@ -248,7 +248,8 @@ export const transcribeAudio = asyncHandler(async (req: Request, res: Response) 
     new ApiResponse(
       200,
       {
-        transcription: result.transcription
+        transcription: result.message,
+        confidence: result.confidence
       },
       'Audio transcription successful'
     )
@@ -278,9 +279,7 @@ export const interpretCommand = asyncHandler(async (req: Request, res: Response)
     new ApiResponse(
       200,
       {
-        intent: result.intent,
-        confidence: result.confidence,
-        actionParams: result.actionParams
+        interpretation: result.message
       },
       'Command interpretation successful'
     )

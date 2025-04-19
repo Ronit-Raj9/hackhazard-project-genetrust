@@ -163,4 +163,145 @@ export const getBlockchainGuidance = async (
   ];
 
   return await chatCompletion(messages);
+};
+
+/**
+ * Analyze lab image for safety compliance
+ * @param scenario Type of scenario to analyze
+ * @returns Analysis result with safety insights
+ */
+export const analyzeLabImage = async (scenario: string) => {
+  try {
+    // Simulate different lab scenarios for demonstration
+    const scenarioPrompts: { [key: string]: string } = {
+      normal_lab: "The laboratory appears to be in normal operating condition with all safety protocols being followed.",
+      spill_detected: "There is a chemical spill detected on the workbench that requires immediate cleanup.",
+      no_gloves: "A researcher is handling biological samples without wearing protective gloves.",
+      contamination_risk: "The biological waste container is overflowing, creating a contamination risk.",
+      equipment_misuse: "Laboratory equipment is being used improperly, creating a safety hazard."
+    };
+
+    const prompt = `
+      You are a laboratory safety expert. Analyze the following lab scene and provide safety insights:
+      
+      Scene description: ${scenarioPrompts[scenario] || "Unknown laboratory scenario"}
+      
+      Provide:
+      1. A safety assessment of the scene
+      2. Immediate actions that should be taken
+      3. Preventative measures for the future
+      
+      Make your response concise and actionable.
+    `;
+
+    const messages = [
+      {
+        role: 'system' as const,
+        content: 'You are a helpful laboratory safety assistant that provides clear, actionable insights.',
+      },
+      {
+        role: 'user' as const,
+        content: prompt,
+      },
+    ];
+
+    const completion = await chatCompletion(messages);
+
+    // Determine severity based on scenario
+    let severity = 'low';
+    if (scenario === 'spill_detected' || scenario === 'contamination_risk') {
+      severity = 'medium';
+    } else if (scenario === 'no_gloves' || scenario === 'equipment_misuse') {
+      severity = 'high';
+    }
+
+    return {
+      ...completion,
+      severity
+    };
+  } catch (error) {
+    logger.error('Error in analyzing lab image:', error);
+    return {
+      success: false,
+      message: 'Failed to analyze lab image',
+      severity: 'unknown',
+      error,
+    };
+  }
+};
+
+/**
+ * Transcribe lab audio commands
+ * @param audioCommand The command identifier or text
+ * @returns Transcription and interpretation
+ */
+export const transcribeLabAudio = async (audioCommand: string) => {
+  try {
+    // Simulate different audio commands for demonstration
+    const commandTranscriptions: { [key: string]: string } = {
+      protocol_request: "Can you display the protocol for CRISPR-Cas9 gene editing?",
+      emergency_alert: "Emergency! We need help in Lab B. There's a chemical spill.",
+      equipment_status: "What's the status of the PCR machine in Lab C?",
+      data_request: "Can you show me the results from yesterday's experiment?",
+      notes_command: "Add to notes: The sample showed unexpected fluorescence at 520nm"
+    };
+
+    const transcription = commandTranscriptions[audioCommand] || audioCommand;
+
+    return {
+      success: true,
+      message: transcription,
+      confidence: 0.95, // Simulated confidence score
+    };
+  } catch (error) {
+    logger.error('Error in transcribing lab audio:', error);
+    return {
+      success: false,
+      message: 'Failed to transcribe audio',
+      confidence: 0,
+      error,
+    };
+  }
+};
+
+/**
+ * Interpret lab commands and provide responses
+ * @param command The command to interpret
+ * @returns Response to the command
+ */
+export const interpretLabCommand = async (command: string) => {
+  try {
+    const prompt = `
+      You are a laboratory assistant AI. Interpret and respond to the following lab command:
+      
+      Command: "${command}"
+      
+      Provide:
+      1. A clear interpretation of what the user is asking
+      2. An appropriate response or action that would be taken
+      3. Any clarifying questions if the command is ambiguous
+      
+      Make your response helpful and concise.
+    `;
+
+    const messages = [
+      {
+        role: 'system' as const,
+        content: 'You are a helpful laboratory assistant that understands and responds to lab commands effectively.',
+      },
+      {
+        role: 'user' as const,
+        content: prompt,
+      },
+    ];
+
+    return await chatCompletion(messages);
+  } catch (error) {
+    logger.error('Error in interpreting lab command:', error);
+    return {
+      success: false,
+      message: 'Failed to interpret lab command',
+      error,
+    };
+  }
 }; 

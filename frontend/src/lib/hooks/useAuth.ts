@@ -8,7 +8,6 @@
  * - Context-based authentication (useAuthState, useAuthDispatch, useAuthMethods)
  * - Store-based authentication (useAuth)
  * - Wallet authentication
- * - Google OAuth authentication
  * - Email/password authentication
  * 
  * All components should import authentication hooks from this file using:
@@ -30,10 +29,42 @@ import {
   AuthMethodsContext
 } from '../contexts/AuthContext';
 
+// Create a simple event system to broadcast auth state changes
+class AuthEventEmitter {
+  private listeners: Function[] = [];
+
+  subscribe(listener: Function) {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter(l => l !== listener);
+    };
+  }
+
+  emit(event: string, data?: any) {
+    this.listeners.forEach(listener => {
+      listener(event, data);
+    });
+  }
+}
+
+export const authEvents = new AuthEventEmitter();
+
 export function useAuth(requireAuth: boolean = false) {
   const router = useRouter();
   const { user, setUser, isLoading, setLoading, error, setError } = useUserStore();
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Subscribe to auth events
+  useEffect(() => {
+    const unsubscribe = authEvents.subscribe((event: string) => {
+      if (event === 'auth_state_changed') {
+        // Force a recheck of authentication status
+        checkAuth();
+      }
+    });
+    
+    return unsubscribe;
+  }, []);
 
   // Check if user is authenticated when component mounts
   useEffect(() => {
@@ -41,77 +72,42 @@ export function useAuth(requireAuth: boolean = false) {
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
     const isLoginPage = pathname === '/login';
     const isHomePage = pathname === '/';
-    const isGoogleCallbackPage = pathname.includes('/auth/google/callback');
     const isRegisterPage = pathname === '/register';
     const isChainSightPage = pathname.includes('/chainSight');
     
     // Don't auto-check auth on these pages unless specifically required
-    if ((isLoginPage || isHomePage || isGoogleCallbackPage || isRegisterPage || isChainSightPage) && !requireAuth) {
+    if ((isLoginPage || isHomePage || isRegisterPage || isChainSightPage) && !requireAuth) {
       setIsInitialized(true);
       return;
     }
     
-    const checkAuth = async () => {
-      try {
-        console.log('Checking authentication status...');
-        setLoading(true);
-        
-        // First check if we have a token in localStorage as fallback
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-          console.log('Found authentication token in localStorage');
-        }
-        
-        // Attempt to get current user (this will use cookies or token header)
-        const response = await authAPI.getCurrentUser();
-        console.log('Authentication successful, user data received');
-        
-        setUser(response.data.data.user);
-        setError(null);
-      } catch (err: any) {
-        console.error('Authentication check failed:', err?.response?.status || err.message || err);
-        setUser(null);
-        
-        // Handle network errors gracefully
-        if (!err.response) {
-          console.log('Network error during authentication check - continuing as guest');
-          // Never redirect on network errors
-          setError("Network error. Please check your connection.");
-          return;
-        }
-        
-        // Only redirect if auth is required for this route and it's not a network error
-        if (requireAuth && err.response) {
-          console.log('Authentication required for this route, redirecting to login');
-          router.push('/login');
-        }
-      } finally {
-        setLoading(false);
-        setIsInitialized(true);
-      }
-    };
-
     checkAuth();
   }, [requireAuth, router, setError, setLoading, setUser]);
-
-  // Login with Google
-  const loginWithGoogle = async () => {
+  
+  const checkAuth = async () => {
     try {
-      console.log('Initiating Google login...');
       setLoading(true);
+      
+      // Attempt to get current user (this will use cookies or token header)
+      const response = await authAPI.getCurrentUser();
+      setUser(response.data.data.user);
       setError(null);
-      
-      // The Google login doesn't return a response - it redirects directly
-      authAPI.loginWithGoogle();
-      
-      // This function won't return since it redirects the browser
-      return Promise.resolve();
     } catch (err: any) {
-      console.error('Google login initialization error:', err);
-      const errorMessage = err.message || 'Failed to initiate Google login';
-      setError(errorMessage);
+      setUser(null);
+      
+      // Handle network errors gracefully
+      if (!err.response) {
+        setError("Network error. Please check your connection.");
+        return;
+      }
+      
+      // Only redirect if auth is required for this route and it's not a network error
+      if (requireAuth && err.response) {
+        router.push('/login');
+      }
+    } finally {
       setLoading(false);
-      throw new Error(errorMessage);
+      setIsInitialized(true);
     }
   };
 
@@ -122,6 +118,8 @@ export function useAuth(requireAuth: boolean = false) {
       setError(null);
       const response = await authAPI.loginWithWallet(walletAddress);
       setUser(response.data.data.user);
+      // Broadcast auth state change
+      authEvents.emit('auth_state_changed', { isAuthenticated: true });
       return response.data.data;
     } catch (err: any) {
       let errorMessage = 'Login failed';
@@ -137,6 +135,25 @@ export function useAuth(requireAuth: boolean = false) {
     }
   };
 
+  // Login with Google
+  const loginWithGoogle = async (idToken: string, email: string, name?: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await authAPI.loginWithGoogle(idToken, email, name);
+      setUser(response.data.data.user);
+      // Broadcast auth state change
+      authEvents.emit('auth_state_changed', { isAuthenticated: true });
+      return response.data.data;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Google login failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Login with email and password
   const login = async (email: string, password: string) => {
     try {
@@ -144,6 +161,8 @@ export function useAuth(requireAuth: boolean = false) {
       setError(null);
       const response = await authAPI.login(email, password);
       setUser(response.data.data.user);
+      // Broadcast auth state change
+      authEvents.emit('auth_state_changed', { isAuthenticated: true });
       return response.data.data;
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Login failed';
@@ -161,6 +180,8 @@ export function useAuth(requireAuth: boolean = false) {
       setError(null);
       const response = await authAPI.register(email, password, name);
       setUser(response.data.data.user);
+      // Broadcast auth state change
+      authEvents.emit('auth_state_changed', { isAuthenticated: true });
       return response.data.data;
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Registration failed';
@@ -225,10 +246,44 @@ export function useAuth(requireAuth: boolean = false) {
       setLoading(true);
       await authAPI.logout();
       setUser(null);
+      // Broadcast auth state change
+      authEvents.emit('auth_state_changed', { isAuthenticated: false });
       router.push('/login');
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Logout failed';
       setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Resend verification email
+  const resendVerification = async (email: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await authAPI.resendVerification(email);
+      return true;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to resend verification email';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Verify email with token
+  const verifyEmail = async (token: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await authAPI.verifyEmail(token);
+      return true;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to verify email';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -247,18 +302,31 @@ export function useAuth(requireAuth: boolean = false) {
     resetPassword,
     changePassword,
     logout,
+    resendVerification,
+    verifyEmail,
     isInitialized,
   };
 }
 
 // Custom hook to access auth state directly from context
 export const useAuthState = (): AuthState => {
+  // Force component using this hook to rerender when auth state changes
+  const [, setForceUpdate] = useState({});
+  
+  useEffect(() => {
+    const unsubscribe = authEvents.subscribe(() => {
+      // Force rerender
+      setForceUpdate({});
+    });
+    
+    return unsubscribe;
+  }, []);
+  
   try {
     const context = useContext(AuthStateContext);
     
     if (context === undefined) {
       // If used outside AuthProvider, fallback to store-based auth
-      console.warn('useAuthState used outside AuthProvider, falling back to store-based auth');
       const storeAuth = useUserStore();
       return {
         user: storeAuth.user,
@@ -271,7 +339,6 @@ export const useAuthState = (): AuthState => {
     return context;
   } catch (error) {
     // If context is not available at all, fallback to store-based auth
-    console.warn('AuthContext not available, falling back to store-based auth');
     const storeAuth = useUserStore();
     return {
       user: storeAuth.user,
@@ -284,62 +351,21 @@ export const useAuthState = (): AuthState => {
 
 // Custom hook to access auth dispatch
 export const useAuthDispatch = (): React.Dispatch<AuthAction> => {
-  try {
-    const context = useContext(AuthDispatchContext);
-    
-    if (context === undefined) {
-      // If used outside AuthProvider, return a no-op dispatch function
-      console.warn('useAuthDispatch used outside AuthProvider, returning no-op dispatch');
-      // Return a no-op function that matches the dispatch signature
-      return () => {};
-    }
-    
-    return context;
-  } catch (error) {
-    // If context is not available at all, return a no-op dispatch function
-    console.warn('AuthDispatchContext not available, returning no-op dispatch');
+  const context = useContext(AuthDispatchContext);
+  
+  if (context === undefined) {
+    // Return a no-op function that matches the dispatch signature
     return () => {};
   }
+  
+  return context;
 };
 
 // Custom hook to access auth methods
 export const useAuthMethods = (): AuthContextMethods => {
-  try {
-    const context = useContext(AuthMethodsContext);
-    
-    if (context === undefined) {
-      // If used outside AuthProvider, fallback to store-based auth methods
-      console.warn('useAuthMethods used outside AuthProvider, falling back to store-based auth methods');
-      
-      // Create a standalone instance of the useAuth hook's methods
-      const {
-        login,
-        loginWithWallet,
-        loginWithGoogle,
-        register,
-        forgotPassword,
-        resetPassword,
-        changePassword,
-        logout
-      } = useAuth();
-      
-      return {
-        login,
-        loginWithWallet,
-        loginWithGoogle,
-        register,
-        forgotPassword,
-        resetPassword,
-        changePassword,
-        logout
-      };
-    }
-    
-    return context;
-  } catch (error) {
-    // If context is not available at all, fallback to store-based auth methods
-    console.warn('AuthMethodsContext not available, falling back to store-based auth methods');
-    
+  const context = useContext(AuthMethodsContext);
+  
+  if (context === undefined) {
     // Create a standalone instance of the useAuth hook's methods
     const {
       login,
@@ -352,6 +378,7 @@ export const useAuthMethods = (): AuthContextMethods => {
       logout
     } = useAuth();
     
+    // Return with required methods to match AuthContextMethods interface
     return {
       login,
       loginWithWallet,
@@ -360,7 +387,18 @@ export const useAuthMethods = (): AuthContextMethods => {
       forgotPassword,
       resetPassword,
       changePassword,
-      logout
+      logout,
+      // Add the missing methods to satisfy the interface
+      verifyEmail: async (token: string) => {
+        console.warn('verifyEmail called from fallback implementation');
+        return false;
+      },
+      resendVerification: async (email: string) => {
+        console.warn('resendVerification called from fallback implementation');
+        return false;
+      }
     };
   }
-}; 
+  
+  return context;
+};

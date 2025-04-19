@@ -7,6 +7,7 @@ import Profile from '../models/profile.model';
 import config from '../config';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+import emailService from '../utils/email';
 
 // Extended request with typed user property
 interface AuthenticatedRequest extends Request {
@@ -61,6 +62,7 @@ export const loginWithWallet = asyncHandler(async (req: Request, res: Response) 
       walletAddress: normalizedWalletAddress,
       role: 'user',
       authProvider: 'wallet',
+      isVerified: true, // Wallet users are automatically verified
     });
 
     // Create profile
@@ -87,6 +89,7 @@ export const loginWithWallet = asyncHandler(async (req: Request, res: Response) 
           role: user.role,
           preferences: user.preferences,
           profileImageUrl: user.profileImageUrl,
+          isVerified: user.isVerified,
         },
         accessToken,
       },
@@ -108,17 +111,16 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   // Check if user already exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    // Check if it's a Google user and provide a helpful message
-    if (existingUser.authProvider === 'google') {
-      throw new ApiError(409, 'This email is already registered with Google. Please login with Google instead.');
-    }
-    
     throw new ApiError(409, 'User with this email already exists');
   }
 
   // Hash password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
+
+  // Generate verification token
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationExpire = new Date(Date.now() + config.EMAIL_VERIFICATION_EXPIRY);
 
   // Create user
   const user = await User.create({
@@ -127,6 +129,9 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     name,
     role: 'user',
     authProvider: 'email',
+    isVerified: false, // Email users need verification
+    verificationToken,
+    verificationExpire,
   });
 
   // Create profile
@@ -135,11 +140,12 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     onboardingCompleted: false,
   });
 
-  // Generate access token
-  const accessToken = user.generateAccessToken();
-
-  // Set cookie
-  res.cookie('accessToken', accessToken, cookieOptions);
+  // Send verification email
+  await emailService.sendVerificationEmail(
+    email,
+    name || '',
+    verificationToken
+  );
 
   // Return response without password
   return res.status(201).json(
@@ -151,12 +157,108 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
           email: user.email,
           name: user.name,
           role: user.role,
-          preferences: user.preferences,
-          profileImageUrl: user.profileImageUrl,
+          isVerified: user.isVerified,
         },
-        accessToken,
       },
-      'User registered successfully'
+      'User registered successfully. Please check your email to verify your account.'
+    )
+  );
+});
+
+/**
+ * Verify user email with token
+ */
+export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  console.log('Email verification request received:', { token: token ? `${token.substring(0, 6)}...${token.substring(token.length - 6)}` : 'undefined' });
+
+  if (!token) {
+    console.error('Email verification failed: No token provided');
+    throw new ApiError(400, 'Verification token is required');
+  }
+
+  // Find user with this token
+  console.log('Searching for user with verification token...');
+  const user = await User.findOne({
+    verificationToken: token,
+    verificationExpire: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    console.error('Email verification failed: Invalid or expired token');
+    throw new ApiError(400, 'Invalid or expired verification token');
+  }
+
+  console.log(`User found: ${user.email}, updating verification status...`);
+  
+  // Update user verification status
+  user.isVerified = true;
+  user.verificationToken = undefined;
+  user.verificationExpire = undefined;
+  await user.save();
+
+  console.log(`Email verified successfully for user: ${user.email}`);
+
+  // Return success response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {},
+      'Email verified successfully. You can now log in.'
+    )
+  );
+});
+
+/**
+ * Resend verification email
+ */
+export const resendVerificationEmail = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new ApiError(400, 'Email is required');
+  }
+
+  // Find user by email
+  const user = await User.findOne({ email });
+  
+  if (!user) {
+    // Don't reveal that user doesn't exist
+    return res.status(200).json(
+      new ApiResponse(200, {}, 'If your email exists in our system, a verification email has been sent.')
+    );
+  }
+
+  // Check if user is already verified
+  if (user.isVerified) {
+    return res.status(400).json(
+      new ApiResponse(400, {}, 'Email is already verified')
+    );
+  }
+
+  // Generate new verification token
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationExpire = new Date(Date.now() + config.EMAIL_VERIFICATION_EXPIRY);
+
+  // Update user with new token
+  user.verificationToken = verificationToken;
+  user.verificationExpire = verificationExpire;
+  await user.save();
+
+  // Send verification email
+  await emailService.sendVerificationEmail(
+    email,
+    user.name || '',
+    verificationToken
+  );
+
+  // Return success response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {},
+      'Verification email has been sent. Please check your inbox.'
     )
   );
 });
@@ -178,12 +280,12 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Check auth provider and handle accordingly
-  if (user.authProvider === 'google') {
-    throw new ApiError(400, 'This account was created with Google. Please use the "Login with Google" option instead.');
-  }
-  
   if (user.authProvider === 'wallet') {
     throw new ApiError(400, 'This account was created with a wallet address. Please connect your wallet instead.');
+  }
+
+  if (user.authProvider === 'google') {
+    throw new ApiError(400, 'This account was created with Google. Please use Google Sign-In instead.');
   }
 
   // Check if password exists in user document
@@ -192,20 +294,18 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Check password
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  const isPasswordValid = await user.comparePassword(password);
   if (!isPasswordValid) {
     throw new ApiError(401, 'Invalid credentials');
   }
 
+  // Check if user is verified
+  if (!user.isVerified) {
+    throw new ApiError(403, 'Please verify your email address before logging in');
+  }
+
   // Generate access token
   const accessToken = user.generateAccessToken();
-
-  // Log cookie settings
-  console.log(`Setting auth cookie with options:`, {
-    secure: cookieOptions.secure,
-    sameSite: cookieOptions.sameSite,
-    httpOnly: cookieOptions.httpOnly
-  });
   
   // Set cookie
   res.cookie('accessToken', accessToken, cookieOptions);
@@ -224,6 +324,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
           preferences: user.preferences,
           profileImageUrl: user.profileImageUrl,
           authProvider: user.authProvider,
+          isVerified: user.isVerified,
         },
         accessToken, // Include token in response body as fallback
       },
@@ -242,6 +343,84 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   // Return response
   return res.status(200).json(
     new ApiResponse(200, {}, 'User logged out successfully')
+  );
+});
+
+/**
+ * Login or register with Google
+ */
+export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
+  const { idToken, name, email } = req.body;
+
+  if (!idToken || !email) {
+    throw new ApiError(400, 'Google ID token and email are required');
+  }
+
+  // Verify the ID token with Google - in a real implementation
+  // Here we're just accepting the token and email from the frontend
+  // In a production app, use the google-auth-library to verify the token
+
+  // Find user by email
+  let user = await User.findOne({ email });
+
+  if (user) {
+    // User exists - check auth provider
+    if (user.authProvider === 'email') {
+      throw new ApiError(400, 'An account with this email already exists. Please log in with your password.');
+    }
+
+    if (user.authProvider === 'wallet') {
+      throw new ApiError(400, 'An account with this email already exists. Please log in with your wallet.');
+    }
+
+    // Update Google ID if needed
+    if (!user.googleId) {
+      user.googleId = idToken.split('.')[0]; // Just using a part of the token as an ID for demo
+      await user.save();
+    }
+  } else {
+    // Create new user
+    user = await User.create({
+      email,
+      name: name || email.split('@')[0],
+      googleId: idToken.split('.')[0], // Just using a part of the token as an ID for demo
+      authProvider: 'google',
+      isVerified: true, // Google users are automatically verified
+      role: 'user',
+    });
+
+    // Create profile
+    await Profile.create({
+      userId: user._id,
+      onboardingCompleted: false,
+    });
+  }
+
+  // Generate access token
+  const accessToken = user.generateAccessToken();
+
+  // Set cookie
+  res.cookie('accessToken', accessToken, cookieOptions);
+
+  // Return response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          preferences: user.preferences,
+          profileImageUrl: user.profileImageUrl,
+          authProvider: user.authProvider,
+          isVerified: user.isVerified,
+        },
+        accessToken,
+      },
+      'Google authentication successful'
+    )
   );
 });
 
@@ -281,6 +460,7 @@ export const getCurrentUser = asyncHandler(async (req: Request, res: Response) =
           preferences: user.preferences,
           profileImageUrl: user.profileImageUrl,
           authProvider: user.authProvider,
+          isVerified: user.isVerified,
           onboardingCompleted: user.profile?.onboardingCompleted
         },
       },
@@ -308,21 +488,29 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
     );
   }
   
-  // Check if user is a Google or wallet user
-  if (user.authProvider === 'google') {
-    return res.status(400).json(
-      new ApiResponse(400, {}, 'This account uses Google authentication. Please reset your password through Google.')
-    );
-  }
-  
+  // Check if user is a wallet user
   if (user.authProvider === 'wallet') {
     return res.status(400).json(
       new ApiResponse(400, {}, 'This account uses wallet authentication. Password reset is not applicable.')
     );
   }
 
+  // Check if user is a Google user
+  if (user.authProvider === 'google') {
+    return res.status(400).json(
+      new ApiResponse(400, {}, 'This account uses Google authentication. Password reset is not applicable.')
+    );
+  }
+
+  // Check if user is verified
+  if (!user.isVerified) {
+    return res.status(400).json(
+      new ApiResponse(400, {}, 'Please verify your email address first. Check your inbox for a verification email.')
+    );
+  }
+
   // Generate reset token
-  const resetToken = crypto.randomBytes(20).toString('hex');
+  const resetToken = crypto.randomBytes(32).toString('hex');
   
   // Hash the token and set to resetPasswordToken field
   user.resetPasswordToken = crypto
@@ -330,18 +518,24 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
     .update(resetToken)
     .digest('hex');
   
-  // Set expiry to 10 minutes
-  user.resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000);
+  // Set expiry to match config
+  user.resetPasswordExpire = new Date(Date.now() + config.PASSWORD_RESET_EXPIRY);
   
   await user.save();
 
-  // For a real application, send an email with the token
-  // For now, just return the token in the response
+  // Send the password reset email
+  await emailService.sendPasswordResetEmail(
+    email,
+    user.name || '',
+    resetToken
+  );
+
+  // Return response
   return res.status(200).json(
     new ApiResponse(
       200, 
-      { resetToken }, 
-      'Password reset email sent, if email exists'
+      {}, 
+      'Password reset email sent. Please check your inbox.'
     )
   );
 });
@@ -413,12 +607,12 @@ export const changePassword = asyncHandler(async (req: Request, res: Response) =
   }
   
   // Check auth provider
-  if (user.authProvider === 'google') {
-    throw new ApiError(400, 'You cannot change the password for a Google account. Please manage your account through Google.');
-  }
-  
   if (user.authProvider === 'wallet') {
     throw new ApiError(400, 'Password change is not applicable for wallet-based accounts.');
+  }
+
+  if (user.authProvider === 'google') {
+    throw new ApiError(400, 'Password change is not applicable for Google-based accounts.');
   }
 
   // Check if password exists in user document
@@ -427,7 +621,7 @@ export const changePassword = asyncHandler(async (req: Request, res: Response) =
   }
 
   // Check if current password is correct
-  const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+  const isPasswordValid = await user.comparePassword(currentPassword);
   if (!isPasswordValid) {
     throw new ApiError(401, 'Current password is incorrect');
   }

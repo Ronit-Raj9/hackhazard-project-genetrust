@@ -5,7 +5,6 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import path from 'path';
 import { createWriteStream } from 'fs';
-import passport from './config/passport.config';
 
 import config from './config';
 import connectToDatabase from './config/database';
@@ -14,6 +13,7 @@ import logger from './utils/logger';
 import errorHandler from './middleware/errorHandler';
 import ApiError from './utils/ApiError';
 import apiRoutes from './api';
+import emailService from './utils/email';
 
 // Create Express app
 const app = express();
@@ -40,9 +40,6 @@ app.use(express.urlencoded({ extended: true, limit: '16kb' }));
 app.use(cookieParser(config.COOKIE_SECRET));
 app.use(morgan('combined', { stream: accessLogStream }));
 
-// Initialize Passport
-app.use(passport.initialize());
-
 // Routes
 app.use('/api', apiRoutes);
 
@@ -62,6 +59,9 @@ const startServer = async () => {
   try {
     // Connect to MongoDB
     await connectToDatabase();
+
+    // Verify email service connection
+    await emailService.verifyEmailConnection();
 
     // Initialize Socket.IO
     initializeSocketIO(server);

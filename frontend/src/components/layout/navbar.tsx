@@ -4,17 +4,30 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, X, Dna } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuthState } from '@/lib/hooks/useAuth';
+import { useAuthState, useAuth } from '@/lib/hooks/useAuth';
 import { motion } from 'framer-motion';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { UserInfo } from '../auth/UserInfo';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, isAuthenticated } = useAuthState();
+  const { user: storeUser, isAuthenticated: storeIsAuthenticated } = useAuth();
   const pathname = usePathname();
   const isHomePage = pathname === '/';
+  const router = useRouter();
+  
+  // Additional auth state check - use combined auth state from both hooks
+  const isUserAuthenticated = isAuthenticated || storeIsAuthenticated;
+  const userInfo = user || storeUser;
+  
+  // Refresh page if pathname is /dashboard to ensure auth state is current
+  useEffect(() => {
+    if (pathname === '/dashboard' && !isUserAuthenticated) {
+      router.refresh();
+    }
+  }, [pathname, isUserAuthenticated, router]);
 
   // Handle scroll effect
   useEffect(() => {
@@ -61,7 +74,7 @@ export function Navbar() {
             <div className="hidden sm:ml-8 sm:flex sm:space-x-4">
               {[
                 { name: 'Home', href: '/' },
-                ...(isAuthenticated ? [{ name: 'Dashboard', href: '/dashboard' }] : []),
+                ...(isUserAuthenticated ? [{ name: 'Dashboard', href: '/dashboard' }] : []),
                 { name: 'ChainSight', href: '/chainSight' },
                 { name: 'CRISPR Predictor', href: '/crispr-predictor' },
                 { name: 'Lab Monitor', href: '/lab-monitor' }
@@ -90,7 +103,7 @@ export function Navbar() {
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {isAuthenticated ? (
+            {isUserAuthenticated ? (
               <UserInfo />
             ) : (
               <>
@@ -129,7 +142,7 @@ export function Navbar() {
           <div className="pt-2 pb-3 space-y-1">
             {[
               { name: 'Home', href: '/' },
-              ...(isAuthenticated ? [{ name: 'Dashboard', href: '/dashboard' }] : []),
+              ...(isUserAuthenticated ? [{ name: 'Dashboard', href: '/dashboard' }] : []),
               { name: 'ChainSight', href: '/chainSight' },
               { name: 'CRISPR Predictor', href: '/crispr-predictor' },
               { name: 'Lab Monitor', href: '/lab-monitor' }
@@ -149,7 +162,7 @@ export function Navbar() {
           </div>
           
           <div className="pt-4 pb-3 border-t border-indigo-900/30">
-            {isAuthenticated ? (
+            {isUserAuthenticated ? (
               <div className="px-4">
                 <UserInfo />
               </div>

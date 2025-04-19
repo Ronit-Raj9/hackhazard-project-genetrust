@@ -216,13 +216,14 @@ export const useChainSightStore = create<ChainSightState>()(
         hasWalletConnected: true
       })),
       
-      disconnectWallet: () => set(() => ({ 
+      disconnectWallet: () => set((state) => ({ 
         wallet: {
           address: null,
           isConnected: false,
           chainId: null,
           connectedTimestamp: null
         },
+        // Only update wallet connection status, not authentication status
         hasWalletConnected: false
       })),
       

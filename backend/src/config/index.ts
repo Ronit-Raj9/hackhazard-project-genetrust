@@ -27,18 +27,24 @@ const config = {
   RPC_URL: process.env.RPC_URL || 'https://sepolia.base.org',
   CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS || '',
   
-  // Google OAuth config
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
-  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
-  GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:8000/api/auth/google/callback',
-  FRONTEND_REDIRECT_URI: process.env.FRONTEND_REDIRECT_URI || 'http://localhost:3000/auth/google/callback',
-  
   // Prediction Service URL
   PREDICTION_SERVICE_URL: process.env.PREDICTION_SERVICE_URL || 'http://localhost:8000',
+  
+  // Email configuration
+  EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  EMAIL_PORT: parseInt(process.env.EMAIL_PORT || '587'),
+  EMAIL_USER: process.env.EMAIL_USER || '',
+  EMAIL_PASS: process.env.EMAIL_PASS || '',
+  EMAIL_FROM: process.env.EMAIL_FROM || '"GeneTrust" <noreply@genetrust.ai>',
+  MAILTRAP_API_TOKEN: process.env.MAILTRAP_API_TOKEN || '',
+  
+  // Token expiry times (in milliseconds)
+  EMAIL_VERIFICATION_EXPIRY: 24 * 60 * 60 * 1000, // 24 hours
+  PASSWORD_RESET_EXPIRY: 30 * 60 * 1000, // 30 minutes
 };
 
 // Validate required environment variables
-const requiredEnvVars = ['GROQ_API_KEY', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'];
+const requiredEnvVars = ['GROQ_API_KEY'];
 const missingEnvVars = requiredEnvVars.filter(envVar => !config[envVar as keyof typeof config]);
 
 if (missingEnvVars.length > 0) {

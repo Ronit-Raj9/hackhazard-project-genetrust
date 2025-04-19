@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Mail, User, Lock, Eye, EyeOff, ArrowRight, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { authEvents } from '@/lib/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import dynamic from 'next/dynamic';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Info, CheckCircle } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 
 // Import the ParticleBackground component from the landing components
 import ParticleBackground from '@/components/landing/ParticleBackground';
@@ -48,7 +50,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 // Helper function to get user-friendly error message
-const getUserFriendlyErrorMessage = (error: string): { message: string; title: string } => {
+const getUserFriendlyErrorMessage = (error: string): { message: string; title: string; isVerificationError?: boolean } => {
   // Authentication errors
   if (error.includes('Invalid credentials') || error.includes('password') || error.includes('Password')) {
     return {
@@ -57,11 +59,21 @@ const getUserFriendlyErrorMessage = (error: string): { message: string; title: s
     };
   }
   
+  // Email verification errors - check for various ways the backend might phrase this
+  if (error.includes('verify') || error.includes('verification') || error.includes('verified') || error.includes('before logging in')) {
+    return {
+      title: 'Verification Required',
+      message: 'Please verify your email address before logging in.',
+      isVerificationError: true
+    };
+  }
+  
   // User already exists errors
   if (error.includes('already exists') || error.includes('duplicate') || error.includes('E11000')) {
     return {
       title: 'Registration Failed',
-      message: 'An account with this email already exists. Please sign in instead.'
+      message: 'An account with this email already exists. Please sign in instead.',
+      isVerificationError: true // This could be an unverified account, so allow resending
     };
   }
 
@@ -208,7 +220,7 @@ function SearchParamsComponent({
   
   useEffect(() => {
     // Check for error message in URL
-    const errorMessage = searchParams.get('error');
+    const errorMessage = searchParams?.get('error');
     if (errorMessage) {
       onError(decodeURIComponent(errorMessage));
     }
@@ -219,10 +231,11 @@ function SearchParamsComponent({
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, loginWithGoogle, register: registerUser, isAuthenticated, isInitialized } = useAuth();
+  const { login, register: registerUser, loginWithGoogle, isAuthenticated, isInitialized, resendVerification } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
   const [activeTab, setActiveTab] = useState<'email' | 'register'>('email');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -277,60 +290,55 @@ export default function LoginPage() {
     setSuccess(null);
   }, [activeTab]);
 
+  // Handle resend verification email
+  const handleResendVerification = async () => {
+    // Get the email from the current active form
+    const email = activeTab === 'email' 
+      ? loginForm.getValues().email 
+      : registerForm.getValues().email;
+    
+    if (!email) {
+      setError('Please enter your email address first to resend verification');
+      return;
+    }
+    
+    try {
+      setIsResendingVerification(true);
+      await resendVerification(email);
+      setError(null);
+      setSuccess(`Verification email has been resent to ${email}. Please check your inbox and spam folder.`);
+    } catch (err: any) {
+      setError(err.message || 'Failed to resend verification email');
+    } finally {
+      setIsResendingVerification(false);
+    }
+  };
+
   // Handle email/password login
   const handleEmailLogin = async (values: LoginFormValues) => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await login(values.email, values.password);
-      setSuccess('Login successful. Redirecting...');
+      const userData = await login(values.email, values.password);
       
-      // Get redirect URL from query parameters or use default
-      const searchParams = new URLSearchParams(window.location.search);
-      const redirectTo = searchParams.get('redirect') || '/dashboard';
-      
-      // Ensure route exists before navigating
-      const redirectPath = redirectTo.startsWith('/') ? redirectTo : `/${redirectTo}`;
-      
-      // Use a delay to ensure the token is properly set before redirect
-      setTimeout(() => {
-        console.log('Redirecting to:', redirectPath);
-        router.push(redirectPath);
-      }, 1500);
+      // Immediately navigate to dashboard after login
+      // The auth event system will handle updating components
+      router.push('/dashboard');
     } catch (err: any) {
+      setError(err.message || 'Failed to login');
       console.error('Login error:', err);
-      const errorInfo = getUserFriendlyErrorMessage(err.message);
-      setError(errorInfo.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle Google login
-  const handleGoogleLogin = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      setSuccess(null);
-      await loginWithGoogle();
-      // loginWithGoogle will redirect to Google's auth page
-    } catch (err: any) {
-      setError(err.message || 'Failed to initiate Google login');
-      console.error('Google login error:', err);
-      setIsLoading(false);
-    }
-  };
-
-  // Handle registration
+  // Handle register
   const handleRegister = async (values: RegisterFormValues) => {
     try {
       setIsLoading(true);
       setError(null);
-      setSuccess(null);
       await registerUser(values.email, values.password, values.name);
-      
-      // Instead of immediate redirect, show success message
-      setSuccess('Account created successfully! You can now sign in.');
+      setSuccess('Account created successfully! Please check your email for verification instructions.');
       // Reset the form
       registerForm.reset();
       // Switch to login tab after a delay
@@ -340,6 +348,45 @@ export default function LoginPage() {
     } catch (err: any) {
       setError(err.message || 'Failed to register');
       console.error('Registration error:', err);
+      
+      // Automatically try to resend verification if email already exists
+      if (err.message && err.message.includes('already exists')) {
+        try {
+          await resendVerification(values.email);
+          setError(null);
+          setSuccess(`This email is already registered. We've sent a verification email to ${values.email}. Please check your inbox and spam folder.`);
+        } catch (resendError) {
+          console.error('Failed to resend verification:', resendError);
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Google login
+  const handleGoogleLogin = async (credentialResponse: any) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Extract the ID token from the credential response
+      const idToken = credentialResponse.credential;
+      
+      // Get user information from the decoded JWT
+      const decodedToken = JSON.parse(atob(idToken.split('.')[1]));
+      const email = decodedToken.email;
+      const name = decodedToken.name;
+      
+      // Call the loginWithGoogle function with the extracted information
+      await loginWithGoogle(idToken, email, name);
+      
+      // Immediately navigate to dashboard after login
+      // The auth event system will handle updating components
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Failed to login with Google');
+      console.error('Google login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -474,6 +521,35 @@ export default function LoginPage() {
                   </AlertTitle>
                   <AlertDescription className="text-red-200/80">
                     {getUserFriendlyErrorMessage(error).message}
+                    
+                    {/* Show resend verification button if it's a verification error */}
+                    {getUserFriendlyErrorMessage(error).isVerificationError && (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="mt-4"
+                      >
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleResendVerification}
+                          disabled={isResendingVerification}
+                          className="w-full bg-amber-600/30 hover:bg-amber-500/40 border border-amber-500/30 text-amber-100"
+                        >
+                          {isResendingVerification ? (
+                            <>
+                              <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Sending...
+                            </>
+                          ) : (
+                            'Resend Verification Email'
+                          )}
+                        </Button>
+                      </motion.div>
+                    )}
                   </AlertDescription>
                 </Alert>
               </motion.div>
@@ -496,34 +572,6 @@ export default function LoginPage() {
             )}
 
             <TabsContent value="email" className="mt-0">
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="mb-6"
-              >
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border-gray-700"
-                  onClick={handleGoogleLogin}
-                  disabled={isLoading}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
-                    <g transform="matrix(1, 0, 0, 1, 0, 0)">
-                      <path d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.2,4.73C15.29,4.73 17.1,6.7 17.1,6.7L19,4.72C19,4.72 16.56,2 12.1,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.25,22C17.6,22 21.5,18.33 21.5,12.91C21.5,11.76 21.35,11.1 21.35,11.1Z" fill="#4285F4"/>
-                    </g>
-                  </svg>
-                  Continue with Google
-                </Button>
-              </motion.div>
-
-              <div className="flex items-center gap-3 my-6">
-                <Separator className="flex-1 bg-gray-700" /> 
-                <span className="text-sm text-gray-400">OR</span>
-                <Separator className="flex-1 bg-gray-700" />
-              </div>
-
               <form onSubmit={loginForm.handleSubmit(handleEmailLogin)} className="space-y-4">
                 <motion.div 
                   className="space-y-2"
@@ -609,38 +657,45 @@ export default function LoginPage() {
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </motion.div>
+                
+                <motion.div 
+                  className="mt-4 relative"
+                  custom={5} 
+                  variants={formAnimation}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-600" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-gray-900 px-2 text-gray-400">Or continue with</span>
+                  </div>
+                </motion.div>
+                
+                <motion.div
+                  custom={6} 
+                  variants={formAnimation}
+                  initial="hidden"
+                  animate="visible"
+                  className="mt-4"
+                >
+                  <div className="w-full flex justify-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleLogin}
+                      onError={() => setError('Google sign-in failed. Please try again.')}
+                      useOneTap
+                      theme="filled_black"
+                      text="signin_with"
+                      shape="pill"
+                      locale="en"
+                    />
+                  </div>
+                </motion.div>
               </form>
             </TabsContent>
 
             <TabsContent value="register" className="mt-0">
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="mb-6"
-              >
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border-gray-700"
-                  onClick={handleGoogleLogin}
-                  disabled={isLoading}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
-                    <g transform="matrix(1, 0, 0, 1, 0, 0)">
-                      <path d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.2,4.73C15.29,4.73 17.1,6.7 17.1,6.7L19,4.72C19,4.72 16.56,2 12.1,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.25,22C17.6,22 21.5,18.33 21.5,12.91C21.5,11.76 21.35,11.1 21.35,11.1Z" fill="#4285F4"/>
-                    </g>
-                  </svg>
-                  Sign up with Google
-                </Button>
-              </motion.div>
-
-              <div className="flex items-center gap-3 my-6">
-                <Separator className="flex-1 bg-gray-700" /> 
-                <span className="text-sm text-gray-400">OR</span>
-                <Separator className="flex-1 bg-gray-700" />
-              </div>
-
               <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
                 <motion.div 
                   className="space-y-2"
@@ -774,6 +829,41 @@ export default function LoginPage() {
                       </>
                     )}
                   </Button>
+                </motion.div>
+
+                <motion.div 
+                  className="mt-4 relative"
+                  custom={6} 
+                  variants={formAnimation}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-600" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-gray-900 px-2 text-gray-400">Or continue with</span>
+                  </div>
+                </motion.div>
+                
+                <motion.div
+                  custom={7} 
+                  variants={formAnimation}
+                  initial="hidden"
+                  animate="visible"
+                  className="mt-4"
+                >
+                  <div className="w-full flex justify-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleLogin}
+                      onError={() => setError('Google sign-in failed. Please try again.')}
+                      useOneTap
+                      theme="filled_black"
+                      text="signup_with"
+                      shape="pill"
+                      locale="en"
+                    />
+                  </div>
                 </motion.div>
               </form>
             </TabsContent>

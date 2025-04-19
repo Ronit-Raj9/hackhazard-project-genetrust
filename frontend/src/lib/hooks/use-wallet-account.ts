@@ -36,25 +36,34 @@ export function useWalletAccount(): WalletAccount {
       storedAddress: wallet.address
     });
     
-    // Synchronize with global state
+    // Synchronize with global wallet state
     if (isConnected && address) {
+      // Connect wallet
       setWalletState({
         address,
         isConnected: true
       });
     } else if (!isConnected && wallet.isConnected) {
-      // When disconnected, clear cached wallet client
+      // When disconnected, clear cached wallet client but DON'T log the user out
       clearWalletClientCache();
-      disconnectWallet();
+      
+      // Just update the wallet state without affecting user authentication
+      setWalletState({
+        address: null,
+        isConnected: false
+      });
+      
+      console.log('Wallet disconnected but user remains logged in');
     }
     
+    // Update local state
     setAccount({
       address,
       isConnected,
       isConnecting,
       isDisconnected
     });
-  }, [address, isConnected, isConnecting, isDisconnected, status, wallet.isConnected, wallet.address, setWalletState, disconnectWallet]);
+  }, [address, isConnected, isConnecting, isDisconnected, status, wallet.isConnected, wallet.address, setWalletState]);
 
   return account;
 } 

@@ -14,7 +14,6 @@ const getAuthToken = () => {
 const saveAuthToken = (token: string) => {
   if (typeof window !== 'undefined' && token) {
     localStorage.setItem('auth_token', token);
-    console.log('Auth token saved to localStorage as fallback');
   }
 };
 
@@ -50,19 +49,10 @@ api.interceptors.response.use(
       saveAuthToken(token);
       // Set token in axios default headers
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      console.log('Token saved and set in default headers');
     }
     return response;
   },
-  (error) => {
-    // Improved error handling
-    if (error.code === 'ECONNABORTED') {
-      console.error('Request timeout:', error);
-    } else if (!error.response) {
-      console.error('Network error - server may be unavailable:', error);
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Auth API with error handling
@@ -71,30 +61,21 @@ export const authAPI = {
   setToken: (token: string) => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      console.log('Token set in API headers manually');
       return true;
     }
     return false;
   },
 
-  // Login-related methods with improved error handling
-  getCurrentUser: () => {
-    try {
-      return api.get('/auth/me');
-    } catch (error) {
-      console.error('Error in getCurrentUser:', error);
-      return Promise.reject(error);
-    }
-  },
+  // Login-related methods
+  getCurrentUser: () => api.get('/auth/me'),
   
-  // Other auth methods...
+  // Email/password authentication
   login: (email: string, password: string) => {
     return api.post('/auth/login', { email, password })
       .then(response => {
         // Explicitly handle token from login response
         const token = response?.data?.data?.accessToken;
         if (token) {
-          console.log('Received accessToken from login, saving and setting in headers');
           saveAuthToken(token);
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         }
@@ -103,25 +84,28 @@ export const authAPI = {
   },
   register: (email: string, password: string, name: string) => 
     api.post('/auth/register', { email, password, name }),
-  forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
+  verifyEmail: (token: string) => {
+    console.log('Frontend API: Sending verification request with token', { tokenLength: token.length });
+    return api.post('/auth/verify-email', { token });
+  },
+  resendVerification: (email: string) => {
+    console.log('Frontend API: Requesting verification email resend for', { email });
+    return api.post('/auth/resend-verification', { email });
+  },
+  forgotPassword: (email: string) => 
+    api.post('/auth/forgot-password', { email }),
   resetPassword: (token: string, password: string) => 
     api.post('/auth/reset-password', { token, password }),
   changePassword: (currentPassword: string, newPassword: string) => 
     api.post('/auth/change-password', { currentPassword, newPassword }),
   
   // Wallet auth
-  loginWithWallet: (walletAddress: string) => api.post('/auth/login/wallet', { walletAddress }),
+  loginWithWallet: (walletAddress: string) => 
+    api.post('/auth/login/wallet', { walletAddress }),
   
   // Google auth
-  loginWithGoogle: () => {
-    // Instead of an API call, we'll redirect the user directly to the Google OAuth endpoint
-    const googleAuthUrl = `${API_URL}/auth/google`;
-    console.log('Redirecting to Google OAuth page:', googleAuthUrl);
-    // Redirect the browser to the Google auth endpoint
-    window.location.href = googleAuthUrl;
-    // Return a promise that never resolves since we're redirecting the page
-    return new Promise(() => {});
-  },
+  loginWithGoogle: (idToken: string, email: string, name?: string) =>
+    api.post('/auth/login/google', { idToken, email, name }),
   
   // Common
   logout: () => {
@@ -173,12 +157,9 @@ export const groqAPI = {
   // Health check for Groq API
   checkHealth: async () => {
     try {
-      console.log('Checking Groq API health...');
       const response = await api.get('/groq/health');
-      console.log('Groq health status:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error checking Groq health:', error);
       return {
         status: 'error',
         groq: {
@@ -215,7 +196,6 @@ api.interceptors.response.use(
   async (error) => {
     // Skip redirect for network errors
     if (!error.response) {
-      console.error('Network error detected, not redirecting');
       return Promise.reject(error);
     }
     
@@ -229,7 +209,6 @@ api.interceptors.response.use(
       
       // Don't redirect for chainSight pages - they handle auth differently
       if (!isLoginPage && !isHomePage && !isChainSightPage) {
-        console.error('Authentication error. Redirecting to login.');
         window.location.href = '/login';
       }
     }

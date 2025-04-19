@@ -87,26 +87,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     },
 
-    loginWithGoogle: async () => {
-      try {
-        dispatch({ type: 'SET_LOADING', payload: true });
-        dispatch({ type: 'CLEAR_ERROR' });
-        
-        // The Google login implementation redirects directly to Google's OAuth service
-        // It doesn't return a response since it redirects the browser
-        authAPI.loginWithGoogle();
-        
-        // This code won't execute because the page will be redirected
-        return Promise.resolve();
-      } catch (err: any) {
-        console.error('Google login error:', err);
-        const errorMessage = err.message || 'Failed to initiate Google login';
-        dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
-        dispatch({ type: 'SET_LOADING', payload: false });
-        return Promise.reject(err);
-      }
-    },
-
     loginWithWallet: async (walletAddress: string) => {
       try {
         dispatch({ type: 'SET_LOADING', payload: true });
@@ -177,6 +157,77 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     },
 
+    loginWithGoogle: async (idToken: string, email: string, name?: string) => {
+      try {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        dispatch({ type: 'CLEAR_ERROR' });
+        
+        console.log(`Attempting to login with Google`);
+        
+        const response = await authAPI.loginWithGoogle(idToken, email, name);
+        console.log('Successfully authenticated with Google');
+        
+        // Save token from Google auth response
+        const token = response?.data?.data?.accessToken;
+        if (token) {
+          localStorage.setItem('auth_token', token);
+        }
+        
+        dispatch({ type: 'LOGIN_SUCCESS', payload: response.data.data.user });
+        return Promise.resolve();
+      } catch (err: any) {
+        console.error('Google login error:', err);
+        let errorMessage = 'Login failed';
+        
+        if (!err.response) {
+          errorMessage = 'Network error. Please check your connection.';
+        } else if (err.response.status === 401) {
+          errorMessage = 'Unauthorized. Please check your Google account.';
+        } else if (err.response.status === 403) {
+          errorMessage = 'Access denied. You may not have permission to login with this Google account.';
+        } else {
+          errorMessage = err.response?.data?.message || 'Login failed';
+        }
+        
+        dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
+        return Promise.reject(err);
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
+    },
+
+    verifyEmail: async (token: string) => {
+      try {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        dispatch({ type: 'CLEAR_ERROR' });
+        
+        await authAPI.verifyEmail(token);
+        dispatch({ type: 'SET_LOADING', payload: false });
+        return true;
+      } catch (err: any) {
+        console.error('Email verification error:', err);
+        const errorMessage = err.response?.data?.message || 'Failed to verify email';
+        dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
+        return false;
+      }
+    },
+
+    resendVerification: async (email: string) => {
+      try {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        dispatch({ type: 'CLEAR_ERROR' });
+        
+        await authAPI.resendVerification(email);
+        dispatch({ type: 'SET_LOADING', payload: false });
+        return true;
+      } catch (err: any) {
+        console.error('Resend verification error:', err);
+        const errorMessage = err.response?.data?.message || 'Failed to resend verification email';
+        dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
+        return false;
+      }
+    },
+
     forgotPassword: async (email: string) => {
       try {
         dispatch({ type: 'SET_LOADING', payload: true });
@@ -235,12 +286,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           const pathname = window.location.pathname;
           const isLoginPage = pathname === '/login' || pathname.includes('/login');
           const isHomePage = pathname === '/';
-          const isGoogleCallbackPage = pathname.includes('/auth/google/callback');
           const isRegisterPage = pathname === '/register';
           const isChainSightPage = pathname.includes('/chainSight');
 
           // Don't check auth on these pages to avoid unnecessary redirects
-          if (isLoginPage || isHomePage || isGoogleCallbackPage || isRegisterPage || isChainSightPage) {
+          if (isLoginPage || isHomePage || isRegisterPage || isChainSightPage) {
             dispatch({ type: 'SET_LOADING', payload: false });
             setIsInitialized(true);
             return;

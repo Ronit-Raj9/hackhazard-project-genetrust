@@ -10,6 +10,8 @@ export interface User {
   walletAddress?: string;
   role?: string;
   profileImageUrl?: string;
+  authProvider?: string;
+  isVerified?: boolean;
   // Add any other user properties your application needs
 }
 
@@ -34,8 +36,10 @@ export interface AuthContextMethods {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
   loginWithWallet: (walletAddress: string) => Promise<void>;
+  loginWithGoogle: (idToken: string, email: string, name?: string) => Promise<void>;
+  verifyEmail: (token: string) => Promise<boolean>;
+  resendVerification: (email: string) => Promise<boolean>;
   forgotPassword: (email: string) => Promise<boolean>;
   resetPassword: (token: string, password: string) => Promise<boolean>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;

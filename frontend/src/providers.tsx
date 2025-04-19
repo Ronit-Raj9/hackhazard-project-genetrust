@@ -7,6 +7,7 @@ import { baseSepolia } from 'wagmi/chains';
 import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import { AuthProvider } from '@/lib/contexts/AuthProvider';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Create a context to track if WalletConnect has been initialized
 const WalletInitContext = createContext(false);
@@ -23,6 +24,7 @@ const queryClient = new QueryClient({
 
 // Get project ID from environment variables with fallback
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c86f23da1913707381b31528a79c3e23';
+const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '356405303441-ge8ghhld339vnmm627o414b6fa0aiger.apps.googleusercontent.com';
 
 // Configure chains
 const chains = [baseSepolia];
@@ -65,7 +67,11 @@ export function Providers({ children }: { children: ReactNode }) {
 
   // Don't render wallet providers during SSR or while initializing
   if (!isClient || !wagmiConfig) {
-    return <AuthProvider>{children}</AuthProvider>;
+    return (
+      <GoogleOAuthProvider clientId={googleClientId}>
+        <AuthProvider>{children}</AuthProvider>
+      </GoogleOAuthProvider>
+    );
   }
 
   return (
@@ -73,9 +79,11 @@ export function Providers({ children }: { children: ReactNode }) {
       <WagmiProvider config={wagmiConfig}>
         <QueryClientProvider client={queryClient}>
           <RainbowKitProvider>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
+            <GoogleOAuthProvider clientId={googleClientId}>
+              <AuthProvider>
+                {children}
+              </AuthProvider>
+            </GoogleOAuthProvider>
           </RainbowKitProvider>
         </QueryClientProvider>
       </WagmiProvider>

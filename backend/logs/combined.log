@@ -3846,3 +3846,262 @@
 2025-04-18 22:20:41 info: Socket.IO initialized
 2025-04-18 22:20:41 info: Server running on port 8000
 2025-04-18 22:20:41 info: Sensor simulation started
+2025-04-19 05:44:50 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 05:44:50 info: Socket.IO initialized
+2025-04-19 05:44:50 info: Server running on port 8000
+2025-04-19 05:44:50 info: Sensor simulation started
+2025-04-19 05:45:13 info: MongoDB Connected: ac-zbybbvl-shard-00-01.djs2ncb.mongodb.net
+2025-04-19 05:50:00 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 05:50:00 info: Socket.IO initialized
+2025-04-19 05:50:00 info: Server running on port 8000
+2025-04-19 05:50:00 info: Sensor simulation started
+2025-04-19 05:54:56 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 05:54:56 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 05:54:56 info: Socket.IO initialized
+2025-04-19 05:54:56 info: Server running on port 8000
+2025-04-19 05:54:56 info: Sensor simulation started
+2025-04-19 05:55:05 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 05:55:05 info: Socket.IO initialized
+2025-04-19 05:55:05 info: Server running on port 8000
+2025-04-19 05:55:06 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 05:55:06 info: Sensor simulation started
+2025-04-19 05:57:15 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 05:57:15 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 05:57:15 info: Socket.IO initialized
+2025-04-19 05:57:15 info: Server running on port 8000
+2025-04-19 05:57:15 info: Sensor simulation started
+2025-04-19 06:34:20 error: Error sending verification email to raunitr786@gmail.com: Can't send mail - all recipients were rejected: 554 5.7.1 Demo domains can only be used to send emails to account owners. You can only send testing emails to your own email address.
+2025-04-19 06:47:17 error: [POST] /api/auth/register >> StatusCode:: 409, Message:: User with this email already exists
+2025-04-19 06:47:17 error: Error: User with this email already exists
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:114:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-19 06:47:44 error: [POST] /api/auth/login >> StatusCode:: 403, Message:: Please verify your email address before logging in
+2025-04-19 06:47:44 error: Error: Please verify your email address before logging in
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:295:11
+2025-04-19 06:47:51 error: [POST] /api/auth/login >> StatusCode:: 403, Message:: Please verify your email address before logging in
+2025-04-19 06:47:51 error: Error: Please verify your email address before logging in
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:295:11
+2025-04-19 06:52:14 error: Error sending verification email to dev.ronitraj@gmail.com: Can't send mail - all recipients were rejected: 554 5.7.1 Demo domains can only be used to send emails to account owners. You can only send testing emails to your own email address.
+2025-04-19 06:52:14 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 06:52:14 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 06:52:14 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 06:52:14 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 06:53:24 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 06:53:24 info: MongoDB Connected: ac-zbybbvl-shard-00-01.djs2ncb.mongodb.net
+2025-04-19 06:53:24 info: Socket.IO initialized
+2025-04-19 06:53:24 info: Server running on port 8000
+2025-04-19 06:53:24 info: Sensor simulation started
+2025-04-19 06:57:02 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 06:57:02 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 06:57:02 info: Socket.IO initialized
+2025-04-19 06:57:02 info: Server running on port 8000
+2025-04-19 06:57:02 info: Sensor simulation started
+2025-04-19 06:57:42 info: MongoDB Connected: ac-zbybbvl-shard-00-02.djs2ncb.mongodb.net
+2025-04-19 06:57:42 info: Socket.IO initialized
+2025-04-19 06:57:42 info: Server running on port 8000
+2025-04-19 06:57:42 info: MongoDB Connected: ac-zbybbvl-shard-00-02.djs2ncb.mongodb.net
+2025-04-19 06:57:43 info: Sensor simulation started
+2025-04-19 06:57:55 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 06:57:55 info: Socket.IO initialized
+2025-04-19 06:57:55 info: Server running on port 8000
+2025-04-19 06:57:55 info: MongoDB Connected: ac-zbybbvl-shard-00-02.djs2ncb.mongodb.net
+2025-04-19 06:57:55 info: Sensor simulation started
+2025-04-19 06:59:39 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 06:59:39 info: Socket.IO initialized
+2025-04-19 06:59:39 info: Server running on port 8000
+2025-04-19 06:59:39 info: Sensor simulation started
+2025-04-19 07:01:16 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 07:01:16 info: Email service client initialized. Note: Full verification not available with API method.
+2025-04-19 07:01:16 info: Socket.IO initialized
+2025-04-19 07:01:16 info: Server running on port 8000
+2025-04-19 07:01:16 info: Sensor simulation started
+2025-04-19 07:03:19 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 07:03:19 info: Mailtrap API client initialized with token
+2025-04-19 07:03:19 info: Socket.IO initialized
+2025-04-19 07:03:19 info: Server running on port 8000
+2025-04-19 07:03:19 info: Sensor simulation started
+2025-04-19 07:05:33 debug: Using MAILTRAP_API_TOKEN for Mailtrap API
+2025-04-19 07:05:34 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 07:05:34 info: Mailtrap API client initialized with token
+2025-04-19 07:05:34 info: Socket.IO initialized
+2025-04-19 07:05:34 info: Server running on port 8000
+2025-04-19 07:05:34 info: Sensor simulation started
+2025-04-19 07:05:55 debug: Using MAILTRAP_API_TOKEN for Mailtrap API
+2025-04-19 07:05:56 info: MongoDB Connected: ac-zbybbvl-shard-00-02.djs2ncb.mongodb.net
+2025-04-19 07:05:56 info: Mailtrap API client initialized with token
+2025-04-19 07:05:56 info: Socket.IO initialized
+2025-04-19 07:05:56 info: Server running on port 8000
+2025-04-19 07:05:56 info: Sensor simulation started
+2025-04-19 07:06:24 error: [POST] /api/auth/login >> StatusCode:: 403, Message:: Please verify your email address before logging in
+2025-04-19 07:06:24 error: Error: Please verify your email address before logging in
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:295:11
+2025-04-19 07:06:27 error: [POST] /api/auth/login >> StatusCode:: 403, Message:: Please verify your email address before logging in
+2025-04-19 07:06:27 error: Error: Please verify your email address before logging in
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:295:11
+2025-04-19 07:06:49 error: [POST] /api/auth/register >> StatusCode:: 409, Message:: User with this email already exists
+2025-04-19 07:06:49 error: Error: User with this email already exists
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:114:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-19 07:06:54 error: [POST] /api/auth/register >> StatusCode:: 409, Message:: User with this email already exists
+2025-04-19 07:06:54 error: Error: User with this email already exists
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:114:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-19 07:06:54 error: [POST] /api/auth/register >> StatusCode:: 409, Message:: User with this email already exists
+2025-04-19 07:06:54 error: Error: User with this email already exists
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:114:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-19 07:06:55 error: [POST] /api/auth/register >> StatusCode:: 409, Message:: User with this email already exists
+2025-04-19 07:06:55 error: Error: User with this email already exists
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:114:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-04-19 07:07:25 error: [POST] /api/auth/login >> StatusCode:: 403, Message:: Please verify your email address before logging in
+2025-04-19 07:07:25 error: Error: Please verify your email address before logging in
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:295:11
+2025-04-19 07:10:04 error: [POST] /api/auth/login >> StatusCode:: 403, Message:: Please verify your email address before logging in
+2025-04-19 07:10:04 error: Error: Please verify your email address before logging in
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:295:11
+2025-04-19 07:10:08 info: Verification email sent to: raunitr786@gmail.com via Mailtrap API
+2025-04-19 07:11:15 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 07:11:15 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 07:11:15 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 07:11:15 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 07:11:15 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 07:11:15 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 07:11:39 error: [POST] /api/auth/login >> StatusCode:: 403, Message:: Please verify your email address before logging in
+2025-04-19 07:11:39 error: Error: Please verify your email address before logging in
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/controllers/auth.controller.ts:295:11
+2025-04-19 07:13:52 debug: Using MAILTRAP_API_TOKEN for Mailtrap API
+2025-04-19 07:13:53 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 07:13:53 info: Mailtrap API client initialized with token
+2025-04-19 07:13:53 info: Socket.IO initialized
+2025-04-19 07:13:53 info: Server running on port 8000
+2025-04-19 07:13:53 info: Sensor simulation started
+2025-04-19 07:15:58 info: Verification email sent to: raunitr786@gmail.com via Mailtrap API
+2025-04-19 07:16:53 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 07:16:53 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 07:16:54 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 07:16:54 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 07:18:50 debug: Using MAILTRAP_API_TOKEN for Mailtrap API
+2025-04-19 07:18:51 info: MongoDB Connected: ac-zbybbvl-shard-00-00.djs2ncb.mongodb.net
+2025-04-19 07:18:51 info: Mailtrap API client initialized with token
+2025-04-19 07:18:51 info: Socket.IO initialized
+2025-04-19 07:18:51 info: Server running on port 8000
+2025-04-19 07:18:51 info: Sensor simulation started
+2025-04-19 07:20:31 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 07:20:31 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 07:20:31 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 07:20:31 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 07:20:32 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 07:20:32 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)
+2025-04-19 07:20:32 error: [GET] /api/auth/me >> StatusCode:: 401, Message:: Unauthorized request
+2025-04-19 07:20:32 error: Error: Unauthorized request
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/middleware/auth.ts:21:13
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/src/utils/asyncHandler.ts:8:19
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/layer.js:95:5)
+    at /home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/raj/Documents/CODDING/PROJECT/Hackathon/Hackhazards/backend/node_modules/express/lib/router/index.js:175:3)

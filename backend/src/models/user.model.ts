@@ -8,9 +8,12 @@ export interface IUser extends Document {
   password?: string;
   name?: string;
   walletAddress?: string;
-  googleId?: string;
   role: 'user' | 'admin';
-  authProvider?: 'email' | 'google' | 'wallet';
+  authProvider?: 'email' | 'wallet' | 'google';
+  isVerified: boolean;
+  googleId?: string;
+  verificationToken?: string;
+  verificationExpire?: Date;
   preferences: {
     theme?: 'light' | 'dark';
     aiVoice?: string;
@@ -25,6 +28,7 @@ export interface IUser extends Document {
   
   // Instance methods
   generateAccessToken: () => string;
+  comparePassword: (candidatePassword: string) => Promise<boolean>;
 }
 
 // User schema
@@ -51,14 +55,9 @@ const userSchema = new Schema<IUser>(
       trim: true,
       lowercase: true,
     },
-    googleId: {
-      type: String,
-      unique: true,
-      sparse: true, // Allow null/undefined values
-    },
     authProvider: {
       type: String,
-      enum: ['email', 'google', 'wallet'],
+      enum: ['email', 'wallet', 'google'],
       default: 'email',
     },
     role: {
@@ -66,6 +65,17 @@ const userSchema = new Schema<IUser>(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      index: true,
+    },
+    verificationToken: String,
+    verificationExpire: Date,
     preferences: {
       theme: {
         type: String,
@@ -114,13 +124,26 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 
+// Method to compare passwords for login
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+  try {
+    // Import bcrypt here to avoid circular dependency
+    const bcrypt = require('bcrypt');
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    return false;
+  }
+};
+
 // Pre-save middleware to set auth provider based on credentials
 userSchema.pre('save', function(next) {
-  if (this.isNew || this.isModified('googleId') || this.isModified('walletAddress')) {
-    if (this.googleId && !this.authProvider) {
-      this.authProvider = 'google';
-    } else if (this.walletAddress && !this.authProvider) {
+  if (this.isNew || this.isModified('walletAddress')) {
+    if (this.walletAddress && !this.authProvider) {
       this.authProvider = 'wallet';
+      this.isVerified = true; // Wallet users are automatically verified
+    } else if (this.googleId && !this.authProvider) {
+      this.authProvider = 'google';
+      this.isVerified = true; // Google users are automatically verified
     } else if (!this.authProvider) {
       this.authProvider = 'email';
     }
