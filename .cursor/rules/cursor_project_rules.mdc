@@ -1,30 +1,65 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
 # Cursor Project Rules
 
-## AI Assistant Guidelines
-- AI should follow the project structure defined in backend_structure_document.mdc
-- When generating code, follow the tech stack defined in tech_stack_document.mdc
-- Frontend components must adhere to guidelines in frontend_guidelines_document.mdc
-- Follow the app flow outlined in app_flow_document.mdc
-- New features should be implemented according to the implementation_plan.mdc
+## General Project Guidelines
+- Frontend is a Next.js application using both App Router (`src/app`) and Pages Router (`src/pages`)
+- Backend is a Node.js/Express application with TypeScript
+- Both use a domain-driven organization (components, controllers, services grouped by feature)
+- Follow the project structure outlined in the codebase
+- Adhere to existing patterns for error handling, API responses, and data models
+
+## Frontend Development (Next.js / TypeScript)
+- Use either App Router or Pages Router based on the feature location in the existing codebase
+- Components should follow the established pattern:
+  - `'use client'` directive for client components in App Router
+  - Feature-specific components in dedicated directories (e.g., `/components/predictor/`)
+  - UI components in `/components/ui/`
+  - Layouts in `/components/layout/` or `/components/layouts/`
+- Use Framer Motion for animations, following existing animation patterns
+- Use Tailwind CSS for styling with the project's custom theme
+- Use SWR or React Query for client-side data fetching where needed
+- Implement proper loading states, error handling, and accessibility
+
+## Backend Development (Node.js / TypeScript)
+- Follow the Controller → Service → Model pattern
+- Controllers handle request/response and validation
+- Services contain business logic and external API interactions
+- Models define MongoDB schemas and document interfaces
+- Use the provided utility classes:
+  - `ApiError` for error handling
+  - `ApiResponse` for standardized responses
+  - `asyncHandler` for async route handlers
+- Implement proper validation, error handling, and logging
+- Follow the established patterns for Groq API integration
+
+## Biotech-Specific Patterns
+- DNA/RNA sequence handling requires validation for correct bases (A, T, G, C for DNA)
+- Use appropriate data structures for sequence data with annotations
+- Provide visual feedback for sequence validation/errors
+- Implement proper sequence visualization with base highlighting
+- Follow domain-specific naming conventions and terminologies
 
 ## Code Generation Rules
-- Generate complete, working code that can be run immediately
+- Generate complete, working code that matches the project's patterns
 - Include all necessary imports and dependencies
-- Follow established patterns in the existing codebase
-- Include proper error handling and validation
+- Use TypeScript types consistently, including interfaces for props and API responses
+- Follow established error handling patterns
 - Write clean, maintainable code with appropriate comments
-- Use TypeScript types for all functions and components
+- Ensure components follow the organization pattern in the codebase
 
 ## Documentation Requirements
-- Document all API endpoints with parameters and responses
-- Include JSDoc comments for all functions and components
-- Add comprehensive README files for each major directory
-- Comment complex logic and algorithms
+- Document API endpoints with parameters, request bodies, and responses
+- Include JSDoc comments for significant functions, components, and classes
+- Comment complex logic, algorithms, and non-obvious code sections
 - Include usage examples for reusable components
 
 ## Testing Expectations
-- Write unit tests for all business logic
-- Include component tests for UI elements
+- Write unit tests for critical business logic
+- Include component tests for key UI elements
 - Test both success and error scenarios
-- Mock external dependencies for reliable testing
-- Maintain test coverage above 80% 
+- Mock external dependencies (Groq API, MongoDB, etc.)
+

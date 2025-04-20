@@ -1,0 +1,379 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Biotech & AI Domain-Specific Conventions
+
+## DNA/RNA Sequence Handling
+
+### Sequence Validation
+```typescript
+// Based on your actual implementation in components/predictor/SequenceInput.tsx
+export function validateSequence(sequence: string): boolean {
+  // Check if sequence is empty
+  if (!sequence.trim()) {
+    return false;
+  }
+
+  // Check if sequence contains only A, T, C, G (case insensitive)
+  const isValid = /^[ATCGatcg]+$/.test(sequence);
+  if (!isValid) {
+    return false;
+  }
+
+  // Check minimum length requirement
+  if (sequence.length < 10) {
+    return false;
+  }
+
+  return true;
+}
+
+// Color mapping for DNA bases
+export const BASE_COLORS: Record<string, string> = {
+  'A': '#3a86ff', // Blue
+  'T': '#ff006e', // Pink
+  'G': '#8338ec', // Purple
+  'C': '#06d6a0'  // Green
+};
+```
+
+### Sequence Data Types
+```typescript
+// Based on the prediction.model.ts structure
+export interface SequenceData {
+  originalSequence: string;
+  predictedSequence?: string;
+  editCount?: number; 
+  editPositions?: number[];
+  annotations?: Array<{
+    start: number;
+    end: number;
+    type: string;
+    description?: string;
+  }>;
+}
+
+export interface PredictionResult {
+  prediction: string;
+  confidence: number;
+  editCount: number;
+  editPositions: number[];
+  explanations?: Array<{
+    text: string;
+    timestamp: Date;
+  }>;
+  visualizations?: Array<{
+    imageUrl: string;
+    type: 'sequence' | 'diagram';
+    timestamp: Date;
+  }>;
+}
+```
+
+## AI Integration Patterns
+
+### Groq API Integration
+```typescript
+// Based on your backend/src/controllers/groq.controller.ts implementation
+import { Request, Response } from 'express';
+import asyncHandler from '../utils/asyncHandler';
+import ApiError from '../utils/ApiError';
+import ApiResponse from '../utils/ApiResponse';
+import { chatCompletion } from '../services/groq.service';
+
+export const handleChatCompletion = asyncHandler(async (req: Request, res: Response) => {
+  const { messages } = req.body;
+
+  // Validate messages
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    throw new ApiError(400, 'Valid messages array is required');
+  }
+
+  // Get chat completion
+  const completion = await chatCompletion(messages);
+
+  if (!completion.success) {
+    throw new ApiError(500, 'Failed to get response from Groq');
+  }
+
+  // Return response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        message: completion.message,
+        usage: completion.usage,
+      },
+      'Chat completion successful'
+    )
+  );
+});
+```
+
+### Frontend AI Interaction
+```typescript
+'use client';
+
+import { useState } from 'react';
+import { toast } from 'sonner';
+
+export function useAIAssistant() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [response, setResponse] = useState<string | null>(null);
+  
+  const getExplanation = async (sequence: string) => {
+    setIsLoading(true);
+    
+    try {
+      const result = await fetch('/api/groq/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an AI assistant that explains DNA sequences.'
+            },
+            {
+              role: 'user',
+              content: `Explain this DNA sequence: ${sequence}`
+            }
+          ]
+        }),
+      });
+      
+      const data = await result.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to get explanation');
+      }
+      
+      setResponse(data.data.message);
+    } catch (error) {
+      toast.error('Failed to get explanation');
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  return { isLoading, response, getExplanation };
+}
+```
+
+## IoT Sensor Data Handling
+
+### Sensor Data Types
+```typescript
+// Based on sensor-data.model.ts
+export interface SensorReading {
+  sensorId: string;
+  timestamp: number;
+  value: number;
+  unit: string;
+  status: 'normal' | 'warning' | 'critical' | 'error';
+}
+
+export interface LabEnvironment {
+  temperature: SensorReading;
+  humidity: SensorReading;
+  pressure?: SensorReading;
+  co2Level?: SensorReading;
+}
+```
+
+### WebSocket Implementation
+```typescript
+// Backend WebSocket setup (simplified from your implementation)
+import { Server } from 'socket.io';
+import http from 'http';
+
+export function setupWebSocket(server: http.Server) {
+  const io = new Server(server, {
+    cors: {
+      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      methods: ['GET', 'POST'],
+    },
+  });
+
+  io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+
+    // Send initial data
+    socket.emit('welcome', { message: 'Connected to GeneTrust IoT Server' });
+
+    // Handle disconnection
+    socket.on('disconnect', () => {
+      console.log('Client disconnected:', socket.id);
+    });
+  });
+
+  // Set up periodic sensor data broadcast
+  setInterval(() => {
+    const sensorData = generateSensorData();
+    io.emit('sensor_update', sensorData);
+  }, 3000);
+
+  return io;
+}
+
+// Frontend WebSocket consumer
+import { useEffect, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
+
+export function useSensorData() {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [sensorData, setSensorData] = useState<LabEnvironment | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    const socketInstance = io(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000');
+    
+    socketInstance.on('connect', () => {
+      setIsConnected(true);
+    });
+    
+    socketInstance.on('disconnect', () => {
+      setIsConnected(false);
+    });
+    
+    socketInstance.on('sensor_update', (data) => {
+      setSensorData(data);
+    });
+    
+    setSocket(socketInstance);
+    
+    return () => {
+      socketInstance.disconnect();
+    };
+  }, []);
+
+  return { sensorData, isConnected };
+}
+```
+
+## UI Components for Scientific Data
+
+### Sequence Display
+```tsx
+'use client';
+
+import { motion } from 'framer-motion';
+import { BASE_COLORS } from '../../utils/sequenceValidation';
+
+interface SequenceDisplayProps {
+  sequence: string;
+  highlights?: Array<{
+    start: number;
+    end: number;
+    type: string;
+  }>;
+  onBaseClick?: (index: number) => void;
+}
+
+export function SequenceDisplay({
+  sequence,
+  highlights = [],
+  onBaseClick
+}: SequenceDisplayProps) {
+  // Format sequence for display with colors
+  const formatSequence = () => {
+    return sequence.split('').map((base, index) => {
+      const color = BASE_COLORS[base.toUpperCase()] || 'text-red-500';
+      const isHighlighted = highlights.some(h => 
+        index >= h.start && index <= h.end
+      );
+      
+      return (
+        <motion.span 
+          key={index}
+          className={`inline-block ${base.match(/[ATGC]/i) ? color : 'text-red-500'} 
+            ${isHighlighted ? 'bg-yellow-100 font-bold' : ''}`}
+          onClick={() => onBaseClick?.(index)}
+          whileHover={{ scale: 1.2 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: index * 0.001 }}
+        >
+          {base}
+        </motion.span>
+      );
+    });
+  };
+  
+  return (
+    <div className="font-mono text-sm overflow-x-auto p-2 bg-white rounded-md shadow">
+      <div className="flex flex-wrap">{formatSequence()}</div>
+    </div>
+  );
+}
+```
+
+### Scientific Chart Component
+```tsx
+'use client';
+
+import { useMemo } from 'react';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, 
+  Tooltip, ResponsiveContainer, ReferenceLine
+} from 'recharts';
+import { SensorReading } from '@/types/iot';
+
+interface SensorChartProps {
+  data: SensorReading[];
+  warningThreshold?: number;
+  criticalThreshold?: number;
+}
+
+export function SensorChart({
+  data,
+  warningThreshold,
+  criticalThreshold
+}: SensorChartProps) {
+  const chartData = useMemo(() => {
+    return data.map(reading => ({
+      timestamp: new Date(reading.timestamp).toLocaleTimeString(),
+      value: reading.value,
+    }));
+  }, [data]);
+  
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart
+        data={chartData}
+        margin={{ top: 5, right: 20, bottom: 20, left: 20 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="timestamp" />
+        <YAxis />
+        <Tooltip />
+        <Line 
+          type="monotone" 
+          dataKey="value" 
+          stroke="#8884d8" 
+          strokeWidth={2}
+        />
+        {warningThreshold && (
+          <ReferenceLine 
+            y={warningThreshold} 
+            stroke="#FFB547" 
+            strokeDasharray="3 3" 
+          />
+        )}
+        {criticalThreshold && (
+          <ReferenceLine 
+            y={criticalThreshold} 
+            stroke="#FF5252" 
+            strokeDasharray="3 3" 
+          />
+        )}
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+```

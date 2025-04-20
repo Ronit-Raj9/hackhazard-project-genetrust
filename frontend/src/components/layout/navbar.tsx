@@ -76,7 +76,7 @@ export function Navbar() {
                 { name: 'Home', href: '/' },
                 ...(isUserAuthenticated ? [{ name: 'Dashboard', href: '/dashboard' }] : []),
                 { name: 'ChainSight', href: '/chainSight' },
-                { name: 'CRISPR Predictor', href: '/crispr-predictor' },
+                { name: 'Gene Predictor', href: '/gene-predictor' },
                 { name: 'Lab Monitor', href: '/lab-monitor' }
               ].map((item) => (
                 <Link 
@@ -144,7 +144,7 @@ export function Navbar() {
               { name: 'Home', href: '/' },
               ...(isUserAuthenticated ? [{ name: 'Dashboard', href: '/dashboard' }] : []),
               { name: 'ChainSight', href: '/chainSight' },
-              { name: 'CRISPR Predictor', href: '/crispr-predictor' },
+              { name: 'Gene Predictor', href: '/gene-predictor' },
               { name: 'Lab Monitor', href: '/lab-monitor' }
             ].map((item) => (
               <Link 

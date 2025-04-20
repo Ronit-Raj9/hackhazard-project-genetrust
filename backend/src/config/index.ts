@@ -28,7 +28,7 @@ const config = {
   CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS || '',
   
   // Prediction Service URL
-  PREDICTION_SERVICE_URL: process.env.PREDICTION_SERVICE_URL || 'http://localhost:8000',
+  PREDICTION_SERVICE_URL: process.env.PREDICTION_SERVICE_URL || 'http://localhost:4000',
   
   // Email configuration
   EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.gmail.com',

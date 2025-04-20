@@ -401,97 +401,76 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
   const { idToken, name, email } = req.body;
 
-  console.log('Google auth request received:', { 
-    hasIdToken: !!idToken, 
-    email, 
-    name,
-    idTokenLength: idToken ? idToken.length : 0 
-  });
-
   if (!idToken || !email) {
     throw new ApiError(400, 'Google ID token and email are required');
   }
 
-  try {
-    // Verify the ID token with Google - in a real implementation
-    // Here we're just accepting the token and email from the frontend
-    // In a production app, use the google-auth-library to verify the token
-  
-    // Find user by email
-    let user = await User.findOne({ email });
-  
-    if (user) {
-      // User exists - check auth provider
-      if (user.authProvider === 'email') {
-        console.log('User attempted Google login but has email auth provider:', { email, authProvider: user.authProvider });
-        throw new ApiError(409, 'An account with this email already exists. Please log in with your password.');
-      }
-  
-      if (user.authProvider === 'wallet') {
-        console.log('User attempted Google login but has wallet auth provider:', { email, authProvider: user.authProvider });
-        throw new ApiError(409, 'An account with this email already exists. Please log in with your wallet.');
-      }
-  
-      console.log('Existing Google user found, logging in:', { userId: user._id, email });
-      
-      // Update Google ID if needed
-      if (!user.googleId) {
-        user.googleId = idToken.split('.')[0]; // Just using a part of the token as an ID for demo
-        await user.save();
-      }
-    } else {
-      // Create new user
-      console.log('Creating new Google user:', { email });
-      user = await User.create({
-        email,
-        name: name || email.split('@')[0],
-        googleId: idToken.split('.')[0], // Just using a part of the token as an ID for demo
-        authProvider: 'google',
-        isVerified: true, // Google users are automatically verified
-        role: 'user',
-      });
-  
-      // Create profile
-      await Profile.create({
-        userId: user._id,
-        onboardingCompleted: false,
-      });
-      
-      console.log('New Google user created successfully:', { userId: user._id, email });
+  // Verify the ID token with Google - in a real implementation
+  // Here we're just accepting the token and email from the frontend
+  // In a production app, use the google-auth-library to verify the token
+
+  // Find user by email
+  let user = await User.findOne({ email });
+
+  if (user) {
+    // User exists - check auth provider
+    if (user.authProvider === 'email') {
+      throw new ApiError(400, 'An account with this email already exists. Please log in with your password.');
     }
-  
-    // Generate access token
-    const accessToken = user.generateAccessToken();
-  
-    // Set cookie
-    res.cookie('accessToken', accessToken, cookieOptions);
-  
-    console.log('Google authentication successful:', { userId: user._id, email });
-    
-    // Return response
-    return res.status(200).json(
-      new ApiResponse(
-        200,
-        {
-          user: {
-            id: user._id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            preferences: user.preferences,
-            profileImageUrl: user.profileImageUrl,
-            authProvider: user.authProvider,
-            isVerified: user.isVerified,
-          },
-          accessToken,
-        },
-        'Google authentication successful'
-      )
-    );
-  } catch (error) {
-    console.error('Error in Google authentication:', error);
-    throw error;
+
+    if (user.authProvider === 'wallet') {
+      throw new ApiError(400, 'An account with this email already exists. Please log in with your wallet.');
+    }
+
+    // Update Google ID if needed
+    if (!user.googleId) {
+      user.googleId = idToken.split('.')[0]; // Just using a part of the token as an ID for demo
+      await user.save();
+    }
+  } else {
+    // Create new user
+    user = await User.create({
+      email,
+      name: name || email.split('@')[0],
+      googleId: idToken.split('.')[0], // Just using a part of the token as an ID for demo
+      authProvider: 'google',
+      isVerified: true, // Google users are automatically verified
+      role: 'user',
+    });
+
+    // Create profile
+    await Profile.create({
+      userId: user._id,
+      onboardingCompleted: false,
+    });
   }
+
+  // Generate access token
+  const accessToken = user.generateAccessToken();
+
+  // Set cookie
+  res.cookie('accessToken', accessToken, cookieOptions);
+
+  // Return response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          preferences: user.preferences,
+          profileImageUrl: user.profileImageUrl,
+          authProvider: user.authProvider,
+          isVerified: user.isVerified,
+        },
+        accessToken,
+      },
+      'Google authentication successful'
+    )
+  );
 });
 
 /**

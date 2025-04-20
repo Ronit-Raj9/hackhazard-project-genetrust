@@ -1,39 +1,5 @@
-# Backend Structure
-
-## API Endpoints Structure (Node.js/Express Example)
-- Use Express Routers to group related endpoints (e.g., `/api/groq`, `/api/iot`).
-- Define routes like:
-  - `POST /api/groq/chat`
-  - `POST /api/groq/image`
-  - `GET /api/blockchain/checkStatus` (Optional Read-Only)
-- Use clear, RESTful naming conventions where applicable.
-
-## WebSocket Structure
-- Dedicated WebSocket endpoint (e.g., `/ws/iot`).
-- Handle connection, disconnection, and specific message events.
-- Broadcast relevant IoT data updates to connected clients.
-
-## Middleware Chain (Express Example)
-1. Request Logging (e.g., morgan)
-2. CORS Handling (e.g., cors middleware)
-3. Body Parsing (express.json(), express.urlencoded())
-4. (Optional) Authentication/Authorization (if backend state requires it)
-5. Route Handling
-6. Centralized Error Handling Middleware
-
-## Service Layer
-- Encapsulate logic for interacting with Groq API.
-- Manage WebSocket connections and broadcasting.
-- Handle IoT data processing (if any occurs backend).
-- Contain database interaction logic (if using MongoDB).
-- Business logic related to user profiles or other features.
-
-## Data Access Layer (if using MongoDB)
-- Mongoose models define schemas and provide methods for DB operations.
-- Keep database queries isolated within this layer or services.
-- Handle database connection logic.
-
-## Environment Configuration
-- Use `.env` files for sensitive keys (`GROQ_API_KEY`, `MONGO_URI`, `RPC_URL`) and configuration.
-- Load environment variables using a library like `dotenv`.
-- Provide separate configurations for development, staging, and production 
+---
+description: 
+globs: 
+alwaysApply: false
+---

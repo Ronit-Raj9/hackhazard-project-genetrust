@@ -178,11 +178,7 @@ export const predictionAPI = {
   getPrediction: (id: string) => api.get(`/prediction/${id}`),
   addExplanation: (id: string, question: string) => 
     api.post(`/prediction/${id}/explanation`, { question }),
-};
-
-// CRISPR Prediction API (calls the Python ML service via backend)
-export const crisprAPI = {
-  predictSequence: (sequence: string) => api.post('/crispr/predict', { sequence }),
+  predictSequence: (sequence: string) => api.post('/prediction/predict', { sequence }),
 };
 
 // IoT Monitoring API

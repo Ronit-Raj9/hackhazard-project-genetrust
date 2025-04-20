@@ -3,57 +3,74 @@ description:
 globs: 
 alwaysApply: false
 ---
-# Implementation Plan (GeneForge AI Studio)
+# Implementation Plan (GeneTrust AI Studio)
 
 ## Phase 1: Core Setup & Foundation
-- Initialize Next.js project (App Router, TS, Tailwind).
-- Setup basic Node.js/Express backend server.
-- Configure ESLint, Prettier, TypeScript.
-- Implement Root Layout, Navbar (with RainbowKit ConnectButton for Base), Footer.
-- Setup Zustand/Jotai store, Wagmi/RainbowKit providers.
-- Securely configure backend environment variables (GROQ_API_KEY).
-- Create placeholder backend API routes (`/api/groq/chat`).
-- Set up CI/CD basics (GitHub Actions).
+- Set up Next.js project with TypeScript and App Router (`frontend/src/app/`)
+- Configure Pages Router for backward compatibility (`frontend/src/pages/`)
+- Set up Node.js/Express backend with TypeScript (`backend/src/`)
+- Configure tailwind.config.js with custom theme variables
+- Set up `components/ui` directory with shadcn/ui components
+- Configure Framer Motion for animations
+- Set up ESLint, Prettier, TypeScript configurations
+- Implement Root Layout (`frontend/src/app/layout.tsx`)
+- Create utility classes in backend (`utils/ApiError.ts`, `utils/ApiResponse.ts`, `utils/asyncHandler.ts`)
+- Configure MongoDB models with Mongoose
+- Set up environment variables (.env files)
 
-## Phase 2: Personalized Onboarding & Dashboard
-- Build Onboarding chat interface (`/onboarding` or `/`).
-- Implement backend logic for `POST /api/groq/chat` to proxy onboarding conversation.
-- Connect onboarding flow to update user profile state in Zustand/Jotai.
-- Integrate Base Wallet connection smoothly within onboarding.
-- Develop Main Dashboard (`/dashboard`), displaying personalized greeting (ENS/Address).
-- Implement Quick Access Cards.
-- (Optional) Implement Groq-generated avatar logic (`GET /api/groq/image?type=avatar`).
+## Phase 2: Authentication & User Management
+- Implement backend auth controller (`controllers/auth.controller.ts`)
+- Set up user model with MongoDB (`models/user.model.ts`)
+- Create profile model and controller (`models/profile.model.ts`, `controllers/profile.controller.ts`)
+- Implement login and registration pages (`app/login/`, `app/auth/`)
+- Set up authentication middleware (`middleware/auth.middleware.ts`)
+- Create user profile management (`app/profile/`)
 
-## Phase 3: Core Features - Predictor & Monitor
-- Develop CRISPR Predictor page (`/predict`).
-- Implement Sequence Input Form and Prediction Results display.
-- Create backend endpoint (`POST /api/predict`) for ML model interaction (assuming external/mocked for now).
-- Integrate Groq AI Assistant panel for automatic explanations (`POST /api/groq/chat` with context).
-- Implement Groq image generation for sequence visualization (`POST /api/groq/image?type=sequence`).
-- Develop Live Lab Monitor page (`/monitor`).
-- Implement WebSocket connection (`/ws/iot`) on frontend and backend.
-- Create SensorCard components and grid layout.
-- Simulate IoT data push from backend via WebSocket.
-- Implement Groq AI Assistant panel for monitor insights (proactive/reactive via WebSocket/API).
+## Phase 3: CRISPR Predictor Feature
+- Create backend prediction model (`models/prediction.model.ts`)
+- Implement CRISPR controller (`controllers/crispr.controller.ts`)
+- Build frontend sequence input component (`components/predictor/SequenceInput.tsx`)
+- Implement sequence visualization component (`components/predictor/SequenceDisplay.tsx`)
+- Create prediction results component (`components/PredictionResult.tsx`)
+- Build CRISPR predictor page (`app/crispr-predictor/page.tsx`)
+- Implement API endpoints for sequence prediction
+- Add sequence validation utilities
 
-## Phase 4: AI Hub & Blockchain Gateway
-- Develop AI Assistant Hub page (`/assistant`).
-- Build general chat interface with history.
-- Implement Groq diagram generation (`POST /api/groq/image?type=diagram`).
-- (Optional) Add voice input (STT) and output (TTS).
-- Develop Blockchain Portal page (`/blockchain`).
-- Display context data passed from other pages.
-- Implement AI Assistant guidance text (via Groq).
-- Add prominent external link button.
-- Display connected Base Wallet info (OnchainKit/Wagmi).
-- (Optional) Implement read-only check (`GET /api/blockchain/checkStatus`).
+## Phase 4: Groq AI Integration
+- Create Groq service in backend (`services/groq.service.ts`)
+- Implement Groq controller (`controllers/groq.controller.ts`)
+- Build AI chat interface components (`components/ai/`)
+- Create API endpoints for Groq interactions
+- Implement sequence analysis with Groq
+- Add visualization generation capabilities
+- Build explanation component for predictions
 
-## Phase 5: User Profile & Refinements
-- Develop User Profile page (`/profile`).
-- Display wallet info and Groq avatar.
-- Implement basic preferences management (theme, etc.).
-- Add placeholders for future features (achievements).
-- Comprehensive testing (unit, integration, E2E if possible).
-- Styling polish, animations (Framer Motion), responsiveness checks.
-- Accessibility review.
-- Deployment preparation (Vercel, Backend Host, DB Host). 
+## Phase 5: Lab Monitor Feature
+- Create sensor data model (`models/sensor-data.model.ts`)
+- Implement IoT controller (`controllers/iot.controller.ts`)
+- Set up WebSocket server in backend
+- Create WebSocket consumer hook in frontend
+- Build sensor visualization components (`components/monitor/`)
+- Implement lab monitor dashboard (`app/lab-monitor/page.tsx`)
+- Add real-time data visualization with Recharts
+- Create alert system for sensor anomalies
+
+## Phase 6: GeneTrust Feature
+- Build GeneTrust components (`components/geneTrust/`)
+- Implement GeneTrust page (`app/geneTrust/page.tsx`)
+- Create relevant backend endpoints
+- Add data visualizations and analytics
+
+## Phase 7: ChainSight Feature
+- Build ChainSight components (`components/chainSight/`)
+- Implement ChainSight page (`app/chainSight/page.tsx`)
+- Create blockchain integration in backend
+- Develop verification system for experimental results
+
+## Phase 8: Final Integration & Optimization
+- Comprehensive testing of all features
+- Performance optimization (useMemo, useCallback, code-splitting)
+- Responsive design refinements
+- Accessibility improvements
+- Documentation updates
+- Final bug fixes and polish 

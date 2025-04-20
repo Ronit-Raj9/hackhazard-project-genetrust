@@ -1,0 +1,134 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Cursor Usage Guide for GeneTrust AI Studio
+
+## Quick Reference
+
+### Common Request Patterns
+
+When working with this project, you can ask Cursor for help in the following ways:
+
+**Frontend (Next.js)**
+- "Create a new component for the CRISPR predictor feature"
+- "Fix the TypeScript error in the SequenceInput component"
+- "Refactor this component to use Next.js Server Components"
+- "Help me implement a new route in the App Router"
+- "Add proper error handling to this API call using the toast pattern"
+- "Optimize this component's rendering with useMemo and useCallback"
+
+**Backend (Node.js/TypeScript)**
+- "Create a new endpoint in the crispr.controller.ts file"
+- "Set up validation for this API request following our ApiError pattern"
+- "Implement proper error handling in this service using asyncHandler"
+- "Create a WebSocket handler for IoT sensor data"
+- "Optimize this MongoDB query in the prediction model"
+- "Fix the type definition for this controller response"
+
+**Biotech/AI-Specific**
+- "Create a validator for DNA sequences using our existing pattern"
+- "Implement a visualization for sequence data using Framer Motion animations"
+- "Build a prompt template for the Groq API in the groq.service.ts file"
+- "Parse this structured response from Groq"
+- "Help me display real-time sensor data using our WebSocket pattern"
+- "Implement caching for expensive prediction operations"
+
+### Project-Specific Prefixes
+
+For optimal results with Cursor, consider using these prefixes:
+
+- **@frontend** - Use when working on Next.js components, pages, or client-side logic
+  - Example: "@frontend Help me create a new sequence visualization component"
+- **@backend** - Use when working on Node.js/Express API routes or services
+  - Example: "@backend Create a new endpoint for sequence prediction"
+- **@biotech** - Use for domain-specific implementations around genetic sequences
+  - Example: "@biotech Help me implement DNA sequence validation"
+- **@groq** - Use for Groq API integration, prompt engineering, response parsing
+  - Example: "@groq Create a prompt for analyzing a DNA sequence"
+- **@websocket** - Use for IoT data handling and real-time updates
+  - Example: "@websocket Help me send real-time sensor alerts to the frontend"
+- **@components** - Use for UI component development
+  - Example: "@components Create a reusable sequence display component"
+
+## Tips for Effective Use
+
+### Project Navigation
+
+Cursor works best when you reference the actual structure of the codebase:
+
+```
+@frontend I need to add a new feature to the CRISPR predictor page in src/app/crispr-predictor/
+```
+
+```
+@backend Add error handling to the chatCompletion function in groq.controller.ts
+```
+
+```
+@biotech Help me validate DNA sequences in the frontend/src/components/predictor/SequenceInput.tsx file
+```
+
+### Understanding Component Structure
+
+Our components follow specific patterns:
+
+1. **UI Components** - Basic, reusable components in `/components/ui/`
+2. **Feature Components** - Domain-specific components in folders like `/components/predictor/`
+3. **Layout Components** - Page layouts in `/components/layout/` or `/components/layouts/`
+4. **Page Components** - Either in `/app/[route]/page.tsx` or `/pages/[route].tsx`
+
+### Backend Structure
+
+Our backend follows the Controller → Service → Model pattern:
+
+1. **Controllers** (`/controllers/`) - Handle HTTP requests/responses
+2. **Services** (`/services/`) - Contain business logic
+3. **Models** (`/models/`) - Define database schemas and interfaces
+4. **Utils** (`/utils/`) - Shared utility functions
+5. **Middleware** (`/middleware/`) - Express middleware functions
+
+### Code Generation
+
+When asking Cursor to generate code, be specific about:
+
+1. **Location** - Specify the file or directory
+2. **Existing Patterns** - Reference similar components or functions
+3. **Types** - Mention the type definitions to use
+4. **Error Handling** - Specify how errors should be handled (ApiError, toast, etc.)
+
+**Example:** "Create a new component in `frontend/src/components/predictor/` that displays a DNA sequence comparison, following the pattern in SequenceInput.tsx, using the same styling and animation approach."
+
+### Troubleshooting
+
+When asking for help with errors, provide:
+
+1. The exact error message
+2. The file path where the error occurs
+3. Related component or function names
+4. What you've already tried
+
+**Example:** "I'm getting a TypeScript error in `frontend/src/components/predictor/SequenceInput.tsx` line 42: 'Property 'onSubmit' does not exist on type...'. I've tried defining a Props interface but it's still not working."
+
+## Common Patterns to Reference
+
+### Frontend Patterns
+
+- **Animation Pattern** - Uses Framer Motion with initial, animate, and transition props
+- **Form Validation** - Uses inline validation with error state and toast notifications
+- **Data Fetching** - Uses SWR or fetch with async/await in try/catch blocks
+- **Layout Pattern** - Components use consistent spacing with tailwind classes
+
+### Backend Patterns
+
+- **Controller Pattern** - Uses asyncHandler, throws ApiError, returns ApiResponse
+- **Service Pattern** - Contains business logic and external API interactions
+- **Error Handling** - Uses ApiError with status codes and messages
+- **Response Format** - Uses ApiResponse with status, data, and message
+
+### Biotech-Specific Patterns
+
+- **Sequence Validation** - Checks for valid DNA/RNA bases and minimum length
+- **Sequence Display** - Uses color-coding and animation for bases
+- **Prediction Models** - Follows specific data structure with original/predicted sequences

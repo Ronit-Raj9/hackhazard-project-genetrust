@@ -4,7 +4,7 @@ import profileRoutes from './routes/profile.routes';
 import iotRoutes from './routes/iot.routes';
 import groqRoutes from './routes/groq.routes';
 import healthRoutes from './routes/health.routes';
-import crisprRoutes from '../routes/crispr.routes';
+import predictionRoutes from './routes/prediction.routes';
 
 const router = Router();
 
@@ -14,6 +14,6 @@ router.use('/auth', authRoutes);
 router.use('/profile', profileRoutes);
 router.use('/iot', iotRoutes);
 router.use('/groq', groqRoutes);
-router.use('/crispr', crisprRoutes);
+router.use('/prediction', predictionRoutes);
 
 export default router; 

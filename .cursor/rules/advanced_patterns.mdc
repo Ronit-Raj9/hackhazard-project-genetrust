@@ -1,0 +1,519 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Advanced Patterns and Best Practices
+
+## Next.js Frontend Patterns
+
+### Data Fetching Patterns
+- **Server Components (Preferred):**
+  ```typescript
+  // app/dashboard/page.tsx
+  async function DashboardPage() {
+    const data = await fetchDashboardData(); // Server-side fetch, no useEffect needed
+    return <DashboardContent data={data} />;
+  }
+  ```
+
+- **Route Handlers for API:**
+  ```typescript
+  // app/api/data/route.ts
+  export async function GET() {
+    const data = await fetchData();
+    return Response.json({ data });
+  }
+  ```
+
+- **Client-Side Fetching (when needed):**
+  ```typescript
+  // Prefer SWR over raw useEffect for client components
+  'use client';
+  import useSWR from 'swr';
+  
+  function DataComponent() {
+    const { data, error, isLoading } = useSWR('/api/data', fetcher);
+    
+    if (isLoading) return <Loading />;
+    if (error) return <Error />;
+    return <DataDisplay data={data} />;
+  }
+  ```
+
+### Component Architecture
+- Prefer small, focused components with clear responsibilities
+- Use composition over inheritance
+- Implement common patterns:
+  ```typescript
+  // Pattern: Component + Hook pattern
+  'use client';
+  
+  // The hook handles logic
+  function useSequenceForm() {
+    const [sequence, setSequence] = useState('');
+    const [results, setResults] = useState(null);
+    
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const data = await postToApi('/api/predict', { sequence });
+      setResults(data);
+    };
+    
+    return { sequence, setSequence, results, handleSubmit };
+  }
+  
+  // The component is purely presentational
+  function SequenceForm() {
+    const { sequence, setSequence, results, handleSubmit } = useSequenceForm();
+    
+    return (
+      <form onSubmit={handleSubmit}>
+        {/* form elements */}
+      </form>
+    );
+  }
+  ```
+
+### State Management
+- **Zustand Store Pattern:**
+  ```typescript
+  // store/userStore.ts
+  import { create } from 'zustand';
+  
+  interface UserState {
+    profile: UserProfile | null;
+    setProfile: (profile: UserProfile) => void;
+    preferences: UserPreferences;
+    updatePreferences: (preferences: Partial<UserPreferences>) => void;
+  }
+  
+  export const useUserStore = create<UserState>((set) => ({
+    profile: null,
+    setProfile: (profile) => set({ profile }),
+    preferences: defaultPreferences,
+    updatePreferences: (prefs) => set((state) => ({
+      preferences: { ...state.preferences, ...prefs }
+    }))
+  }));
+  ```
+
+- **Context + Zustand Pattern (for complex cases):**
+  ```typescript
+  // contexts/AppContext.tsx
+  'use client';
+  
+  import { createContext, useContext, ReactNode } from 'react';
+  import { useUserStore } from '@/store/userStore';
+  import { useWalletStore } from '@/store/walletStore';
+  
+  const AppContext = createContext(null);
+  
+  export function AppProvider({ children }: { children: ReactNode }) {
+    const userState = useUserStore();
+    const walletState = useWalletStore();
+    
+    return (
+      <AppContext.Provider value={{ user: userState, wallet: walletState }}>
+        {children}
+      </AppContext.Provider>
+    );
+  }
+  
+  export const useAppContext = () => useContext(AppContext);
+  ```
+
+## Node.js Backend Patterns
+
+### API Layer Architecture
+- **Controller → Service → Repository Pattern:**
+  ```typescript
+  // controllers/predictController.ts
+  export async function predict(req: Request, res: Response) {
+    try {
+      const { sequence } = req.body;
+      const result = await predictionService.predictOutcome(sequence);
+      return res.json({ success: true, data: result });
+    } catch (error) {
+      next(error); // Pass to error middleware
+    }
+  }
+  
+  // services/predictionService.ts
+  export async function predictOutcome(sequence: string) {
+    // Business logic, validation, transformation
+    const validatedSequence = validateSequence(sequence);
+    const prediction = await predictionRepository.getPrediction(validatedSequence);
+    return processResults(prediction);
+  }
+  
+  // repositories/predictionRepository.ts
+  export async function getPrediction(sequence: string) {
+    // Data access layer (external API, ML model, database, etc.)
+    return await externalService.predict(sequence);
+  }
+  ```
+
+### Error Handling
+- **Central Error Middleware:**
+  ```typescript
+  // middleware/errorHandler.ts
+  export function errorHandler(
+    err: any, 
+    req: Request, 
+    res: Response, 
+    next: NextFunction
+  ) {
+    const status = err.statusCode || 500;
+    const message = err.message || 'Internal Server Error';
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.error(err.stack);
+    }
+    
+    res.status(status).json({
+      success: false,
+      error: {
+        message,
+        code: err.code || 'INTERNAL_ERROR',
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+      }
+    });
+  }
+  ```
+
+- **Custom Error Classes:**
+  ```typescript
+  // utils/errors.ts
+  export class AppError extends Error {
+    statusCode: number;
+    code: string;
+    
+    constructor(message: string, statusCode = 400, code = 'BAD_REQUEST') {
+      super(message);
+      this.statusCode = statusCode;
+      this.code = code;
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
+  
+  export class NotFoundError extends AppError {
+    constructor(message = 'Resource not found') {
+      super(message, 404, 'NOT_FOUND');
+    }
+  }
+  
+  export class GroqAPIError extends AppError {
+    constructor(message: string) {
+      super(message, 502, 'GROQ_API_ERROR');
+    }
+  }
+  ```
+
+### TypeScript Type Patterns
+- **API Request/Response Types:**
+  ```typescript
+  // types/api.ts
+  export interface APIResponse<T = any> {
+    success: boolean;
+    data: T | null;
+    error: APIError | null;
+  }
+  
+  export interface APIError {
+    message: string;
+    code: string;
+    stack?: string; // Only in development
+  }
+  
+  export interface PredictionRequest {
+    sequence: string;
+    options?: PredictionOptions;
+  }
+  
+  export interface PredictionResult {
+    prediction: string;
+    confidence: number;
+    metadata: Record<string, any>;
+  }
+  ```
+
+- **Zod Validation Pattern:**
+  ```typescript
+  // validation/schemas.ts
+  import { z } from 'zod';
+  
+  export const predictionSchema = z.object({
+    sequence: z.string().min(10).max(1000),
+    options: z.object({
+      detailed: z.boolean().optional(),
+      format: z.enum(['json', 'text']).optional(),
+    }).optional(),
+  });
+  
+  // middleware/validate.ts
+  import { AnyZodObject } from 'zod';
+  
+  export const validate = (schema: AnyZodObject) => async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await schema.parseAsync(req.body);
+      return next();
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Validation failed',
+          code: 'VALIDATION_ERROR',
+          details: error.errors
+        }
+      });
+    }
+  };
+  ```
+
+## Full-Stack Integration Patterns
+
+### Type Sharing
+- Keep shared types in a common location accessible to both frontend and backend
+  ```typescript
+  // types/shared.ts (can be imported by both)
+  export interface UserProfile {
+    id: string;
+    walletAddress: string;
+    preferences: UserPreferences;
+  }
+  
+  export interface UserPreferences {
+    theme: 'light' | 'dark' | 'system';
+    notifications: boolean;
+    visualizationStyle: 'simple' | 'detailed';
+  }
+  ```
+
+### API Contract Pattern
+- Define API endpoints as a contract that both frontend and backend adhere to
+  ```typescript
+  // api-contract.ts (shared)
+  export const API_ENDPOINTS = {
+    PREDICT: '/api/predict',
+    GROQ_CHAT: '/api/groq/chat',
+    GROQ_IMAGE: '/api/groq/image',
+    BLOCKCHAIN_STATUS: '/api/blockchain/checkStatus',
+    WEBSOCKET_IOT: '/ws/iot'
+  } as const;
+  
+  export interface PredictEndpoint {
+    request: PredictionRequest;
+    response: APIResponse<PredictionResult>;
+  }
+  ```
+
+## Performance Optimization Patterns
+
+### Frontend
+- Implement component code-splitting with `dynamic`
+  ```typescript
+  // For heavy components that aren't needed immediately
+  import dynamic from 'next/dynamic';
+  
+  const SequenceDiagram = dynamic(() => import('@/components/SequenceDiagram'), {
+    loading: () => <div>Loading diagram...</div>,
+    ssr: false // If component relies on browser APIs
+  });
+  ```
+
+- Use `useMemo` and `useCallback` for expensive operations
+  ```typescript
+  const memoizedData = useMemo(() => {
+    return expensiveCalculation(data);
+  }, [data]);
+  ```
+
+### Backend
+- Implement caching strategies for expensive operations
+  ```typescript
+  // Simple in-memory cache with TTL
+  const cache = new Map();
+  
+  async function getCachedData(key, fetchFn, ttlMs = 60000) {
+    const now = Date.now();
+    const cachedItem = cache.get(key);
+    
+    if (cachedItem && now - cachedItem.timestamp < ttlMs) {
+      return cachedItem.data;
+    }
+    
+    const data = await fetchFn();
+    cache.set(key, { data, timestamp: now });
+    return data;
+  }
+  ```
+
+## Groq AI Integration Patterns
+
+### Chat Completions Pattern
+```typescript
+// services/groqService.ts
+import { GroqClient } from 'groq-sdk';
+
+export async function generateChatCompletion(
+  messages: { role: 'system' | 'user' | 'assistant'; content: string }[],
+  options: { temperature?: number; maxTokens?: number } = {}
+) {
+  const groq = new GroqClient({ apiKey: process.env.GROQ_API_KEY });
+  
+  try {
+    const completion = await groq.chat.completions.create({
+      messages,
+      model: 'mixtral-8x7b-32768',
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.maxTokens ?? 1024,
+    });
+    
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error('Groq API error:', error);
+    throw new GroqAPIError('Failed to generate completion');
+  }
+}
+```
+
+### Image Generation Pattern
+```typescript
+// services/groqImageService.ts
+import { GroqClient } from 'groq-sdk';
+
+export async function generateImage(
+  prompt: string,
+  options: { size?: string; style?: string } = {}
+) {
+  const groq = new GroqClient({ apiKey: process.env.GROQ_API_KEY });
+  
+  try {
+    const response = await groq.images.generate({
+      prompt,
+      n: 1,
+      size: options.size ?? '1024x1024',
+      style: options.style ?? 'natural',
+    });
+    
+    return response.data[0].url;
+  } catch (error) {
+    console.error('Groq Image API error:', error);
+    throw new GroqAPIError('Failed to generate image');
+  }
+}
+```
+
+## Web3 Integration Patterns
+
+### Wallet Connection Pattern
+```typescript
+// components/WalletConnect.tsx
+'use client';
+
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
+import { useEffect } from 'react';
+import { useUserStore } from '@/store/userStore';
+
+export function WalletConnect() {
+  const { address, isConnected } = useAccount();
+  const setWalletAddress = useUserStore(state => state.setWalletAddress);
+  
+  useEffect(() => {
+    if (isConnected && address) {
+      setWalletAddress(address);
+    }
+  }, [isConnected, address, setWalletAddress]);
+  
+  return (
+    <ConnectButton 
+      accountStatus="address"
+      chainStatus="icon"
+      showBalance={false}
+    />
+  );
+}
+```
+
+### Smart Contract Read Pattern
+```typescript
+// hooks/useContractData.ts
+'use client';
+
+import { useContractRead } from 'wagmi';
+import { abi } from '@/contracts/MyContract';
+
+export function useContractData(contractAddress: string, functionName: string, args: any[] = []) {
+  const { data, isError, isLoading } = useContractRead({
+    address: contractAddress as `0x${string}`,
+    abi,
+    functionName,
+    args,
+    watch: true,
+  });
+  
+  return { data, isError, isLoading };
+}
+```
+
+## Testing Patterns
+
+### Frontend Component Testing
+```typescript
+// components/SequenceInput.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { SequenceInput } from './SequenceInput';
+
+describe('SequenceInput', () => {
+  it('validates input correctly', async () => {
+    const mockOnSubmit = jest.fn();
+    render(<SequenceInput onSubmit={mockOnSubmit} />);
+    
+    // Invalid input test
+    await userEvent.type(screen.getByRole('textbox'), 'XYZ');
+    fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+    expect(screen.getByText(/invalid sequence/i)).toBeInTheDocument();
+    expect(mockOnSubmit).not.toHaveBeenCalled();
+    
+    // Valid input test
+    await userEvent.clear(screen.getByRole('textbox'));
+    await userEvent.type(screen.getByRole('textbox'), 'ATCG');
+    fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+    expect(mockOnSubmit).toHaveBeenCalledWith('ATCG');
+  });
+});
+```
+
+### Backend Service Testing
+```typescript
+// services/predictionService.test.ts
+import { predictOutcome } from './predictionService';
+import * as predictionRepository from '../repositories/predictionRepository';
+
+jest.mock('../repositories/predictionRepository');
+
+describe('predictionService', () => {
+  it('processes prediction results correctly', async () => {
+    // Mock the repository response
+    (predictionRepository.getPrediction as jest.Mock).mockResolvedValue({
+      rawScore: 0.85,
+      features: { a: 1, b: 2 }
+    });
+    
+    const result = await predictOutcome('ATCG');
+    
+    expect(result).toEqual({
+      prediction: 'positive',
+      confidence: 85,
+      metadata: { features: { a: 1, b: 2 } }
+    });
+  });
+  
+  it('handles validation errors', async () => {
+    await expect(predictOutcome('XYZ')).rejects.toThrow('Invalid sequence');
+  });
+});
+```
