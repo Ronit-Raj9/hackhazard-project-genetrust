@@ -8,16 +8,6 @@ echo "========== DNA Sequence Prediction Server Setup =========="
 # Get the directory where the script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 VENV_PATH="$SCRIPT_DIR/dnabert_env"
-MODEL_PATH="$SCRIPT_DIR/DNABERT-2-117M"
-
-# Initialize and update git submodules if needed
-echo "Checking DNABERT-2 model..."
-if [ ! -d "$MODEL_PATH" ] || [ ! -f "$MODEL_PATH/config.json" ]; then
-    echo "Initializing DNABERT-2 model submodule..."
-    cd "$(dirname "$SCRIPT_DIR")"  # Go to root project directory
-    git submodule update --init --recursive
-    cd - > /dev/null  # Return to original directory
-fi
 
 # Check if environment already exists, use it without asking
 if [ -d "$VENV_PATH" ]; then
@@ -36,26 +26,21 @@ if [ "$CREATE_ENV" = true ]; then
     source "$VENV_PATH/bin/activate"
     
     echo "Installing CPU-only dependencies..."
-    pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
-    pip install transformers protobuf einops accelerate fastapi uvicorn numpy
+    pip install torch==2.6.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+    pip install transformers==4.51.3 protobuf==6.30.2 einops==0.8.1 accelerate==1.6.0 fastapi==0.115.12 uvicorn==0.34.2 numpy==2.2.5
     
-    # Update requirements.txt
-    echo "torch" > "$SCRIPT_DIR/requirements.txt"
-    echo "transformers" >> "$SCRIPT_DIR/requirements.txt"
-    echo "protobuf" >> "$SCRIPT_DIR/requirements.txt"
-    echo "einops" >> "$SCRIPT_DIR/requirements.txt"
-    echo "accelerate" >> "$SCRIPT_DIR/requirements.txt"
-    echo "fastapi" >> "$SCRIPT_DIR/requirements.txt"
-    echo "uvicorn" >> "$SCRIPT_DIR/requirements.txt"
-    echo "numpy" >> "$SCRIPT_DIR/requirements.txt"
+    # Update requirements.txt with specific versions
+    cat > "$SCRIPT_DIR/requirements.txt" << EOL
+torch==2.6.0+cpu
+transformers==4.51.3
+protobuf==6.30.2
+einops==0.8.1
+accelerate==1.6.0
+fastapi==0.115.12
+uvicorn==0.34.2
+numpy==2.2.5
+EOL
     
-    # Check for git-lfs
-    if ! command -v git-lfs &> /dev/null; then
-        echo "WARNING: git-lfs not found. If you encounter model loading issues, install it:"
-        echo "  On Fedora: sudo dnf install git-lfs"
-        echo "  On Ubuntu: sudo apt-get install git-lfs"
-        echo "  On Amazon Linux: sudo yum install git-lfs"
-    fi
 else
     # Just activate the existing environment
     echo "Activating existing virtual environment..."
@@ -63,7 +48,7 @@ else
     
     # Make sure server dependencies are installed
     echo "Ensuring server dependencies are installed..."
-    pip install fastapi uvicorn numpy
+    pip install -r "$SCRIPT_DIR/requirements.txt"
 fi
 
 # Set environment variables to ensure CPU-only usage
