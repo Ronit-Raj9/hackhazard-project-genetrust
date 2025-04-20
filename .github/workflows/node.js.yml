@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         node-version: [22.x]
-        python-version: [3.13.3]
+        python-version: [3.12.3]  # Changed to match your system Python version
 
     steps:
     - uses: actions/checkout@v4
@@ -29,8 +29,11 @@ jobs:
         # Kill any existing Python processes
         pkill -f "python app.py" || true
         
-        # Start the server in the background
-        bash run_server.sh &
+        # Make script executable
+        chmod +x without_venv.sh
+        
+        # Start the server in the background using the non-venv script
+        bash without_venv.sh &
         
         # Wait for the server to be ready
         for i in {1..30}; do
@@ -42,7 +45,7 @@ jobs:
             echo "Timeout waiting for Python server"
             exit 1
           fi
-          echo "Waiting for Python server to start..."
+          echo "Waiting for Python server to start... (Attempt $i/30)"
           sleep 2
         done
 
@@ -76,11 +79,22 @@ jobs:
         # Get Python server PID and add to PM2
         PYTHON_PID=$(pgrep -f "python app.py")
         if [ ! -z "$PYTHON_PID" ]; then
-          pm2 start --name genetrust-python-server -x --attach --pid $PYTHON_PID || pm2 restart genetrust-python-server
+          pm2 describe genetrust-python-server > /dev/null 2>&1
+          if [ $? -eq 0 ]; then
+            echo "Restarting existing PM2 process..."
+            pm2 restart genetrust-python-server
+          else
+            echo "Creating new PM2 process..."
+            pm2 start --name genetrust-python-server -x --attach --pid $PYTHON_PID
+          fi
         else
           echo "Python server not found running!"
           exit 1
         fi
         
         # Start or restart Node.js backend
-        pm2 restart genetrust-backend || pm2 start npm --name genetrust-backend -- run start
+        pm2 describe genetrust-backend > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+          pm2 restart genetrust-backend
+        else
+          pm2 start npm --name genetrust-backend -- run start
