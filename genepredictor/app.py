@@ -7,6 +7,7 @@ import random
 import numpy as np
 from transformers import AutoModel, AutoTokenizer
 from pydantic import BaseModel
+from datetime import datetime
 
 # Force CPU usage
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -226,6 +227,11 @@ async def predict_sequence(data: DNASequence):
             status_code=500,
             content={"error": str(e)}
         )
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring server status"""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 if __name__ == "__main__":
     import uvicorn

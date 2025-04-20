@@ -1,4 +1,4 @@
-name: Geneforge Backend CI/CD
+name: Geneforge Full Stack CI/CD
 
 on:
   push:
@@ -7,15 +7,53 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  deploy:
     runs-on: self-hosted
 
     strategy:
       matrix:
         node-version: [22.x]
+        python-version: [3.9]
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'  # This will fetch the DNABERT submodule
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install git-lfs
+      run: |
+        if ! command -v git-lfs &> /dev/null; then
+          sudo yum install -y git-lfs || sudo apt-get install -y git-lfs || sudo dnf install -y git-lfs
+        fi
+        git lfs install
+
+    - name: Start Python DNA Prediction Server
+      working-directory: ./genepredictor
+      run: |
+        # Kill any existing Python processes
+        pkill -f "python app.py" || true
+        
+        # Start the server in the background
+        bash run_server.sh &
+        
+        # Wait for the server to be ready
+        for i in {1..30}; do
+          if curl -s http://localhost:4000/health > /dev/null; then
+            echo "Python server is up!"
+            break
+          fi
+          if [ $i -eq 30 ]; then
+            echo "Timeout waiting for Python server"
+            exit 1
+          fi
+          echo "Waiting for Python server to start..."
+          sleep 2
+        done
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
@@ -37,6 +75,7 @@ jobs:
           echo "Installing dependencies..."
           npm ci
         fi
+
     - name: Build TypeScript
       working-directory: ./backend
       run: npm run build
@@ -47,3 +86,13 @@ jobs:
     - name: Restart PM2 backend process
       working-directory: ./backend
       run: pm2 restart geneforge-backend || pm2 start npm --name geneforge-backend -- run start
+
+    - name: Store Python server PID in PM2
+      run: |
+        PYTHON_PID=$(pgrep -f "python app.py")
+        if [ ! -z "$PYTHON_PID" ]; then
+          pm2 start --name geneforge-python-server -x --attach --pid $PYTHON_PID || pm2 restart geneforge-python-server
+        else
+          echo "Python server not found running!"
+          exit 1
+        fi
