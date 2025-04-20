@@ -4,8 +4,7 @@ import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Mail, User, Lock, Eye, EyeOff, ArrowRight, LogIn, UserPlus } from 'lucide-react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { authEvents } from '@/lib/hooks/useAuth';
+import { useAuth, authEvents } from '@/lib/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -403,43 +402,43 @@ export default function LoginPage() {
         name = decodedToken.name;
         
         if (!email) {
-          throw new Error('Email not found in Google token');
+          throw new Error('Email is required from Google authentication');
         }
       } catch (decodeError) {
         console.error('Failed to decode Google token:', decodeError);
-        throw new Error('Could not process Google sign-in information');
+        throw new Error('Failed to decode Google authentication token');
       }
       
-      // Call the loginWithGoogle function with the extracted information
-      console.log('Calling loginWithGoogle with:', { email, name: name || '' });
-      const response = await loginWithGoogle(idToken, email, name);
-      console.log('Google login successful:', response);
+      // Call the loginWithGoogle function with the token and user info
+      console.log('Calling loginWithGoogle with:', { 
+        email, 
+        name,
+        hasIdToken: !!idToken
+      });
       
-      // Immediately navigate to dashboard after login
-      // The auth event system will handle updating components
-      router.push('/dashboard');
+      await loginWithGoogle(idToken, email, name);
+      console.log('Google login successful, navigating to dashboard');
+      
+      // Emit auth state change event to ensure components update
+      authEvents.emit('auth_state_changed', { isAuthenticated: true });
+      
+      // Provide a small delay to allow the auth state to update completely
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 100);
+      
     } catch (err: any) {
-      console.error('Google login error details:', err);
-      
-      // Provide more helpful error messages based on the error
-      let errorMessage = 'Failed to login with Google';
-      
-      if (err.response) {
-        // Handle API response errors
-        if (err.response.status === 400) {
-          errorMessage = err.response.data?.message || 'Invalid Google authentication data';
-        } else if (err.response.status === 401 || err.response.status === 403) {
-          errorMessage = 'Authentication failed. You may not have permission to access this account.';
-        } else if (err.response.status >= 500) {
-          errorMessage = 'Server error while processing Google login. Please try again later.';
-        }
-      } else if (err.message) {
-        // Use the error message directly if available
-        errorMessage = err.message;
-      }
-      
-      setError(errorMessage);
       console.error('Google login error:', err);
+      
+      // Handle specific error scenarios
+      if (err.response?.status === 409) {
+        // Handle account exists with different auth method
+        setError('An account with this email already exists. Please sign in with your password.');
+      } else {
+        // Handle generic errors with better messages
+        const errorMessage = err.response?.data?.message || err.message || 'Google authentication failed';
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }

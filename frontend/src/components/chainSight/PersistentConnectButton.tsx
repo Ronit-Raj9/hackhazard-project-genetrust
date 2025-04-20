@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useChainSightStore } from '@/lib/stores/chainSightStore';
 import { useWalletAccount } from '@/lib/hooks/use-wallet-account';
-import { useAuthState } from '@/lib/hooks/useAuth';
+import { useAuthState, authEvents } from '@/lib/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Wallet, LogIn } from 'lucide-react';
@@ -24,6 +24,25 @@ export function PersistentConnectButton() {
   // Handle client-side mounting
   useEffect(() => {
     setIsMounted(true);
+    
+    // Log initial state for debugging
+    console.log('PersistentConnectButton mounted with auth state:', {
+      isAuthenticated,
+      userType,
+      hasWallet: !!address,
+      isConnected
+    });
+    
+    // Subscribe to auth events
+    const unsubscribe = authEvents.subscribe((event: string, data?: any) => {
+      if (event === 'auth_state_changed' || event === 'refresh_requested') {
+        console.log(`PersistentConnectButton: ${event} received`, data);
+      }
+    });
+    
+    return () => {
+      unsubscribe();
+    };
   }, []);
   
   useEffect(() => {
@@ -31,8 +50,10 @@ export function PersistentConnectButton() {
     
     try {
       if (address && isConnected) {
+        console.log('Wallet connected in PersistentConnectButton:', { address });
         setWalletConnected(true);
       } else {
+        console.log('Wallet disconnected in PersistentConnectButton');
         setWalletConnected(false);
       }
     } catch (error) {

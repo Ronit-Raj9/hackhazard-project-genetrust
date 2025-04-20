@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { Settings, User, LogOut, Wallet, Shield, Moon, Sun, Activity, Bell, ChevronDown, FileText } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { Settings, User, LogOut, Activity, Bell, ChevronDown, FileText, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { profileAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,8 @@ import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { PersistentConnectButton } from './chainSight/PersistentConnectButton';
+import WalletConnector from '@/components/chainSight/WalletConnector';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 // Animation variants
 const fadeIn = {
@@ -70,6 +71,9 @@ export default function DashboardClient() {
   const [activeTab, setActiveTab] = useState('all');
   const [isMounted, setIsMounted] = useState(false);
   
+  // Add the RainbowKit connect modal hook
+  const { openConnectModal } = useConnectModal();
+  
   // Add a useEffect to handle client-side mounting
   useEffect(() => {
     setIsMounted(true);
@@ -77,8 +81,6 @@ export default function DashboardClient() {
   
   // Wagmi hooks for wallet connection
   const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
 
   // Fetch user profile data
   useEffect(() => {
@@ -111,56 +113,6 @@ export default function DashboardClient() {
       console.error('Failed to update theme preference:', error);
       toast.error('Failed to update theme preference');
       setDarkMode(!newMode); // Revert on error
-    }
-  };
-
-  // Handle wallet connection
-  const connectWallet = async () => {
-    try {
-      // For guest users, just show a success toast and don't try to connect via Wagmi
-      if (user?.role === 'guest') {
-        toast.success('Wallet connected in guest mode');
-        return;
-      }
-      
-      // Check if connectors are available
-      if (!connectors || connectors.length === 0) {
-        toast.error('Wallet connectors not available');
-        return;
-      }
-      
-      // Find a suitable connector, preferring MetaMask if available
-      const metaMaskConnector = connectors.find(connector => connector?.name === 'MetaMask');
-      const anyConnector = connectors[0];
-      
-      const selectedConnector = metaMaskConnector || anyConnector;
-      
-      if (selectedConnector) {
-        await connect({ connector: selectedConnector });
-        toast.success('Wallet connected successfully');
-      } else {
-        toast.error('No wallet connectors found');
-      }
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
-      toast.error(error.message || 'Failed to connect wallet');
-    }
-  };
-
-  // Handle wallet disconnection
-  const disconnectWallet = () => {
-    try {
-      // For guest users, just show a success toast
-      if (user?.role === 'guest') {
-        toast.success('Wallet disconnected in guest mode');
-        return;
-      }
-      
-      disconnect();
-      toast.success('Wallet disconnected');
-    } catch (error) {
-      console.error('Failed to disconnect wallet:', error);
-      toast.error(error.message || 'Failed to disconnect wallet');
     }
   };
 
@@ -431,106 +383,17 @@ export default function DashboardClient() {
           </Card>
             </motion.div>
 
-          {/* Wallet Card */}
-            <motion.div variants={fadeIn} custom={1}>
-              <Card className="backdrop-blur-sm bg-gray-900/30 border-indigo-500/20 overflow-hidden h-full">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-transparent to-cyan-900/10 rounded-lg"></div>
-                <CardHeader className="relative pb-4 border-b border-indigo-500/10">
-                  <CardTitle className="text-indigo-100">Wallet Connection</CardTitle>
-                  <CardDescription className="text-indigo-300/70">Manage your blockchain wallet</CardDescription>
-            </CardHeader>
-                <CardContent className="pb-0 relative pt-6">
-                  <motion.div 
-                    className="flex items-center justify-between mb-6"
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                <div className="flex items-center space-x-3">
-                      <div className="bg-indigo-900/50 p-3 rounded-full border border-indigo-500/30 shadow-lg shadow-indigo-500/10">
-                        <Wallet className="h-6 w-6 text-indigo-300" />
-                  </div>
-                  <div>
-                        <h3 className="font-medium text-white">Wallet Status</h3>
-                        <p className="text-sm text-indigo-300/70">
-                      {isConnected ? 'Connected' : 'Not connected'}
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  {isConnected ? (
-                        <Badge className="bg-green-900/30 text-green-300 border border-green-500/30">
-                      Active
-                    </Badge>
-                  ) : (
-                        <Badge className="bg-gray-800/50 text-gray-300 border border-gray-600/30">
-                      Inactive
-                    </Badge>
-                  )}
-                </div>
-                  </motion.div>
-
-                  <AnimatePresence>
-              {isConnected && address && (
-                      <motion.div 
-                        className="mb-6 p-4 bg-indigo-900/20 rounded-lg border border-indigo-500/20"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                      >
-                  <div className="flex justify-between items-center">
-                          <span className="text-sm text-indigo-300/70">Address</span>
-                          <motion.span 
-                            className="text-sm font-mono font-medium text-indigo-100 bg-indigo-800/30 px-2 py-1 rounded-md"
-                            whileHover={{ scale: 1.05 }}
-                          >
-                      {`${address.substring(0, 6)}...${address.substring(38)}`}
-                          </motion.span>
-                  </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <motion.div 
-                    className="flex justify-between items-center"
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                  <div className="flex items-center space-x-3">
-                      <div className="bg-orange-900/30 p-3 rounded-full border border-orange-500/30 shadow-lg shadow-orange-500/5">
-                        <Shield className="h-5 w-5 text-orange-300" />
-                    </div>
-                    <div>
-                        <h3 className="font-medium text-white">Secured Connection</h3>
-                        <p className="text-sm text-indigo-300/70">End-to-end encryption</p>
-                      </div>
-                    </div>
-                    <Switch 
-                      defaultChecked 
-                      disabled 
-                      className="data-[state=checked]:bg-indigo-600"
-                    />
-                  </motion.div>
-            </CardContent>
-                <CardFooter className="pt-6 pb-6 relative">
-              {isConnected ? (
-                <Button 
-                      className="w-full border-indigo-500/30 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-100" 
-                  variant="outline" 
-                  onClick={disconnectWallet}
-                >
-                  Disconnect Wallet
-                </Button>
-              ) : (
-                <Button 
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                  onClick={connectWallet}
-                >
-                  Connect Wallet
-                </Button>
-              )}
-            </CardFooter>
-          </Card>
-            </motion.div>
+          {/* Wallet Connection */}
+          <motion.div variants={fadeIn} custom={1}>
+            <div className="bg-transparent h-full">
+              <WalletConnector 
+                containerClassName="p-0" 
+                forceAuthenticated={!!user} 
+                forceUserType={user?.role === 'guest' ? 'guest' : 'registered'} 
+                forceAuthLoading={authLoading}
+              />
+            </div>
+          </motion.div>
 
           {/* Settings Card */}
             <motion.div variants={fadeIn} custom={2}>

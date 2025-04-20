@@ -74,6 +74,8 @@ export default function ChainSightWrapper() {
           console.log('ChainSight refresh with auth state:', {
             hasToken: !!token,
             isGuestSession: !!guestId && isGuestActive,
+            currentAuthState: isAuthenticated,
+            localAuthState,
             event,
             data
           });
@@ -84,17 +86,11 @@ export default function ChainSightWrapper() {
       }
     });
     
-    // Check auth state on mount - but limit frequency of checks
-    let checkCount = 0;
-    const checkAuthInterval = setInterval(() => {
+    // Initial auth state check on mount
+    const checkAuthState = () => {
       if (document.hidden) return; // Don't check if tab is not visible
       
-      // Gradually reduce check frequency
-      checkCount++;
-      if (checkCount > 10 && checkCount % 3 !== 0) return; // After 10 checks, only check every 3rd time
-      if (checkCount > 30 && checkCount % 5 !== 0) return; // After 30 checks, only check every 5th time
-      
-      // Check if user is logged in based on local storage values
+      // Check auth state from localStorage/cookies
       const token = localStorage.getItem('auth_token');
       const guestId = localStorage.getItem('guestId');
       const isGuestActive = localStorage.getItem('isGuestSessionActive') === 'true';
@@ -102,17 +98,40 @@ export default function ChainSightWrapper() {
       // If local auth state doesn't match component state, force refresh
       const localAuthState = !!token || (!!guestId && isGuestActive);
       if (localAuthState !== isAuthenticated) {
-        console.log('Auth state mismatch detected - refreshing UI');
+        console.log('Auth state mismatch detected in ChainSightWrapper - refreshing UI', {
+          currentAuthState: isAuthenticated,
+          localAuthState,
+          hasToken: !!token,
+          hasGuestId: !!guestId,
+          isGuestActive
+        });
+        
         // Force rerender by updating key
         setRefreshKey(prev => prev + 1);
       }
-    }, 3000);
+    };
+    
+    // Run initial check after a short delay to allow other components to initialize
+    setTimeout(checkAuthState, 200);
+    
+    // Set up periodic checks at a reasonable interval
+    const checkAuthInterval = setInterval(checkAuthState, 5000);
+    
+    // Add visibility change listener to check auth state when tab becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        checkAuthState();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
       unsubscribe();
       clearInterval(checkAuthInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isAuthenticated]); // Add isAuthenticated as dependency so the effect reruns when it changes
+  }, [isAuthenticated, setRefreshKey]); // Add setRefreshKey to dependency list
 
   // On mount - check container size and set global scaling if needed
   useEffect(() => {
