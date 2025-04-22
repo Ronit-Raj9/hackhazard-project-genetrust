@@ -44,22 +44,27 @@ jobs:
           npm ci
         fi
 
+    - name: Install PM2 globally
+      run: npm install -g pm2
+
     - name: Build TypeScript
       working-directory: ./backend
       run: npm run build
 
     - name: Manage PM2 node processes
       working-directory: ./backend
-      run:        
+      run: |
+        if pm2 list | grep -q genetrust-node; then
           pm2 restart genetrust-node
         else
           pm2 start npm --name genetrust-backend -- run start
-
+        fi
 
     - name: Manage PM2 python processes
       working-directory: ./genepredictor
-      run:        
+      run: |
+        if pm2 list | grep -q genetrust-python; then
           pm2 restart genetrust-python
         else
           pm2 start npm --name genetrust-python -- run start
-
+        fi
