@@ -74,27 +74,17 @@ jobs:
       working-directory: ./backend
       run: npm run build
 
-    - name: Manage PM2 processes
-      run: |
-        # Get Python server PID and add to PM2
-        PYTHON_PID=$(pgrep -f "python app.py")
-        if [ ! -z "$PYTHON_PID" ]; then
-          pm2 describe genetrust-python-server > /dev/null 2>&1
-          if [ $? -eq 0 ]; then
-            echo "Restarting existing PM2 process..."
-            pm2 restart genetrust-python-server
-          else
-            echo "Creating new PM2 process..."
-            pm2 start --name genetrust-python-server -x --attach --pid $PYTHON_PID
-          fi
-        else
-          echo "Python server not found running!"
-          exit 1
-        fi
-        
-        # Start or restart Node.js backend
-        pm2 describe genetrust-backend > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-          pm2 restart genetrust-backend
+    - name: Manage PM2 node processes
+      working-directory: ./backend
+      run:        
+          pm2 restart genetrust-node
         else
           pm2 start npm --name genetrust-backend -- run start
+          
+    - name: Manage PM2 python processes
+      working-directory: ./genepredictor
+      run:        
+          pm2 restart genetrust-python
+        else
+          pm2 start npm --name genetrust-python -- run start
+
