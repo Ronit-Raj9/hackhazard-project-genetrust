@@ -8,11 +8,11 @@ echo "========== DNA Sequence Prediction Server Setup =========="
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 VENV_PATH="$SCRIPT_DIR/dnabert_env"
 
-PYTHON_BIN="python3.12"
+PYTHON_BIN="python3.13"
 
 # Check if Python 3.12 exists
 if ! command -v $PYTHON_BIN &> /dev/null; then
-    echo "❌ Python 3.12 not found. Please install it and try again."
+    echo "❌ Python 3.13 not found. Please install it and try again."
     exit 1
 fi
 
