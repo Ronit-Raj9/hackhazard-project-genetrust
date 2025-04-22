@@ -30,10 +30,10 @@ jobs:
         pkill -f "python app.py" || true
         
         # Make script executable
-        chmod +x without_venv.sh
+        chmod +x run_server.sh
         
         # Start the server in the background using the non-venv script
-        bash without_venv.sh &
+        bash run_server.sh &
         
         # Wait for the server to be ready
         for i in {1..30}; do
