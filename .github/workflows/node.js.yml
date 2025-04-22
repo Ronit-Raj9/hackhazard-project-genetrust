@@ -23,32 +23,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Start Python DNA Prediction Server
-      working-directory: ./genepredictor
-      run: |
-        # Kill any existing Python processes
-        pkill -f "python app.py" || true
-        
-        # Make script executable
-        chmod +x run_server.sh
-        
-        # Start the server in the background using the non-venv script
-        bash run_server.sh &
-        
-        # Wait for the server to be ready
-        for i in {1..30}; do
-          if curl -s http://localhost:4000/health > /dev/null; then
-            echo "Python server is up!"
-            break
-          fi
-          if [ $i -eq 30 ]; then
-            echo "Timeout waiting for Python server"
-            exit 1
-          fi
-          echo "Waiting for Python server to start... (Attempt $i/30)"
-          sleep 2
-        done
-
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
@@ -80,7 +54,8 @@ jobs:
           pm2 restart genetrust-node
         else
           pm2 start npm --name genetrust-backend -- run start
-          
+
+
     - name: Manage PM2 python processes
       working-directory: ./genepredictor
       run:        
