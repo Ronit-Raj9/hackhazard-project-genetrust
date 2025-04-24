@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         node-version: [22.x]
-        python-version: [3.13.3]  # Changed to match your system Python version
+        python-version: [3.12]  # Changed to Python 3.12
 
     steps:
     - uses: actions/checkout@v4
@@ -27,20 +27,13 @@ jobs:
       working-directory: ./backend
       run: echo "${{ secrets.PROD_ENV_FILE }}" > .env
 
-
     - name: Start Python DNA Prediction Server
       working-directory: ./genepredictor
       run: |
-        # Kill any existing Python processes
         pkill -f "python app.py" || true
-        
-        # Make script executable
         chmod +x run_server.sh
-        
-        # Start the server in the background using the non-venv script
         bash run_server.sh &
-        
-        # Wait for the server to be ready
+
         for i in {1..30}; do
           if curl -s http://localhost:4000/health > /dev/null; then
             echo "Python server is up!"
@@ -77,7 +70,6 @@ jobs:
 
     - name: Manage PM2 processes
       run: |
-        # Get Python server PID and add to PM2
         PYTHON_PID=$(pgrep -f "python app.py")
         if [ ! -z "$PYTHON_PID" ]; then
           pm2 describe genetrust-python-server > /dev/null 2>&1
@@ -93,7 +85,6 @@ jobs:
           exit 1
         fi
         
-        # Start or restart Node.js backend
         pm2 describe genetrust-backend > /dev/null 2>&1
         if [ $? -eq 0 ]; then
           pm2 restart genetrust-backend
