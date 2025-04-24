@@ -137,7 +137,6 @@ uploads/**/*
 media/**/*
 large_files/
 datasets/
-models/
 
 # Large directories
 dist/
