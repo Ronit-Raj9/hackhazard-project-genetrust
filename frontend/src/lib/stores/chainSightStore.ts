@@ -1,10 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import mockGenomicData from '@/lib/data/mockGenomicData';
+import { transactionAPI } from '../api';
 
 export type ExperimentType = 'prediction' | 'sensor' | 'manual';
 export type ViewMode = 'grid' | 'helix';
 export type SortOrder = 'newest' | 'oldest' | 'recordId';
+export type TransactionType = 'sample' | 'experiment' | 'access' | 'workflow' | 'ip' | 'other';
+export type TransactionStatus = 'pending' | 'confirmed' | 'failed';
 
 export interface GenomicRecord {
   id: string;
@@ -27,15 +30,17 @@ export interface Transaction {
   hash: string;
   timestamp: number;
   description: string;
-  type: 'sample' | 'experiment' | 'access' | 'workflow' | 'ip' | 'other';
-  status: 'pending' | 'confirmed' | 'failed';
+  type: TransactionType;
+  status: TransactionStatus;
+  blockNumber?: number;
+  gasUsed?: number;
+  entityId?: string;
 }
 
-interface WalletState {
-  address: string | null;
+export interface WalletState {
+  address: string;
   isConnected: boolean;
-  chainId: number | null;
-  connectedTimestamp: number | null;
+  provider?: any;
 }
 
 interface ChainSightState {
@@ -92,13 +97,15 @@ interface ChainSightState {
   loadMockData: () => void;
   addTransaction: (transaction: Transaction) => void;
   clearTransactionHistory: () => void;
-  setTransactionStatus: (hash: string, status: 'pending' | 'confirmed' | 'failed') => void;
+  setTransactionStatus: (hash: string, status: TransactionStatus, blockData?: { blockNumber: number; gasUsed: number }) => void;
+  setWallet: (walletState: WalletState) => void;
+  syncWithBackend: () => Promise<void>;
 }
 
 // Use persist middleware to store state in localStorage
 export const useChainSightStore = create<ChainSightState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // UI States
       isSequencerOpen: false,
       isMicroscopeOpen: false,
@@ -112,10 +119,9 @@ export const useChainSightStore = create<ChainSightState>()(
       
       // Wallet State
       wallet: {
-        address: null,
+        address: '',
         isConnected: false,
-        chainId: null,
-        connectedTimestamp: null
+        provider: null
       },
       
       // Filter/Search States
@@ -218,10 +224,9 @@ export const useChainSightStore = create<ChainSightState>()(
       
       disconnectWallet: () => set((state) => ({ 
         wallet: {
-          address: null,
+          address: '',
           isConnected: false,
-          chainId: null,
-          connectedTimestamp: null
+          provider: null
         },
         // Only update wallet connection status, not authentication status
         hasWalletConnected: false
@@ -271,27 +276,156 @@ export const useChainSightStore = create<ChainSightState>()(
         });
       },
       
-      addTransaction: (transaction) => set((state) => ({
-        transactionHistory: [transaction, ...state.transactionHistory]
-      })),
+      addTransaction: (transaction: Transaction) => {
+        set((state) => {
+          // Check if the transaction already exists
+          const exists = state.transactionHistory.some(tx => tx.hash === transaction.hash);
+          
+          if (exists) {
+            // Update existing transaction
+            return {
+              transactionHistory: state.transactionHistory.map(tx => 
+                tx.hash === transaction.hash ? { ...tx, ...transaction } : tx
+              )
+            };
+          } else {
+            // Add new transaction at the beginning of the array
+            const newHistory = [transaction, ...state.transactionHistory];
+            
+            // Try to save to backend if wallet is connected
+            if (state.wallet.isConnected && state.wallet.address) {
+              try {
+                transactionAPI.createTransaction({
+                  ...transaction,
+                  walletAddress: state.wallet.address
+                }).catch(err => {
+                  console.warn('Failed to save transaction to backend:', err);
+                });
+              } catch (err) {
+                console.warn('Error calling transaction API:', err);
+              }
+            }
+            
+            return { transactionHistory: newHistory };
+          }
+        });
+      },
       
-      clearTransactionHistory: () => set(() => ({ 
-        transactionHistory: [] 
-      })),
+      setTransactionStatus: (hash: string, status: TransactionStatus, blockData?: { blockNumber: number; gasUsed: number }) => {
+        set((state) => {
+          const updatedHistory = state.transactionHistory.map(tx => 
+            tx.hash === hash ? { ...tx, status, ...blockData } : tx
+          );
+          
+          // Try to update status in backend if wallet is connected
+          if (state.wallet.isConnected && state.wallet.address) {
+            try {
+              transactionAPI.updateTransactionStatus(hash, status, blockData)
+                .catch(err => {
+                  console.warn('Failed to update transaction status in backend:', err);
+                });
+            } catch (err) {
+              console.warn('Error calling transaction API:', err);
+            }
+          }
+          
+          return { transactionHistory: updatedHistory };
+        });
+      },
       
-      setTransactionStatus: (hash, status) => set(state => ({
-        transactionHistory: state.transactionHistory.map(tx => 
-          tx.hash === hash ? { ...tx, status } : tx
-        )
-      })),
+      clearTransactionHistory: () => {
+        // Try to clear in backend if wallet is connected
+        if (get().wallet.isConnected) {
+          try {
+            transactionAPI.clearTransactions()
+              .catch(err => {
+                console.warn('Failed to clear transaction history in backend:', err);
+              });
+          } catch (err) {
+            console.warn('Error calling transaction API:', err);
+          }
+        }
+        
+        set({ transactionHistory: [] });
+      },
+      
+      setWallet: (walletState: WalletState) => {
+        set({ wallet: walletState });
+        
+        // If connecting wallet, sync with backend
+        if (walletState.isConnected && walletState.address) {
+          get().syncWithBackend();
+        }
+      },
+      
+      syncWithBackend: async () => {
+        const { wallet, transactionHistory } = get();
+        
+        if (!wallet.isConnected || !wallet.address) {
+          console.log('Cannot sync with backend: wallet not connected');
+          return;
+        }
+        
+        try {
+          // Fetch transactions from backend
+          const response = await transactionAPI.getUserTransactions({
+            walletAddress: wallet.address,
+            limit: 100 // Get a large batch
+          });
+          
+          const backendTransactions = response.data.data.transactions;
+          
+          // Merge local and backend transactions, preferring backend data
+          // but keeping local transactions that aren't in the backend yet
+          const backendHashes = new Set(backendTransactions.map((tx: any) => tx.hash));
+          
+          // Keep local transactions that aren't in backend
+          const localOnlyTransactions = transactionHistory.filter(tx => !backendHashes.has(tx.hash));
+          
+          // Upload local-only transactions to backend
+          for (const tx of localOnlyTransactions) {
+            try {
+              await transactionAPI.createTransaction({
+                ...tx,
+                walletAddress: wallet.address
+              });
+            } catch (err) {
+              console.warn(`Failed to upload local transaction ${tx.hash} to backend:`, err);
+            }
+          }
+          
+          // Convert backend transactions to local format
+          const formattedBackendTxs = backendTransactions.map((tx: any) => ({
+            hash: tx.hash,
+            timestamp: tx.timestamp ? new Date(tx.timestamp).getTime() : Date.now(),
+            description: tx.description,
+            type: tx.type as TransactionType,
+            status: tx.status as TransactionStatus,
+            blockNumber: tx.blockNumber,
+            gasUsed: tx.gasUsed,
+            entityId: tx.entityId
+          }));
+          
+          // Sort transactions by timestamp (newest first)
+          const mergedTransactions = [...formattedBackendTxs, ...localOnlyTransactions].sort(
+            (a, b) => b.timestamp - a.timestamp
+          );
+          
+          set({ transactionHistory: mergedTransactions });
+          
+        } catch (err) {
+          console.error('Failed to sync with backend:', err);
+        }
+      }
     }),
     {
-      name: 'chainSight-wallet-storage', // unique name for localStorage
+      name: 'chain-sight-storage',
+      // Persist both transaction history and wallet state
       partialize: (state) => ({ 
+        transactionHistory: state.transactionHistory,
         wallet: state.wallet,
-        hasWalletConnected: state.hasWalletConnected,
-        transactionHistory: state.transactionHistory
-      }), // only store wallet-related state
+        hasWalletConnected: state.hasWalletConnected
+      })
     }
   )
 ); 

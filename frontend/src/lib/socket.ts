@@ -1,33 +1,48 @@
+'use client';
+
 import { io, Socket } from 'socket.io-client';
 import { useIoTStore } from './store';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Socket instance shared across the application
 let socket: Socket | null = null;
 
-export const initializeSocket = () => {
-  const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8000';
-  
-  if (socket) return socket;
-  
-  // Initialize socket connection
-  socket = io(SOCKET_URL, {
+/**
+ * Initialize Socket.IO connection
+ * @returns Socket instance
+ */
+export const initializeSocket = (): Socket => {
+  if (socket) {
+    return socket;
+  }
+
+  socket = io(API_URL, {
+    transports: ['websocket'],
     withCredentials: true,
     autoConnect: true,
     reconnection: true,
     reconnectionAttempts: 5,
-    reconnectionDelay: 1000,
+    reconnectionDelay: 1000
   });
   
-  // Connection events
+  // Set up common event handlers
   socket.on('connect', () => {
-    console.log('Socket connected');
+    console.log('Socket connected:', socket?.id);
   });
   
   socket.on('disconnect', () => {
     console.log('Socket disconnected');
   });
   
-  socket.on('connect_error', (error) => {
-    console.error('Socket connection error:', error);
+  socket.on('error', (error) => {
+    console.error('Socket error:', error);
+  });
+
+  // Set up custom event handlers
+  socket.on('synapse_agent_update', (data) => {
+    console.log('Agent status update:', data);
+    // This event will be handled by consumers using getSocket().on()
   });
   
   // Initialize sensor data handlers
@@ -36,7 +51,10 @@ export const initializeSocket = () => {
   return socket;
 };
 
-export const disconnectSocket = () => {
+/**
+ * Disconnect Socket.IO connection
+ */
+export const disconnectSocket = (): void => {
   if (socket) {
     socket.disconnect();
     socket = null;
@@ -86,7 +104,12 @@ const setupSensorDataHandlers = (socket: Socket) => {
   });
 };
 
-export const getSocket = () => {
+/**
+ * Get the current Socket.IO instance
+ * Creates a new connection if one doesn't exist
+ * @returns Socket instance
+ */
+export const getSocket = (): Socket => {
   if (!socket) {
     return initializeSocket();
   }

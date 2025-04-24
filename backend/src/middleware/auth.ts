@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import asyncHandler from '../utils/asyncHandler';
 import ApiError from '../utils/ApiError';
 import config from '../config';
+import mongoose from 'mongoose';
 
 // We'll no longer extend the Request interface here
 // Instead we'll use the one from the @types/express directory
@@ -40,7 +41,7 @@ export const verifyJWT = asyncHandler(
 
       // Set user in request, handling potentially missing fields
       req.user = {
-        _id: decodedToken._id,
+        _id: new mongoose.Types.ObjectId(decodedToken._id),
         email: decodedToken.email,
         walletAddress: decodedToken.walletAddress,
         role: decodedToken.role

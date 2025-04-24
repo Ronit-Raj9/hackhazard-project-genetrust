@@ -1,41 +1,36 @@
 #!/bin/bash
 
+# Exit immediately if a command exits with a non-zero status
 set -e
 
 echo "========== DNA Sequence Prediction Server Setup =========="
 
-# Directory setup
+# Get the directory where the script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 VENV_PATH="$SCRIPT_DIR/dnabert_env"
 
-PYTHON_BIN="python3.12"
-
-# Check if Python 3.12 exists
-if ! command -v $PYTHON_BIN &> /dev/null; then
-    echo "❌ Python 3.12 not found. Please install it and try again."
-    exit 1
+# Check if environment already exists, use it without asking
+if [ -d "$VENV_PATH" ]; then
+    echo "Environment already exists. Using existing environment..."
+    CREATE_ENV=false
+else
+    CREATE_ENV=true
 fi
 
-# Create virtual environment if it doesn't exist
-if [ ! -d "$VENV_PATH" ]; then
+# Create and setup the environment if needed
+if [ "$CREATE_ENV" = true ]; then
     echo "Creating new virtual environment..."
-    $PYTHON_BIN -m venv "$VENV_PATH"
-fi
-
-# Activate the virtual environment
-echo "Activating virtual environment..."
-source "$VENV_PATH/bin/activate"
-
-# Upgrade pip to avoid PEP 668 issues
-pip install --upgrade pip
-
-# Install dependencies
-echo "Installing dependencies..."
-pip install torch==2.6.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
-pip install transformers==4.51.3 protobuf==6.30.2 einops==0.8.1 accelerate==1.6.0 fastapi==0.115.12 uvicorn==0.34.2 numpy==2.2.5
-
-# Write/update requirements.txt
-cat > "$SCRIPT_DIR/requirements.txt" << EOL
+    python -m venv "$VENV_PATH"
+    
+    echo "Activating virtual environment..."
+    source "$VENV_PATH/bin/activate"
+    
+    echo "Installing CPU-only dependencies..."
+    pip install torch==2.6.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+    pip install transformers==4.51.3 protobuf==6.30.2 einops==0.8.1 accelerate==1.6.0 fastapi==0.115.12 uvicorn==0.34.2 numpy==2.2.5
+    
+    # Update requirements.txt with specific versions
+    cat > "$SCRIPT_DIR/requirements.txt" << EOL
 torch==2.6.0+cpu
 transformers==4.51.3
 protobuf==6.30.2
@@ -45,20 +40,34 @@ fastapi==0.115.12
 uvicorn==0.34.2
 numpy==2.2.5
 EOL
+    
+else
+    # Just activate the existing environment
+    echo "Activating existing virtual environment..."
+    source "$VENV_PATH/bin/activate"
+    
+    # Make sure server dependencies are installed
+    echo "Ensuring server dependencies are installed..."
+    pip install -r "$SCRIPT_DIR/requirements.txt"
+fi
 
-# Set CPU usage
+# Set environment variables to ensure CPU-only usage
 export CUDA_VISIBLE_DEVICES=""
 export USE_TORCH=1
 export USE_CUDA=0
 export USE_TRITON=0
 
-# Launch the server
+# Inform the user
 echo ""
 echo "========== Starting DNA Sequence Prediction Server =========="
 echo "API will be available at http://localhost:4000"
-echo "Example usage:"
+echo "Example usage with curl:"
 echo "curl -X POST http://localhost:4000/predict -H \"Content-Type: application/json\" -d '{\"sequence\": \"ACGTAGCATCGGATCTATCT\"}'"
 echo ""
+echo "Press Ctrl+C to stop the server"
+echo "==========================================================="
+echo ""
 
+# Run the FastAPI server
 cd "$SCRIPT_DIR"
-$PYTHON_BIN app.py
+python app.py 

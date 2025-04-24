@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Settings as SettingsIcon, Volume2, VolumeX, Info, ShieldCheck, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { useChainSightStore } from '@/lib/stores/chainSightStore';
-import { EFFECTS, DNA_COLORS } from '@/lib/constants/designTokens';
+import { EFFECTS, GENOMIC_THEME } from '@/lib/constants/designTokens';
 import { useWalletState, ROLES } from '@/lib/hooks/useWalletState';
 
 export const Settings = () => {
@@ -92,7 +92,7 @@ export const Settings = () => {
                 >
                   <div className="flex items-center gap-2">
                     <div className={`w-3 h-3 rounded-full ${isWalletConnected ? 'bg-green-500' : 'bg-gray-500'}`}></div>
-                    <span className="text-sm" style={{ color: DNA_COLORS.text.secondary }}>Connected to {chainName}</span>
+                    <span className="text-sm" style={{ color: GENOMIC_THEME.text.secondary }}>Connected to {chainName}</span>
                   </div>
                   {isWrongNetwork && (
                     <div className="flex items-center gap-1 text-orange-400 text-xs">
@@ -109,7 +109,7 @@ export const Settings = () => {
                   }}
                 >
                   <div className="text-sm font-medium">Chain ID</div>
-                  <div className="text-sm font-mono" style={{ color: DNA_COLORS.text.secondary }}>{chainId}</div>
+                  <div className="text-sm font-mono" style={{ color: GENOMIC_THEME.text.secondary }}>{chainId}</div>
                 </div>
               </div>
               
@@ -122,7 +122,7 @@ export const Settings = () => {
                     border: '1px solid rgba(255, 255, 255, 0.05)',
                   }}
                 >
-                  <div className="font-mono text-sm truncate" style={{ color: DNA_COLORS.text.secondary }}>
+                  <div className="font-mono text-sm truncate" style={{ color: GENOMIC_THEME.text.secondary }}>
                     {contractAddress}
                   </div>
                   <button 
@@ -156,7 +156,7 @@ export const Settings = () => {
                     <Info size={18} className="text-gray-400" />
                   )}
                   
-                  <div className="text-sm capitalize" style={{ color: DNA_COLORS.text.secondary }}>
+                  <div className="text-sm capitalize" style={{ color: GENOMIC_THEME.text.secondary }}>
                     {userRole}
                   </div>
                 </div>
@@ -178,7 +178,7 @@ export const Settings = () => {
                     ) : (
                       <VolumeX size={18} className="text-gray-500" />
                     )}
-                    <span className="text-sm" style={{ color: DNA_COLORS.text.secondary }}>
+                    <span className="text-sm" style={{ color: GENOMIC_THEME.text.secondary }}>
                       Interface Sounds
                     </span>
                   </div>
@@ -199,7 +199,7 @@ export const Settings = () => {
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-sm hover:underline"
-                  style={{ color: DNA_COLORS.primary }}
+                  style={{ color: GENOMIC_THEME.primary }}
                 >
                   <ShieldCheck size={14} />
                   <span>View Security Audit Report</span>
@@ -208,8 +208,8 @@ export const Settings = () => {
             </div>
             
             {/* Footer */}
-            <div className="p-4 border-t border-gray-800 text-xs text-center" style={{ color: DNA_COLORS.text.muted }}>
-              ChainSight v1.0.0 • © 2023 GeneForge Labs
+            <div className="p-4 border-t border-gray-800 text-xs text-center" style={{ color: GENOMIC_THEME.text.muted }}>
+              ChainSight v1.0.0 • © 2023 GeneTrust Labs
             </div>
           </motion.div>
         </motion.div>

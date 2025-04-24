@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { Settings, User, LogOut, Wallet, Shield, Moon, Sun, Activity, Bell, ChevronDown, FileText } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { Settings, User, LogOut, Wallet, Shield, Moon, Sun, Activity, Bell, ChevronDown, FileText, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { profileAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,15 @@ import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { PersistentConnectButton } from './chainSight/PersistentConnectButton';
+import Link from 'next/link';
+import { TransactionHistory } from './dashboard/TransactionHistory';
+import { ActivityFeed } from './dashboard/ActivityFeed';
+
+// Import GeneList component
+const GeneList = dynamic(() => import('./dashboard/GeneList'), {
+  loading: () => <div className="text-center py-4 animate-pulse">Loading predictions...</div>,
+  ssr: false,
+});
 
 // Animation variants
 const fadeIn = {
@@ -70,15 +78,8 @@ export default function DashboardClient() {
   const [activeTab, setActiveTab] = useState('all');
   const [isMounted, setIsMounted] = useState(false);
   
-  // Add a useEffect to handle client-side mounting
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-  
   // Wagmi hooks for wallet connection
   const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
 
   // Fetch user profile data
   useEffect(() => {
@@ -111,56 +112,6 @@ export default function DashboardClient() {
       console.error('Failed to update theme preference:', error);
       toast.error('Failed to update theme preference');
       setDarkMode(!newMode); // Revert on error
-    }
-  };
-
-  // Handle wallet connection
-  const connectWallet = async () => {
-    try {
-      // For guest users, just show a success toast and don't try to connect via Wagmi
-      if (user?.role === 'guest') {
-        toast.success('Wallet connected in guest mode');
-        return;
-      }
-      
-      // Check if connectors are available
-      if (!connectors || connectors.length === 0) {
-        toast.error('Wallet connectors not available');
-        return;
-      }
-      
-      // Find a suitable connector, preferring MetaMask if available
-      const metaMaskConnector = connectors.find(connector => connector?.name === 'MetaMask');
-      const anyConnector = connectors[0];
-      
-      const selectedConnector = metaMaskConnector || anyConnector;
-      
-      if (selectedConnector) {
-        await connect({ connector: selectedConnector });
-        toast.success('Wallet connected successfully');
-      } else {
-        toast.error('No wallet connectors found');
-      }
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
-      toast.error(error.message || 'Failed to connect wallet');
-    }
-  };
-
-  // Handle wallet disconnection
-  const disconnectWallet = () => {
-    try {
-      // For guest users, just show a success toast
-      if (user?.role === 'guest') {
-        toast.success('Wallet disconnected in guest mode');
-        return;
-      }
-      
-      disconnect();
-      toast.success('Wallet disconnected');
-    } catch (error) {
-      console.error('Failed to disconnect wallet:', error);
-      toast.error(error.message || 'Failed to disconnect wallet');
     }
   };
 
@@ -226,7 +177,7 @@ export default function DashboardClient() {
               <p className="text-gray-400 mt-1">Manage your account and view your data</p>
             </motion.div>
             
-            <motion.div 
+            {/* <motion.div 
               className="flex items-center mt-4 md:mt-0 space-x-2"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -258,7 +209,7 @@ export default function DashboardClient() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            </motion.div>
+            </motion.div> */}
         </div>
 
           <motion.div 
@@ -512,28 +463,21 @@ export default function DashboardClient() {
                   </motion.div>
             </CardContent>
                 <CardFooter className="pt-6 pb-6 relative">
-              {isConnected ? (
-                <Button 
-                      className="w-full border-indigo-500/30 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-100" 
-                  variant="outline" 
-                  onClick={disconnectWallet}
-                >
-                  Disconnect Wallet
-                </Button>
-              ) : (
-                <Button 
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                  onClick={connectWallet}
-                >
-                  Connect Wallet
-                </Button>
-              )}
-            </CardFooter>
+                <Link href="/chainSight" passHref>
+                  <Button 
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center"
+                  >
+                    <Wallet className="h-4 w-4 mr-2" />
+                    Go to Wallet Hub
+                    <ExternalLink className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardFooter>
           </Card>
             </motion.div>
 
           {/* Settings Card */}
-            <motion.div variants={fadeIn} custom={2}>
+            {/* <motion.div variants={fadeIn} custom={2}>
               <Card className="backdrop-blur-sm bg-gray-900/30 border-indigo-500/20 overflow-hidden h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-transparent to-cyan-900/10 rounded-lg"></div>
                 <CardHeader className="relative pb-4 border-b border-indigo-500/10">
@@ -603,7 +547,7 @@ export default function DashboardClient() {
               </div>
             </CardContent>
           </Card>
-            </motion.div>
+            </motion.div> */}
           </motion.div>
 
         {/* Recent Activity Section */}
@@ -641,6 +585,12 @@ export default function DashboardClient() {
                       Predictions
                     </TabsTrigger>
                     <TabsTrigger 
+                      value="transactions"
+                      className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-gray-300"
+                    >
+                      Transactions
+                    </TabsTrigger>
+                    <TabsTrigger 
                       value="monitoring"
                       className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-gray-300"
                     >
@@ -664,80 +614,17 @@ export default function DashboardClient() {
                           </div>
                         </div>
                       ) : activeTab === 'all' ? (
-                        profile?.recentActivity?.length > 0 ? (
-                    <div className="space-y-4">
-                      {profile.recentActivity.map((activity: any, index: number) => (
-                              <motion.div 
-                                key={index}
-                                className="flex justify-between p-4 bg-indigo-900/20 rounded-lg border border-indigo-500/20"
-                                whileHover={{ scale: 1.01 }}
-                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                              >
-                          <div>
-                                  <p className="font-medium text-white">{activity.type === 'prediction' ? 'Gene Prediction' : 'IoT Monitoring'}</p>
-                                  <p className="text-sm text-indigo-300/70">
-                              {activity.data.summary || 'Activity recorded'}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                                  <p className="text-sm text-indigo-300/70">
-                              {new Date(activity.timestamp).toLocaleDateString()}
-                            </p>
-                                  <p className="text-sm text-indigo-400/50">
-                              {new Date(activity.timestamp).toLocaleTimeString()}
-                            </p>
-                          </div>
-                              </motion.div>
-                      ))}
-                    </div>
-                  ) : (
-                          <motion.div 
-                            className="text-center py-12 bg-indigo-900/10 rounded-lg border border-indigo-500/10"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                          >
-                            <FileText className="h-12 w-12 mx-auto mb-4 text-indigo-400/50" />
-                            <p className="text-lg text-indigo-300">No activity found</p>
-                            <p className="text-sm text-indigo-300/70 mt-1">Your recent actions will appear here</p>
-                          </motion.div>
-                        )
+                        <ActivityFeed limit={8} />
                       ) : activeTab === 'predictions' ? (
-                        profile?.recentActivity?.filter((a: any) => a.type === 'prediction')?.length > 0 ? (
-                    <div className="space-y-4">
-                      {profile.recentActivity
-                        .filter((activity: any) => activity.type === 'prediction')
-                        .map((activity: any, index: number) => (
-                                <motion.div 
-                                  key={index}
-                                  className="flex justify-between p-4 bg-indigo-900/20 rounded-lg border border-indigo-500/20"
-                                  whileHover={{ scale: 1.01 }}
-                                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                                >
-                            <div>
-                                    <p className="font-medium text-white">Gene Prediction</p>
-                                    <p className="text-sm text-indigo-300/70">
-                                {activity.data.summary || 'Prediction recorded'}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                                    <p className="text-sm text-indigo-300/70">
-                                {new Date(activity.timestamp).toLocaleDateString()}
-                              </p>
-                            </div>
-                                </motion.div>
-                              ))}
-                          </div>
-                        ) : (
-                          <motion.div 
-                            className="text-center py-12 bg-indigo-900/10 rounded-lg border border-indigo-500/10"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                          >
-                            <FileText className="h-12 w-12 mx-auto mb-4 text-indigo-400/50" />
-                            <p className="text-lg text-indigo-300">No predictions found</p>
-                            <p className="text-sm text-indigo-300/70 mt-1">Your gene predictions will appear here</p>
-                          </motion.div>
-                        )
+                        <div className="space-y-6">
+                          {/* Full Gene Predictions List */}
+                          <GeneList />
+                        </div>
+                      ) : activeTab === 'transactions' ? (
+                        <div className="space-y-6">
+                          {/* Just use the component directly */}
+                          <TransactionHistory limit={8} />
+                        </div>
                       ) : (
                         profile?.recentActivity?.filter((a: any) => a.type === 'monitoring')?.length > 0 ? (
                     <div className="space-y-4">

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/providers";
 import { Navbar } from '@/components/layout/navbar';
 import { ConditionalFooter } from '@/components/layout/conditional-footer';
+import Synapse from '@/components/synapse/Synapse';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,6 +27,7 @@ export default function RootLayout({
           <main className="flex-grow">{children}</main>
           <ConditionalFooter />
           <Toaster />
+          <Synapse />
         </Providers>
       </body>
     </html>

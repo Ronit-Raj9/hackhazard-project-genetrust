@@ -3,7 +3,7 @@ description:
 globs: 
 alwaysApply: false
 ---
-# Application Flow Document (GeneForge AI Studio)
+# Application Flow Document (GeneTrust AI Studio)
 
 ## User Journey
 1. Landing / Personalized Onboarding (Groq Chat, Wallet Connect)

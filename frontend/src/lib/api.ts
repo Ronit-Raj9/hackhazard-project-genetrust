@@ -1,3 +1,5 @@
+'use client';
+
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
@@ -181,6 +183,163 @@ export const predictionAPI = {
   predictSequence: (sequence: string) => api.post('/prediction/predict', { sequence }),
 };
 
+// Gene API for DNA sequence analysis
+export const geneAPI = {
+  // Create a gene prediction
+  createGene: (sequence: string, metadata?: {
+    name?: string;
+    description?: string;
+    tags?: string[];
+    geneType?: 'crispr' | 'rna' | 'dna' | 'protein' | 'other';
+    isPublic?: boolean;
+  }) => api.post('/gene', { sequence, ...metadata }),
+  
+  // Get all gene predictions for the authenticated user with filtering options
+  getUserGenes: (options?: {
+    page?: number;
+    limit?: number;
+    sort?: string;
+    order?: 'asc' | 'desc';
+    geneType?: string;
+    tags?: string[];
+    favorite?: boolean;
+    query?: string;
+    minEfficiency?: number;
+  }) => {
+    const params = new URLSearchParams();
+    if (options) {
+      if (options.page) params.append('page', options.page.toString());
+      if (options.limit) params.append('limit', options.limit.toString());
+      if (options.sort) params.append('sort', options.sort);
+      if (options.order) params.append('order', options.order);
+      if (options.geneType) params.append('geneType', options.geneType);
+      if (options.favorite) params.append('favorite', options.favorite.toString());
+      if (options.query) params.append('query', options.query);
+      if (options.minEfficiency) params.append('minEfficiency', options.minEfficiency.toString());
+      if (options.tags && options.tags.length > 0) {
+        options.tags.forEach(tag => params.append('tags', tag));
+      }
+    }
+    return api.get(`/gene?${params.toString()}`);
+  },
+  
+  // Get a single gene prediction by ID
+  getGene: (id: string) => api.get(`/gene/${id}`),
+  
+  // Update gene prediction metadata
+  updateGene: (id: string, updates: {
+    name?: string;
+    description?: string;
+    tags?: string[];
+    geneType?: 'crispr' | 'rna' | 'dna' | 'protein' | 'other';
+    isFavorite?: boolean;
+    isPublic?: boolean;
+  }) => api.put(`/gene/${id}`, updates),
+  
+  // Delete a gene prediction
+  deleteGene: (id: string) => api.delete(`/gene/${id}`),
+  
+  // Add an explanation to a gene prediction
+  addExplanation: (id: string, text: string) => 
+    api.post(`/gene/${id}/explanation`, { text }),
+  
+  // Run the prediction service (compatible with legacy predictionAPI.predictSequence)
+  predictSequence: (sequence: string, metadata?: {
+    name?: string;
+    description?: string;
+    tags?: string[];
+    geneType?: 'crispr' | 'rna' | 'dna' | 'protein' | 'other';
+    isPublic?: boolean;
+  }) => api.post('/gene/predict', { sequence, ...metadata }),
+};
+
+// Transaction API for blockchain transactions
+export const transactionAPI = {
+  // Create a new blockchain transaction record
+  createTransaction: (transactionData: {
+    hash: string;
+    description: string;
+    type: 'sample' | 'experiment' | 'access' | 'workflow' | 'ip' | 'other';
+    timestamp?: number; // Milliseconds timestamp
+    status?: 'pending' | 'confirmed' | 'failed';
+    walletAddress: string;
+    blockNumber?: number;
+    gasUsed?: number;
+    metadata?: Record<string, any>;
+    entityId?: string;
+    contractAddress?: string;
+  }) => api.post('/transactions', transactionData),
+  
+  // Update transaction status (e.g., when confirmed on blockchain)
+  updateTransactionStatus: (hash: string, status: 'pending' | 'confirmed' | 'failed', blockData?: {
+    blockNumber: number;
+    gasUsed: number;
+  }) => api.patch(`/transactions/${hash}/status`, { status, ...blockData }),
+  
+  // Get all transactions for the user with filtering
+  getUserTransactions: (options?: {
+    type?: string | string[]; // Single type or comma-separated list
+    status?: string | string[]; // Single status or comma-separated list
+    walletAddress?: string;
+    fromDate?: string | Date; // ISO date string or Date object
+    toDate?: string | Date; // ISO date string or Date object
+    entityId?: string;
+    page?: number;
+    limit?: number;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
+    const params = new URLSearchParams();
+    if (options) {
+      if (options.type) {
+        const typeParam = Array.isArray(options.type) ? options.type.join(',') : options.type;
+        params.append('type', typeParam);
+      }
+      
+      if (options.status) {
+        const statusParam = Array.isArray(options.status) ? options.status.join(',') : options.status;
+        params.append('status', statusParam);
+      }
+      
+      if (options.walletAddress) params.append('walletAddress', options.walletAddress);
+      if (options.entityId) params.append('entityId', options.entityId);
+      
+      if (options.fromDate) {
+        const fromDateStr = options.fromDate instanceof Date 
+          ? options.fromDate.toISOString() 
+          : options.fromDate;
+        params.append('fromDate', fromDateStr);
+      }
+      
+      if (options.toDate) {
+        const toDateStr = options.toDate instanceof Date 
+          ? options.toDate.toISOString() 
+          : options.toDate;
+        params.append('toDate', toDateStr);
+      }
+      
+      if (options.page) params.append('page', options.page.toString());
+      if (options.limit) params.append('limit', options.limit.toString());
+      if (options.sort) params.append('sort', options.sort);
+      if (options.order) params.append('order', options.order);
+    }
+    
+    return api.get(`/transactions?${params.toString()}`);
+  },
+  
+  // Get a specific transaction by hash
+  getTransactionByHash: (hash: string) => api.get(`/transactions/${hash}`),
+  
+  // Delete a transaction record
+  deleteTransaction: (hash: string) => api.delete(`/transactions/${hash}`),
+  
+  // Get transaction counts by type
+  getTransactionCounts: () => api.get('/transactions/stats/counts'),
+  
+  // Clear transaction history (soft delete)
+  clearTransactions: () => api.post('/transactions/clear')
+};
+
 // IoT Monitoring API
 export const iotAPI = {
   getLatestData: () => api.get('/iot/data'),
@@ -273,5 +432,85 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Synapse AI Bot API
+export const synapseAPI = {
+  // Send a message to the Synapse Bot
+  sendMessage: (sessionId: string, message: string, contextHint: any) => 
+    api.post('/synapse/bot/message', { sessionId, message, contextHint }),
+  
+  // Send a message to Synapse Agent with agentic RAG capabilities
+  sendAgentMessage: (sessionId: string, message: string, contextHint: any) =>
+    api.post('/synapse/agent/message', { sessionId, message, contextHint }),
+  
+  // Create a new chat session - change route to match backend
+  createSession: (title?: string) => 
+    api.post('/synapse/chat/session', { title }),
+  
+  // Get user sessions
+  getUserSessions: () => 
+    api.get('/synapse/chat/sessions'),
+  
+  // Get session history - update to use the correct route
+  getSessionHistory: (sessionId: string) => 
+    api.get(`/synapse/chat/sessions/${sessionId}/history`),
+  
+  // Delete a chat session
+  deleteSession: (sessionId: string) =>
+    api.delete(`/synapse/chat/sessions/${sessionId}`),
+  
+  // Submit feedback for a message
+  submitFeedback: (
+    sessionId: string, 
+    messageId: string, 
+    feedbackType: 'positive' | 'negative' | 'specific', 
+    options?: {
+      comment?: string;
+      specificRatings?: {
+        accuracy?: number;
+        relevance?: number;
+        helpfulness?: number;
+        clarity?: number;
+      }
+    }
+  ) => api.post('/synapse/feedback', { 
+    sessionId, 
+    messageId, 
+    feedbackType,
+    comment: options?.comment,
+    specificRatings: options?.specificRatings
+  }),
+  
+  // Get user feedback statistics
+  getFeedbackStats: () => api.get('/synapse/feedback/stats'),
+  
+  // Get Synapse AI info
+  getInfo: () => 
+    api.get('/synapse/ai/info'),
+  
+  // Lab Monitor specific commands
+  interpretLabCommand: (command: string) => 
+    api.post('/synapse/bot/lab-command', { command }),
+  
+  // Analyze sensor data
+  analyzeSensorData: (sensorType: string, readings: Array<{ timestamp: Date; value: number }>, thresholdValue: number) => 
+    api.post('/synapse/bot/analyze-sensor', { sensorType, readings, thresholdValue }),
+  
+  // Analyze sensor trends
+  analyzeSensorTrends: (
+    sensorType: string, 
+    sensorId: string, 
+    timeRange: { start: number | string, end: number | string },
+    options: { predictionHours?: number; detectAnomalies?: boolean } = {}
+  ) => api.post('/synapse/bot/analyze-trends', { sensorType, sensorId, timeRange, options }),
+  
+  // For gene analysis
+  analyzeGeneEdit: (originalSequence: string, editedSequence: string, experimentMetadata?: any) => 
+    api.post('/synapse/bot/analyze-gene-edit', { originalSequence, editedSequence, experimentMetadata }),
+  
+  // For blockchain
+  narrateTransaction: (transactionDetails: any, transactionHash?: string) => 
+    api.post('/synapse/bot/narrate-transaction', { transactionDetails, transactionHash })
+};
 
 export default api; 

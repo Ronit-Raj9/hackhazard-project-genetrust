@@ -5,11 +5,16 @@
     "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "./src",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "noImplicitAny": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitThis": false,
+    "strictNullChecks": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.ts"]

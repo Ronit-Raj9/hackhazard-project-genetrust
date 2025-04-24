@@ -38,7 +38,7 @@ const itemVariants = {
   }
 };
 
-export default function ChainSightWrapper() {
+export default function ChainSightWrapper({ children }: { children?: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isClient, setIsClient] = useState(false);
   const { wallet } = useChainSightStore();
@@ -140,10 +140,10 @@ export default function ChainSightWrapper() {
 
   // Check wallet connection from the store which doesn't rely on Wagmi hooks directly
   const isWalletConnected = wallet.isConnected && wallet.address;
-
+  console.log('isWalletConnected chainSight wrapper', isWalletConnected);
   return (
     <div className="min-h-screen overflow-hidden bg-gradient-to-b from-black to-gray-900" ref={containerRef}>
-      {/* Background animations */}
+      {/* Background animations */}isWalletConnected
       <BackgroundParticles />
       
       {/* Use HelixFlow with required props */}
@@ -230,12 +230,12 @@ export default function ChainSightWrapper() {
                 <WalletConnector 
                   // Explicitly pass auth state to ensure component has latest values
                   forceAuthenticated={isAuthenticated}
-                  forceUserType={userType}
+                  forceUserType={userType || undefined}
                   forceAuthLoading={isLoading}
                 />
               </motion.div>
               
-              {/* Only show genomic tools when wallet is connected */}
+              { /* Only show genomic tools when wallet is connected */}
               {isWalletConnected && (
                 <motion.div 
                   variants={containerVariants}
@@ -248,29 +248,45 @@ export default function ChainSightWrapper() {
                     <GenomicDashboard />
                   </motion.div>
                   
-                  {/* Transaction History */}
-                  <motion.div variants={itemVariants} className="mt-8">
-                    <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
-                      <span className="mr-2 h-1 w-6 bg-indigo-500 rounded-full"></span>
-                      Transaction History
-                      <span className="ml-2 h-1 w-6 bg-indigo-500 rounded-full"></span>
-                    </h2>
-                    <TransactionHistory showFilters={true} />
-                  </motion.div>
+                  {/* Show Transaction History only if no children are provided */}
+                  {!children && (
+                    <motion.div variants={itemVariants} className="mt-8">
+                      <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+                        <span className="mr-2 h-1 w-6 bg-indigo-500 rounded-full"></span>
+                        Transaction History
+                        <span className="ml-2 h-1 w-6 bg-indigo-500 rounded-full"></span>
+                      </h2>
+                      <TransactionHistory showFilters={true} />
+                    </motion.div>
+                  )}
                   
-                  <motion.div 
-                    variants={itemVariants}
-                    className="flex justify-center mt-12"
-                  >
-                    <Button 
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-8 py-2 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-indigo-500/30"
-                      onClick={() => {
-                        window.location.href = "/dashboard";
-                      }}
+                  {!children && (
+                    <motion.div 
+                      variants={itemVariants}
+                      className="flex justify-center mt-12"
                     >
-                      Go to Dashboard
-                    </Button>
-                  </motion.div>
+                      <Button 
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-8 py-2 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-indigo-500/30"
+                        onClick={() => {
+                          window.location.href = "/dashboard";
+                        }}
+                      >
+                        Go to Dashboard
+                      </Button>
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
+              
+              {/* Render children if provided */}
+              {children && (
+                <motion.div 
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="mt-8"
+                >
+                  {children}
                 </motion.div>
               )}
             </motion.div>

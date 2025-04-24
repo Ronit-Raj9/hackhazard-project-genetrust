@@ -43,8 +43,8 @@ try:
     )
     
     # Example DNA sequence
-    dna = "ACGTAGCATCGGATCTATCTATCGACACTTGGTTATCGATCTACGAGCATCTCGTTAGC"
-    print(f"Processing DNA sequence: {dna[:20]}...")
+dna = "ACGTAGCATCGGATCTATCTATCGACACTTGGTTATCGATCTACGAGCATCTCGTTAGC"
+print(f"Processing DNA sequence: {dna[:20]}...")
     
     # Tokenize input
     inputs = tokenizer(dna, return_tensors='pt')
@@ -57,11 +57,11 @@ try:
     hidden_states = outputs[0]
     
     # Apply pooling strategies to get fixed-size embeddings
-    embedding_mean = torch.mean(hidden_states[0], dim=0)
-    print(f"Mean pooling embedding shape: {embedding_mean.shape}")
-    
-    embedding_max = torch.max(hidden_states[0], dim=0)[0]
-    print(f"Max pooling embedding shape: {embedding_max.shape}")
+embedding_mean = torch.mean(hidden_states[0], dim=0)
+print(f"Mean pooling embedding shape: {embedding_mean.shape}")
+
+embedding_max = torch.max(hidden_states[0], dim=0)[0]
+print(f"Max pooling embedding shape: {embedding_max.shape}")
     
     # Example usage of embeddings
     print("\nFirst 5 values of mean-pooled embedding:")

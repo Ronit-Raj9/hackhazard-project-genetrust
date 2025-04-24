@@ -67,7 +67,7 @@ export function Navbar() {
               >
                 <Dna className="h-6 w-6 mr-2 text-indigo-400" />
                 <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400 group-hover:from-indigo-300 group-hover:to-cyan-300 transition-all duration-300">GENE</span>
-                <span className="text-2xl font-bold text-white group-hover:text-indigo-200 transition-all duration-300">Forge</span>
+                <span className="text-2xl font-bold text-white group-hover:text-indigo-200 transition-all duration-300">Trust</span>
               </motion.div>
             </Link>
             

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { Info, AlertTriangle, ChevronDown, ChevronUp, Zap, ExternalLink, Check, Wallet, LogIn } from 'lucide-react';
+import { Info, AlertTriangle, ChevronDown, ChevronUp, Zap, ExternalLink, Check, Wallet, LogIn, Copy, CopyIcon } from 'lucide-react';
 import { DNA_COLORS } from '@/lib/constants/designTokens';
 import { getWalletClient, getAccount, signMessage, connect, disconnect } from 'wagmi/actions';
 import { useWalletAccount } from '@/lib/hooks/use-wallet-account';
@@ -15,10 +15,11 @@ import { authAPI } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LogOutIcon, CopyIcon } from 'lucide-react';
+import { LogOutIcon } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { formatEther } from 'ethers';
 import { isEmpty } from 'lodash';
+import { WalletState } from '@/lib/stores/chainSightStore';
 import { 
   getGuestId, 
   loadGuestData, 
@@ -26,9 +27,7 @@ import {
   isGuestSessionActive 
 } from '@/lib/utils/guestStorage';
 import { useConnect } from 'wagmi';
-import { ClipboardCopyIcon } from "@radix-ui/react-icons";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import lodash from 'lodash';
 
 // Component animations
@@ -221,7 +220,7 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
           
           setGuestWalletAddress(address);
           setIsGuestWalletConnected(true);
-      setWalletConnected(true);
+          setWalletConnected(true);
           
           // Notify about wallet connection status change
           authEvents.emit('auth_state_changed', { isAuthenticated, walletConnected: true });
@@ -229,10 +228,7 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
       }
     } catch (error) {
       console.error('Error saving guest wallet data:', error);
-      toast({
-        description: "Failed to save wallet connection data",
-        variant: "destructive",
-      });
+      toast.error("Failed to save wallet connection data");
     }
   }, [isGuest, isConnected, address, chainId, setWalletConnected, toast, isMounted, isAuthenticated]);
   
@@ -261,17 +257,11 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
     if (address) {
       navigator.clipboard.writeText(address)
         .then(() => {
-          toast({
-            description: "Address copied to clipboard!",
-            duration: 2000,
-          });
+          toast.success("Address copied to clipboard!");
         })
         .catch(error => {
           console.error('Failed to copy address:', error);
-          toast({
-            description: "Failed to copy address",
-            variant: "destructive",
-          });
+          toast.error("Failed to copy address");
         });
     }
   };
@@ -315,6 +305,11 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
     }
     return isConnected;
   };
+
+  wallet.isConnected = isWalletEffectivelyConnected();
+
+  console.log('isWalletEffectivelyConnected', isWalletEffectivelyConnected());
+
 
   // Toggle expandable sections
   const toggleSection = (section: string) => {
@@ -508,19 +503,19 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
                   <ul className="space-y-2">
                     <motion.li variants={itemVariants} className="flex items-start gap-2">
                       <div className="min-w-5 pt-0.5">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: typeof DNA_COLORS === 'object' ? DNA_COLORS.primary : '#6366f1' }}></div>
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS && Array.isArray(DNA_COLORS) ? DNA_COLORS[0] || '#6366f1' : '#6366f1' }}></div>
                       </div>
                       <span className="text-gray-300">Authorize blockchain interactions with our smart contracts</span>
                     </motion.li>
                     <motion.li variants={itemVariants} className="flex items-start gap-2">
                       <div className="min-w-5 pt-0.5">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: typeof DNA_COLORS === 'object' ? DNA_COLORS.secondary : '#8b5cf6' }}></div>
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS && Array.isArray(DNA_COLORS) ? DNA_COLORS[1] || '#8b5cf6' : '#8b5cf6' }}></div>
                           </div>
                       <span className="text-gray-300">Access secure genomic data management features</span>
                     </motion.li>
                     <motion.li variants={itemVariants} className="flex items-start gap-2">
                       <div className="min-w-5 pt-0.5">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: typeof DNA_COLORS === 'object' ? DNA_COLORS.tertiary : '#ec4899' }}></div>
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS && Array.isArray(DNA_COLORS) ? DNA_COLORS[2] || '#ec4899' : '#ec4899' }}></div>
                         </div>
                       <span className="text-gray-300">Sign transactions and verify your identity</span>
                       </motion.li>

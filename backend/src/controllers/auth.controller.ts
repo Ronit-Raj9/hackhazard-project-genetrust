@@ -9,11 +9,12 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import emailService from '../utils/email';
 import { v4 as uuidv4 } from 'uuid';
+import mongoose from 'mongoose';
 
 // Extended request with typed user property
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   user: {
-    _id: string;
+    _id: mongoose.Types.ObjectId;
     email?: string;
     walletAddress?: string;
     role?: string;
@@ -215,6 +216,67 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 });
 
 /**
+ * Login user with email and password
+ */
+export const login = asyncHandler(async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new ApiError(400, 'Email and password are required');
+  }
+
+  // Find user
+  const user = await User.findOne({ email }).select('+password');
+  
+  if (!user) {
+    throw new ApiError(401, 'Invalid email or password');
+  }
+
+  // Check if user is using email authentication
+  if (user.authProvider !== 'email') {
+    throw new ApiError(400, `This account uses ${user.authProvider} for authentication. Please login with ${user.authProvider}.`);
+  }
+
+  // Verify password
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  
+  if (!isPasswordValid) {
+    throw new ApiError(401, 'Invalid email or password');
+  }
+
+  // Check if user is verified
+  if (!user.isVerified) {
+    throw new ApiError(403, 'Please verify your email before logging in');
+  }
+
+  // Generate access token
+  const accessToken = user.generateAccessToken();
+
+  // Set cookie
+  res.cookie('accessToken', accessToken, cookieOptions);
+
+  // Return response
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          preferences: user.preferences,
+          profileImageUrl: user.profileImageUrl,
+          isVerified: user.isVerified,
+        },
+        accessToken,
+      },
+      'User logged in successfully'
+    )
+  );
+});
+
+/**
  * Verify user email with token
  */
 export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
@@ -308,76 +370,6 @@ export const resendVerificationEmail = asyncHandler(async (req: Request, res: Re
       200,
       {},
       'Verification email has been sent. Please check your inbox.'
-    )
-  );
-});
-
-/**
- * Login with email and password
- */
-export const login = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    throw new ApiError(400, 'Email and password are required');
-  }
-
-  // Find user
-  const user = await User.findOne({ email }).select('+password');
-  if (!user) {
-    throw new ApiError(404, 'User not found');
-  }
-
-  // Check auth provider and handle accordingly
-  if (user.authProvider === 'wallet') {
-    throw new ApiError(400, 'This account was created with a wallet address. Please connect your wallet instead.');
-  }
-
-  if (user.authProvider === 'google') {
-    throw new ApiError(400, 'This account was created with Google. Please use Google Sign-In instead.');
-  }
-
-  // Check if password exists in user document
-  if (!user.password) {
-    throw new ApiError(400, 'Invalid login method. Please use the appropriate login option for your account.');
-  }
-
-  // Check password
-  const isPasswordValid = await user.comparePassword(password);
-  if (!isPasswordValid) {
-    throw new ApiError(401, 'Invalid credentials');
-  }
-
-  // Check if user is verified
-  if (!user.isVerified) {
-    throw new ApiError(403, 'Please verify your email address before logging in');
-  }
-
-  // Generate access token
-  const accessToken = user.generateAccessToken();
-  
-  // Set cookie
-  res.cookie('accessToken', accessToken, cookieOptions);
-
-  // Return response without password
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          walletAddress: user.walletAddress,
-          role: user.role,
-          preferences: user.preferences,
-          profileImageUrl: user.profileImageUrl,
-          authProvider: user.authProvider,
-          isVerified: user.isVerified,
-        },
-        accessToken, // Include token in response body as fallback
-      },
-      'User logged in successfully'
     )
   );
 });

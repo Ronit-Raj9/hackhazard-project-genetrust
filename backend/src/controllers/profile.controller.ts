@@ -4,11 +4,12 @@ import ApiError from '../utils/ApiError';
 import ApiResponse from '../utils/ApiResponse';
 import Profile from '../models/profile.model';
 import User from '../models/user.model';
+import mongoose from 'mongoose';
 
 // Extended request with typed user property
 interface AuthenticatedRequest extends Request {
   user: {
-    _id: string;
+    _id: mongoose.Types.ObjectId;
     email?: string;
     walletAddress?: string;
     role?: string;

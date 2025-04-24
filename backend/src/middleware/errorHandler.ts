@@ -14,7 +14,7 @@ const errorHandler = (
   next: NextFunction
 ) => {
   let statusCode = 500;
-  let data = null;
+  let data: null | Record<string, any> = null;
   let message = 'Internal Server Error';
   let errors: string[] = [];
 

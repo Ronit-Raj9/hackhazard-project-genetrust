@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Dna, CheckCircle, AlertCircle, ChevronRight, Lightbulb, RotateCw, Info, Zap, Lock } from 'lucide-react';
-import { predictionAPI } from '@/lib/api';
+import { geneAPI } from '@/lib/api';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import LoadingScreen from '@/components/ui/LoadingScreen';
@@ -46,26 +46,30 @@ export default function GenePredictorPage() {
     setResult(null);
     
     try {
-      console.log('Sending prediction request for sequence:', sequence.toUpperCase());
+      console.log('Sending gene analysis request for sequence:', sequence.toUpperCase());
       
-      // Use the updated predictionAPI.predictSequence method
-      const response = await predictionAPI.predictSequence(sequence.toUpperCase());
+      // Use the geneAPI.predictSequence method
+      const response = await geneAPI.predictSequence(sequence.toUpperCase(), {
+        name: `Gene Analysis ${new Date().toLocaleDateString()}`,
+        geneType: 'dna',
+        isPublic: false,
+      });
       
-      console.log('Received prediction response:', response);
+      console.log('Received gene analysis response:', response);
       
       if (response.data && response.data.data) {
         setResult(response.data.data);
-        toast.success('Prediction successful!');
+        toast.success('Gene analysis successful!');
       } else {
-        throw new Error('Received empty or invalid response from prediction service');
+        throw new Error('Received empty or invalid response from gene service');
       }
     } catch (err: any) {
-      console.error('Prediction API error:', err);
+      console.error('Gene API error:', err);
       
       // Handle different error scenarios
       if (err.response?.status === 503 || err.response?.status === 504) {
         // Service unavailable or timeout
-        const errMsg = 'The prediction service is currently unavailable. Please try again later.';
+        const errMsg = 'The gene analysis service is currently unavailable. Please try again later.';
         setError(errMsg);
         toast.error('Service Unavailable', { description: errMsg });
       } else if (err.response?.status === 400) {
@@ -75,9 +79,9 @@ export default function GenePredictorPage() {
         toast.error('Invalid Input', { description: errMsg });
       } else {
         // General error
-        const errMsg = err.response?.data?.message || err.message || 'Failed to get prediction';
+        const errMsg = err.response?.data?.message || err.message || 'Failed to analyze gene sequence';
         setError(errMsg);
-        toast.error('Prediction failed', { description: errMsg });
+        toast.error('Analysis failed', { description: errMsg });
       }
     } finally {
       setIsLoading(false);

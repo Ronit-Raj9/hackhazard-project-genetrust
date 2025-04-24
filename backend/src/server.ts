@@ -8,9 +8,9 @@ import { createWriteStream } from 'fs';
 
 import config from './config';
 import connectToDatabase from './config/database';
-import { initializeSocketIO } from './services/iot.service';
+import { setSocketIOInstance } from './services/labIoTService';
+import { initializeIO } from './utils/socketio';
 import logger from './utils/logger';
-import errorHandler from './middleware/errorHandler';
 import ApiError from './utils/ApiError';
 import apiRoutes from './api';
 import emailService from './utils/email';
@@ -45,11 +45,26 @@ app.use('/api', apiRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response, next: NextFunction) => {
-  next(new ApiError(404, `Route ${req.path} not found`));
+  next(new ApiError(404, `Route ${req.originalUrl} not found`));
 });
 
-// Error handler
-app.use(errorHandler);
+// Error handler middleware
+app.use((err: Error | ApiError, req: Request, res: Response, next: NextFunction) => {
+  const statusCode = err instanceof ApiError ? err.statusCode : 500;
+  const message = err.message || 'Something went wrong';
+  
+  logger.error(`Error: ${message}`, { 
+    path: req.path,
+    method: req.method,
+    statusCode 
+  });
+  
+  res.status(statusCode).json({
+    success: false,
+    message,
+    stack: config.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
 
 // Create HTTP server
 const server = http.createServer(app);
@@ -63,8 +78,11 @@ const startServer = async () => {
     // Verify email service connection
     await emailService.verifyEmailConnection();
 
-    // Initialize Socket.IO
-    initializeSocketIO(server);
+    // Initialize Socket.IO in utils for global access (only initialize once)
+    const ioInstance = initializeIO(server);
+    
+    // Share the Socket.IO instance with labIoTService instead of initializing again
+    setSocketIOInstance(ioInstance);
 
     // Start server
     server.listen(config.PORT, () => {

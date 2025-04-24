@@ -10,6 +10,7 @@ import { http } from 'viem';
 import MousePositionProvider from '@/components/landing/MousePositionProvider';
 import { useWalletInit } from '@/providers';
 import { AuthProvider } from '@/lib/contexts/AuthProvider';
+import Synapse from '@/components/synapse/Synapse';
 
 // This providers file is deprecated and will be removed in a future update.
 // It's being maintained for backward compatibility.
@@ -30,6 +31,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <MousePositionProvider>
         <AuthProvider>
           {children}
+          {isClient && <Synapse />}
         </AuthProvider>
       </MousePositionProvider>
     );
@@ -79,6 +81,7 @@ export function Providers({ children }: { children: ReactNode }) {
           <MousePositionProvider>
             <AuthProvider>
               {children}
+              <Synapse />
             </AuthProvider>
           </MousePositionProvider>
         </RainbowKitProvider>

@@ -1,6 +1,7 @@
 import { createPublicClient, createWalletClient, http, custom } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 import { keccak256, stringToHex, parseEther, Hex, Address } from 'viem';
+import { transactionAPI } from '@/lib/api';
 
 // Import the contract ABIs for GeneTrust genomics platform
 import SampleProvenanceABI from './abis/SampleProvenance.json';
@@ -50,6 +51,15 @@ const contractABIs: Record<keyof ContractAddresses, unknown[]> = {
   accessControl: AccessControlABI,
   workflowAutomation: WorkflowAutomationABI,
   intellectualProperty: IntellectualPropertyABI
+};
+
+// Transaction type mapping by contract name
+const contractToTransactionType: Record<keyof ContractAddresses, 'sample' | 'experiment' | 'access' | 'workflow' | 'ip'> = {
+  sampleProvenance: 'sample',
+  experimentalDataAudit: 'experiment',
+  accessControl: 'access',
+  workflowAutomation: 'workflow',
+  intellectualProperty: 'ip'
 };
 
 // Function to check if a function exists in the ABI
@@ -106,7 +116,7 @@ const isLocalStorageAvailable = () => {
 // Check for persisted wallet state at module load time
 if (isLocalStorageAvailable()) {
   try {
-    const persistedState = localStorage.getItem('geneTrust-wallet-storage');
+    const persistedState = localStorage.getItem('chain-sight-storage');
     if (persistedState) {
       const { state } = JSON.parse(persistedState);
       if (state.wallet?.isConnected && state.wallet?.address) {
@@ -116,6 +126,63 @@ if (isLocalStorageAvailable()) {
     }
   } catch (error) {
     console.warn('Error loading persisted wallet state:', error);
+  }
+}
+
+// Helper function to sync transaction with backend
+async function syncTransactionWithBackend(
+  txHash: string, 
+  description: string, 
+  contractName: keyof ContractAddresses, 
+  walletAddress: string,
+  entityId?: string,
+  metadata?: Record<string, any>
+) {
+  try {
+    // Convert contract name to transaction type
+    const type = contractToTransactionType[contractName];
+    
+    // Create transaction record in the backend
+    await transactionAPI.createTransaction({
+      hash: txHash,
+      description,
+      type,
+      timestamp: Date.now(),
+      status: 'pending',
+      walletAddress,
+      contractAddress: addresses[contractName],
+      entityId,
+      metadata
+    });
+    
+    console.log(`Transaction ${txHash} synced with backend (${type})`);
+    
+    // Wait for transaction receipt asynchronously
+    setTimeout(async () => {
+      try {
+        const receipt = await publicClient.waitForTransactionReceipt({ 
+          hash: txHash as `0x${string}` 
+        });
+        
+        if (receipt) {
+          // Update transaction status based on receipt
+          const status = receipt.status === 'success' ? 'confirmed' : 'failed';
+          const blockData = {
+            blockNumber: Number(receipt.blockNumber),
+            gasUsed: Number(receipt.gasUsed)
+          };
+          
+          await transactionAPI.updateTransactionStatus(txHash, status, blockData);
+          console.log(`Transaction ${txHash} status updated to ${status}`);
+        }
+      } catch (waitError) {
+        console.error(`Failed to get receipt for transaction ${txHash}:`, waitError);
+      }
+    }, 2000); // Wait 2 seconds before checking receipt
+    
+  } catch (syncError) {
+    console.warn('Failed to sync transaction with backend:', syncError);
+    // Don't throw - we don't want to break the transaction flow for the user
   }
 }
 
@@ -137,7 +204,7 @@ async function getWalletClient() {
     let persistedWalletAddress = null;
     if (isLocalStorageAvailable()) {
       try {
-        const persistedState = localStorage.getItem('geneTrust-wallet-storage');
+        const persistedState = localStorage.getItem('chain-sight-storage');
         if (persistedState) {
           const { state } = JSON.parse(persistedState);
           if (state.wallet?.isConnected && state.wallet?.address) {
@@ -341,52 +408,51 @@ async function readContract<T>(
 async function writeContract(
   contractName: keyof ContractAddresses,
   functionName: string,
-  args: unknown[] = []
+  args: unknown[] = [],
+  transactionDetails?: {
+    description: string;
+    entityId?: string;
+    metadata?: Record<string, any>;
+  }
 ): Promise<string> {
   try {
     const { walletClient, account } = await getWalletClient();
-    const { abi, address } = getContract(contractName);
+
+    if (!account) {
+      throw new Error("No wallet account available");
+    }
+
+    const contract = getContract(contractName);
     
-    // Add verification that the function exists in the ABI
-    const functionExists = doesFunctionExistInAbi(abi, functionName);
-    
-    if (!functionExists) {
-      console.error(`Function "${functionName}" not found in ${contractName} ABI`);
-      throw new Error(`Function "${functionName}" not found in contract ABI. Check your contract deployment and ABI definition.`);
+    // Check if the function exists in the ABI
+    if (!doesFunctionExistInAbi(contract.abi, functionName)) {
+      throw new Error(`Function '${functionName}' not found in ${contractName} ABI`);
     }
     
-    if (address === defaultAddresses[contractName]) {
-      console.warn(`Using placeholder address for ${contractName}. Make sure the contract is properly deployed.`);
-    }
-    
-    console.log(`Writing to ${contractName}.${functionName} with args:`, args);
+    // Request approval and wait for transaction hash
     const hash = await walletClient.writeContract({
-      account,
-      address: address as Address,
-      abi,
+      address: contract.address as Address,
+      abi: contract.abi,
       functionName,
       args,
-    });
+      account: account as Address
+    }) as string;
+    
+    // If transaction details are provided, sync with backend
+    if (transactionDetails && account) {
+      syncTransactionWithBackend(
+        hash,
+        transactionDetails.description,
+        contractName,
+        account,
+        transactionDetails.entityId,
+        transactionDetails.metadata
+      );
+    }
     
     return hash;
   } catch (error) {
     console.error(`Error writing to ${contractName}.${functionName}:`, error);
-    
-    // Enhanced error reporting
-    if (error instanceof Error) {
-      if (error.message.includes('user rejected transaction') || 
-          error.message.includes('User rejected the request') ||
-          error.message.includes('rejected by user') ||
-          error.message.includes('user denied') ||
-          error.message.includes('transaction cancelled')) {
-      throw new Error("Transaction rejected in wallet.");
-      } else if (error.message.includes('not found on ABI')) {
-        throw new Error(`Contract function "${functionName}" not found. Please check the ABI and contract deployment.`);
-      } else if (error.message.includes('invalid address')) {
-        throw new Error(`Invalid contract address for ${contractName}. Please verify the contract deployment.`);
-      }
-    }
-    
     throw error;
   }
 }
@@ -404,11 +470,19 @@ export async function registerGenomeSample(
   description: string,
   importance: string
 ): Promise<string> {
-  return writeContract(
-    'sampleProvenance',
-    'registerSample',
-    [sampleId, sampleType, description, importance]
-  );
+  return writeContract('sampleProvenance', 'registerSample', [
+    sampleId,
+    sampleType,
+    description,
+    importance
+  ], {
+    description: `Registered Sample: ${sampleId}`,
+    entityId: sampleId,
+    metadata: {
+      sampleType,
+      importance
+    }
+  });
 }
 
 // Alias for registerGenomeSample to maintain backward compatibility
@@ -487,18 +561,18 @@ export async function registerCRISPRExperiment(
   location: string,
   notes: string
 ): Promise<string> {
-  // Since the contract doesn't have a dedicated experiment function yet,
-  // we'll use registerSample as a fallback for the demo
-  const sampleId = `EXP-${specimenId.toString()}`;
-  const experimentType = "CRISPR";
-  const description = `Location: ${location}. Notes: ${notes}`;
-  const importance = "Medium"; // Default importance
-  
-  return writeContract(
-    'sampleProvenance',
-    'registerSample',
-    [sampleId, experimentType, description, importance]
-  );
+  return writeContract('experimentalDataAudit', 'registerExperiment', [
+    specimenId,
+    location,
+    notes
+  ], {
+    description: `Registered Experiment for Specimen: ${specimenId.toString()}`,
+    entityId: specimenId.toString(),
+    metadata: {
+      location,
+      notes: notes.substring(0, 100) // Limit notes length for metadata
+    }
+  });
 }
 
 /**
@@ -599,20 +673,19 @@ function getWorkflowStatusValue(status: string): number {
  * Grant access role to a researcher or team member
  */
 export async function grantResearcherAccess(role: string, targetAccount: string): Promise<string> {
-  try {
-    console.log(`Granting role "${role}" to address ${targetAccount}`);
+  // Map frontend role names to contract roles
     const roleBytes = getRoleBytes(role);
-    console.log(`Role bytes: ${roleBytes}`);
     
-    return writeContract(
-      'accessControl', 
-      'grantRole',
-      [roleBytes, targetAccount as `0x${string}`]
-    );
-  } catch (error) {
-    console.error("Failed to grant access role:", error);
-    throw error;
-  }
+  return writeContract('accessControl', 'grantRole', [
+    roleBytes,
+    targetAccount as Address
+  ], {
+    description: `Granted ${role} access to ${targetAccount.substring(0, 6)}...${targetAccount.substring(38)}`,
+    entityId: targetAccount,
+    metadata: {
+      role
+    }
+  });
 }
 
 // Workflow functions
@@ -621,21 +694,21 @@ export async function grantResearcherAccess(role: string, targetAccount: string)
  * Update the workflow status of a genetic sample
  */
 export async function updateGeneticSampleStatus(sampleId: string, status: string, notes: string): Promise<string> {
-  try {
-    // Since updateSampleStatus doesn't exist in the contract, we'll use createWorkflow instead
-    // We'll use the sample ID as the workflow name and combine status and notes for the description
-    const workflowName = `Sample: ${sampleId}`;
-    const description = `Status: ${status}, Notes: ${notes}`;
+  // Convert status string to enum value
+  const statusValue = getWorkflowStatusValue(status);
     
-    return writeContract(
-      'workflowAutomation',
-      'createWorkflow',
-      [workflowName, description]
-    );
-  } catch (error) {
-    console.error("Failed to update workflow status:", error);
-    throw error;
-  }
+  return writeContract('workflowAutomation', 'updateSampleStatus', [
+    sampleId,
+    statusValue,
+    notes
+  ], {
+    description: `Updated ${sampleId} to ${status}`,
+    entityId: sampleId,
+    metadata: {
+      status,
+      notes: notes.substring(0, 100) // Limit notes length for metadata
+    }
+  });
 }
 
 // Intellectual Property functions
@@ -650,17 +723,26 @@ export async function registerGeneticIP(
   uri: string | undefined, 
   initialOwnersString: string
 ): Promise<string> {
-  // Convert comma-separated list to array of addresses
+  // Convert comma-separated addresses to array
   const initialOwners = initialOwnersString
       .split(',')
     .map(addr => addr.trim())
-    .filter(addr => addr.startsWith('0x')) as `0x${string}`[];
+    .filter(addr => addr.length > 0) as Address[];
   
-  return writeContract(
-    'intellectualProperty',
-    'createIPRecord',
-    [title, description, ipType, uri || "", initialOwners]
-  );
+  return writeContract('intellectualProperty', 'registerIP', [
+    title,
+    description,
+    ipType,
+    uri || '',
+    initialOwners
+  ], {
+    description: `Registered IP Rights: ${title}`,
+    entityId: title.replace(/\s+/g, '-').toLowerCase(),
+    metadata: {
+      ipType,
+      owners: initialOwners
+    }
+  });
 }
 
 /**

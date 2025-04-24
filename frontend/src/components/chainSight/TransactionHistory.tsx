@@ -1,8 +1,16 @@
 'use client';
 
-import { useChainSightStore, Transaction } from '@/lib/stores/chainSightStore';
-import { ExternalLink, AlertCircle, Clock, CheckCircle, XCircle, Filter, DatabaseIcon, ArrowUpDown, MoreHorizontal } from 'lucide-react';
-import { useState } from 'react';
+import React from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { 
+  ExternalLink, AlertCircle, Clock, CheckCircle, XCircle, 
+  Filter, ArrowLeft, ArrowRight, Loader2, DownloadCloud, RefreshCw,
+  Calendar, ChevronDown, ChevronUp, X
+} from 'lucide-react';
+import { useTransactionHistory, TransactionType, TransactionStatus, Transaction } from '@/lib/hooks/useTransactionHistory';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useChainSightStore } from '@/lib/stores/chainSightStore';
+import { transactionAPI } from '@/lib/api';
 
 interface TransactionHistoryProps {
   compact?: boolean;
@@ -10,8 +18,20 @@ interface TransactionHistoryProps {
   showFilters?: boolean;
 }
 
+// Format date for CSV export
+const formatDate = (date: Date) => {
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+};
+
 // Map of transaction types to friendly names
-const typeLabels: Record<Transaction['type'], string> = {
+const typeLabels: Record<TransactionType, string> = {
   sample: 'Sample',
   experiment: 'Experiment',
   access: 'Access Control',
@@ -21,10 +41,27 @@ const typeLabels: Record<Transaction['type'], string> = {
 };
 
 // Map of status to icons
-const statusIcons = {
-  pending: <Clock className="h-4 w-4 text-yellow-400" />,
-  confirmed: <CheckCircle className="h-4 w-4 text-green-400" />,
-  failed: <XCircle className="h-4 w-4 text-red-400" />
+const statusIcons: Record<TransactionStatus, React.ReactElement> = {
+  pending: <Clock className="h-3.5 w-3.5 text-yellow-400" />,
+  confirmed: <CheckCircle className="h-3.5 w-3.5 text-green-400" />,
+  failed: <XCircle className="h-3.5 w-3.5 text-red-400" />
+};
+
+// Map of status to colors
+const statusColors: Record<TransactionStatus, string> = {
+  pending: 'text-yellow-400',
+  confirmed: 'text-green-400',
+  failed: 'text-red-400'
+};
+
+// Map of type to colors
+const typeColors: Record<TransactionType, string> = {
+  sample: 'bg-blue-900/30 text-blue-300',
+  experiment: 'bg-purple-900/30 text-purple-300',
+  access: 'bg-green-900/30 text-green-300',
+  workflow: 'bg-amber-900/30 text-amber-300',
+  ip: 'bg-pink-900/30 text-pink-300',
+  other: 'bg-gray-900/30 text-gray-300'
 };
 
 export const TransactionHistory = ({ 
@@ -32,52 +69,287 @@ export const TransactionHistory = ({
   limit,
   showFilters = true 
 }: TransactionHistoryProps) => {
-  const { transactionHistory, clearTransactionHistory } = useChainSightStore();
-  const [typeFilter, setTypeFilter] = useState<Transaction['type'] | 'all'>('all');
+  const { transactionHistory, clearTransactionHistory, wallet, syncWithBackend } = useChainSightStore();
+  const { isAuthenticated } = useAuth();
+  const [typeFilter, setTypeFilter] = useState<TransactionType | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<TransactionStatus | 'all'>('all');
+  const [exportLoading, setExportLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [fromDate, setFromDate] = useState<string>('');
+  const [toDate, setToDate] = useState<string>('');
+  const [showFiltersPanel, setShowFiltersPanel] = useState(false);
   
-  // Apply filters
-  const filteredHistory = transactionHistory.filter(tx => 
-    typeFilter === 'all' || tx.type === typeFilter
-  );
+  // Use our custom hook for transaction history
+  const {
+    transactions,
+    isLoading,
+    error,
+    totalTransactions,
+    currentPage,
+    totalPages,
+    pageSize,
+    fetchTransactions,
+    goToPage,
+    clearTransactionHistory: clearBackendHistory,
+    counts,
+    loadingCounts,
+    fetchCounts
+  } = useTransactionHistory({
+    limit: limit || 10, 
+    type: typeFilter !== 'all' ? typeFilter : undefined,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    fromDate: fromDate ? new Date(fromDate) : undefined,
+    toDate: toDate ? new Date(toDate) : undefined
+  });
   
-  // Apply limit
-  const displayedHistory = limit ? filteredHistory.slice(0, limit) : filteredHistory;
+  // Reload data when filters change
+  const applyFilters = useCallback(() => {
+    fetchTransactions({
+      type: typeFilter !== 'all' ? typeFilter : undefined,
+      status: statusFilter !== 'all' ? statusFilter : undefined,
+      fromDate: fromDate ? new Date(fromDate) : undefined,
+      toDate: toDate ? new Date(toDate) : undefined,
+      page: 1 // Reset to first page when filters change
+    });
+    setShowFiltersPanel(false);
+  }, [fetchTransactions, typeFilter, statusFilter, fromDate, toDate]);
   
-  if (displayedHistory.length === 0) {
+  // Refresh data
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchTransactions();
+      await fetchCounts();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchTransactions, fetchCounts]);
+  
+  // Export transactions as CSV
+  const exportToCsv = useCallback(async () => {
+    if (transactions.length === 0) {
+      alert('No transactions available to export');
+      return;
+    }
+    
+    setExportLoading(true);
+    
+    try {
+      // Use the transactionAPI directly for better type safety
+      const response = await transactionAPI.getUserTransactions({
+        type: typeFilter !== 'all' ? typeFilter : undefined,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        fromDate: fromDate ? new Date(fromDate) : undefined,
+        toDate: toDate ? new Date(toDate) : undefined,
+        limit: 1000 // Get a large batch for export
+      });
+      
+      const exportTransactions = response.data.data.transactions;
+      
+      if (exportTransactions.length === 0) {
+        alert('No transactions found to export with current filters');
+        return;
+      }
+      
+      // Convert to CSV
+      const headers = ['Hash', 'Description', 'Type', 'Status', 'Time', 'Block Number', 'Gas Used'];
+      const csvContent = [
+        headers.join(','),
+        ...exportTransactions.map((tx: Transaction) => [
+          `"${tx.hash}"`,
+          `"${tx.description.replace(/"/g, '""')}"`,
+          `"${tx.type}"`,
+          `"${tx.status}"`,
+          `"${formatDate(new Date(tx.timestamp instanceof Date ? tx.timestamp.getTime() : tx.timestamp))}"`,
+          tx.blockNumber || '',
+          tx.gasUsed || ''
+        ].join(','))
+      ].join('\n');
+      
+      // Download CSV
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `blockchain-transactions-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error exporting transactions:', error);
+      alert('Failed to export transactions. Please try again.');
+    } finally {
+      setExportLoading(false);
+    }
+  }, [transactions.length, typeFilter, statusFilter, fromDate, toDate]);
+  
+  // Reset all filters
+  const resetFilters = useCallback(() => {
+    setTypeFilter('all');
+    setStatusFilter('all');
+    setFromDate('');
+    setToDate('');
+    fetchTransactions({ page: 1 });
+  }, [fetchTransactions]);
+  
+  // Calculate date range for "Last 30 days", "Last 7 days", etc.
+  const setDateRange = useCallback((days: number) => {
+    const today = new Date();
+    const endDate = today.toISOString().split('T')[0];
+    
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - days);
+    const formattedStartDate = startDate.toISOString().split('T')[0];
+    
+    setFromDate(formattedStartDate);
+    setToDate(endDate);
+  }, []);
+  
+  // Handle clear history
+  const handleClearHistory = useCallback(async () => {
+    if (transactions.length === 0) return;
+  
+    if (!confirm('Are you sure you want to clear your transaction history?')) {
+      return;
+    }
+    
+    try {
+      if (isAuthenticated) {
+        await clearBackendHistory();
+      }
+      clearTransactionHistory();
+    } catch (error) {
+      console.error('Error clearing transaction history:', error);
+      alert('Failed to clear transaction history. Please try again.');
+    }
+  }, [isAuthenticated, clearBackendHistory, clearTransactionHistory, transactions.length]);
+  
+  // Effect to refetch when wallet changes or when component mounts
+  useEffect(() => {
+    let isMounted = true;
+    
+    const initData = async () => {
+      if (isAuthenticated && wallet.isConnected && isMounted) {
+        await syncWithBackend();
+        await fetchTransactions();
+        await fetchCounts();
+      }
+    };
+    
+    initData();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, wallet.isConnected, syncWithBackend, fetchTransactions, fetchCounts]);
+  
+  if (!isAuthenticated) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 border border-dashed border-indigo-500/20 rounded-lg bg-black/20">
-        <div className="h-12 w-12 rounded-full bg-indigo-500/10 flex items-center justify-center mb-3">
-          <AlertCircle className="h-6 w-6 text-indigo-400" />
-        </div>
-        <p className="text-gray-400 text-sm">No transaction history available</p>
-        <p className="text-gray-500 text-xs mt-1">Transactions will appear here once you register a sample or perform other actions</p>
+      <div className="rounded-lg border border-indigo-500/30 bg-indigo-900/10 p-4 text-center">
+        <AlertCircle className="h-8 w-8 text-indigo-400 mx-auto mb-2" />
+        <h3 className="text-lg font-semibold text-white mb-1">Authentication Required</h3>
+        <p className="text-gray-400 text-sm">
+          Please log in to view your blockchain transaction history.
+        </p>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="rounded-lg overflow-hidden border border-indigo-500/30">
-        <div className="p-4 border-b border-indigo-500/30 bg-indigo-900/20 flex justify-between items-center">
-          <div className="flex items-center">
-            <div className="h-8 w-8 rounded-lg bg-indigo-500/20 flex items-center justify-center mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-bold text-white">Blockchain Transaction History</h2>
+          {counts && (
+            <span className="text-xs bg-indigo-900/30 px-2 py-0.5 rounded border border-indigo-500/30 text-indigo-300">
+              {Object.values(counts).reduce((sum, count) => sum + count, 0)} transactions
+            </span>
+          )}
+        </div>
+        <div className="flex space-x-1.5">
+          <button 
+            onClick={() => setShowFiltersPanel(!showFiltersPanel)}
+            className="p-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-white rounded-md border border-indigo-500/30 transition-colors flex items-center text-xs"
+          >
+            <Filter className="h-3.5 w-3.5 mr-1" />
+            Filters
+            {showFiltersPanel ? <ChevronUp className="h-3.5 w-3.5 ml-1" /> : <ChevronDown className="h-3.5 w-3.5 ml-1" />}
+          </button>
+          <button 
+            onClick={handleRefresh}
+            disabled={isLoading || refreshing}
+            className="p-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-white rounded-md border border-indigo-500/30 transition-colors"
+            title="Refresh"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+          <button 
+            onClick={exportToCsv}
+            disabled={isLoading || exportLoading || transactions.length === 0}
+            className="p-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-white rounded-md border border-indigo-500/30 transition-colors"
+            title="Export to CSV"
+          >
+            {exportLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <DownloadCloud className="h-3.5 w-3.5" />}
+          </button>
+        </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Transaction History</h3>
-              <p className="text-xs text-gray-400">Blockchain transactions and their status</p>
+      
+      {/* Compact Transaction Type Filters */}
+      {counts && Object.keys(counts).length > 0 && (
+        <div className="flex gap-1.5 overflow-x-auto py-1 scrollbar-thin scrollbar-thumb-indigo-700 scrollbar-track-transparent">
+          {Object.entries(counts).map(([type, count]) => (
+            <button 
+              key={type}
+              className={`px-2 py-1 rounded-md text-xs whitespace-nowrap ${
+                typeFilter === type 
+                  ? 'bg-indigo-700 text-white border-indigo-500' 
+                  : 'bg-indigo-900/20 text-gray-300 border-gray-700 hover:bg-indigo-900/30'
+              } border transition-colors flex items-center gap-1`}
+              onClick={() => setTypeFilter(type as TransactionType)}
+            >
+              {typeLabels[type as TransactionType]}
+              <span className={`${typeFilter === type ? 'bg-indigo-800' : 'bg-indigo-950'} px-1.5 py-0.5 rounded-sm`}>
+                {count}
+              </span>
+            </button>
+          ))}
+          <button 
+            className={`px-2 py-1 rounded-md text-xs whitespace-nowrap ${
+              typeFilter === 'all' 
+                ? 'bg-indigo-700 text-white border-indigo-500' 
+                : 'bg-indigo-900/20 text-gray-300 border-gray-700 hover:bg-indigo-900/30'
+            } border transition-colors flex items-center gap-1`}
+            onClick={() => setTypeFilter('all')}
+          >
+            All Types
+            <span className={`${typeFilter === 'all' ? 'bg-indigo-800' : 'bg-indigo-950'} px-1.5 py-0.5 rounded-sm`}>
+              {Object.values(counts).reduce((sum, count) => sum + count, 0)}
+            </span>
+          </button>
             </div>
+      )}
+      
+      {/* Collapsible Filters Panel */}
+      {showFilters && showFiltersPanel && (
+        <div className="bg-black/30 rounded-md p-3 border border-gray-800 mb-3 animate-in fade-in">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-sm font-medium text-indigo-300">Advanced Filters</h3>
+            <button 
+              onClick={() => setShowFiltersPanel(false)}
+              className="text-gray-400 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
           
-          {showFilters && (
-            <div className="flex space-x-2">
-              <div className="relative">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Transaction Type</label>
                 <select
                   value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value as Transaction['type'] | 'all')}
-                  className="appearance-none bg-indigo-900/30 text-white text-sm rounded-md px-3 py-1.5 pr-8 border border-indigo-600/30 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                onChange={(e) => setTypeFilter(e.target.value as TransactionType | 'all')}
+                className="w-full bg-black/50 text-white text-xs rounded-md px-2 py-1.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 >
                   <option value="all">All Types</option>
                   <option value="sample">Samples</option>
@@ -87,88 +359,204 @@ export const TransactionHistory = ({
                   <option value="ip">IP Rights</option>
                   <option value="other">Other</option>
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-indigo-400">
-                  <Filter className="h-4 w-4" />
+            </div>
+            
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as TransactionStatus | 'all')}
+                className="w-full bg-black/50 text-white text-xs rounded-md px-2 py-1.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="failed">Failed</option>
+              </select>
                 </div>
+            
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">From Date</label>
+              <input 
+                type="date" 
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="w-full bg-black/50 text-white text-xs rounded-md px-2 py-1.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">To Date</label>
+              <input 
+                type="date" 
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="w-full bg-black/50 text-white text-xs rounded-md px-2 py-1.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            <button
+              onClick={() => setDateRange(7)}
+              className="px-2 py-0.5 bg-indigo-900/30 hover:bg-indigo-900/50 text-xs text-white rounded border border-indigo-800/50"
+            >
+              Last 7 days
+            </button>
+            <button
+              onClick={() => setDateRange(30)}
+              className="px-2 py-0.5 bg-indigo-900/30 hover:bg-indigo-900/50 text-xs text-white rounded border border-indigo-800/50"
+            >
+              Last 30 days
+            </button>
+            <button
+              onClick={() => setDateRange(90)}
+              className="px-2 py-0.5 bg-indigo-900/30 hover:bg-indigo-900/50 text-xs text-white rounded border border-indigo-800/50"
+            >
+              Last 90 days
+            </button>
+          </div>
+          
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={resetFilters}
+              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium rounded-md transition-colors"
+            >
+              Reset
+            </button>
+            <button
+              onClick={applyFilters}
+              className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md transition-colors"
+            >
+              Apply Filters
+            </button>
               </div>
             </div>
           )}
+      
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-6 border border-dashed border-indigo-500/20 rounded-lg bg-black/20">
+          <Loader2 className="h-6 w-6 text-indigo-400 animate-spin mb-2" />
+          <p className="text-gray-400 text-xs">Loading transaction history...</p>
         </div>
-        
+      ) : error ? (
+        <div className="rounded-lg border border-red-500/30 bg-red-900/10 p-3">
+          <div className="flex items-center">
+            <AlertCircle className="h-4 w-4 text-red-400 mr-2" />
+            <p className="text-red-300 text-xs">{error}</p>
+          </div>
+        </div>
+      ) : transactions.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-8 border border-dashed border-indigo-500/20 rounded-lg bg-black/20">
+          <div className="h-12 w-12 rounded-full bg-indigo-500/10 flex items-center justify-center mb-2">
+            <AlertCircle className="h-6 w-6 text-indigo-400" />
+          </div>
+          <h3 className="text-base font-medium text-white mb-1">No transaction history available</h3>
+          <p className="text-gray-500 text-xs">Try adjusting your filters or connect a different wallet</p>
+        </div>
+      ) : (
+        <>
+          <div className="rounded-lg overflow-hidden border border-indigo-500/30">
         <div className="overflow-x-auto bg-black/40">
-          <table className="w-full text-sm">
+              <table className="w-full text-xs">
             <thead>
               <tr className="bg-indigo-950/50 border-b border-indigo-500/20">
-                <th className="font-medium p-3 text-left text-indigo-200">Transaction</th>
-                {!compact && <th className="font-medium p-3 text-left text-indigo-200">Type</th>}
-                <th className="font-medium p-3 text-left text-indigo-200">Hash</th>
-                <th className="font-medium p-3 text-left text-indigo-200">Time</th>
-                <th className="font-medium p-3 text-left text-indigo-200">Status</th>
-                <th className="font-medium p-3 text-left text-indigo-200">Actions</th>
+                    <th className="font-medium p-2 text-left text-indigo-200">Transaction</th>
+                    {!compact && <th className="font-medium p-2 text-left text-indigo-200">Type</th>}
+                    <th className="font-medium p-2 text-left text-indigo-200">Hash</th>
+                    <th className="font-medium p-2 text-left text-indigo-200">Time</th>
+                    <th className="font-medium p-2 text-left text-indigo-200">Status</th>
+                    <th className="font-medium p-2 text-left text-indigo-200">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {displayedHistory.map((tx, index) => (
+                  {transactions.map((tx, index) => {
+                    // Ensure type safety for the transaction object
+                    const type = tx.type as TransactionType;
+                    const status = tx.status as TransactionStatus;
+                    
+                    return (
                 <tr key={tx.hash} className={index % 2 === 0 ? "bg-transparent" : "bg-indigo-900/10"}>
-                  <td className="p-3 align-middle text-white">{tx.description}</td>
+                        <td className="p-2 align-middle text-white">{tx.description}</td>
                   {!compact && (
-                    <td className="p-3 align-middle">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        tx.type === 'sample' ? 'bg-blue-900/30 text-blue-300' : 
-                        tx.type === 'experiment' ? 'bg-purple-900/30 text-purple-300' : 
-                        tx.type === 'access' ? 'bg-green-900/30 text-green-300' : 
-                        tx.type === 'workflow' ? 'bg-amber-900/30 text-amber-300' : 
-                        tx.type === 'ip' ? 'bg-pink-900/30 text-pink-300' : 
-                        'bg-gray-900/30 text-gray-300'
-                      }`}>
-                        {typeLabels[tx.type]}
+                          <td className="p-2 align-middle">
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${typeColors[type]}`}>
+                              {typeLabels[type]}
                       </span>
                     </td>
                   )}
-                  <td className="p-3 align-middle font-mono text-xs text-gray-400">
+                        <td className="p-2 align-middle font-mono text-xs text-gray-400">
                     {tx.hash.slice(0, 6)}...{tx.hash.slice(-4)}
                   </td>
-                  <td className="p-3 align-middle text-xs text-gray-400">
-                    {new Date(tx.timestamp).toLocaleString()}
+                        <td className="p-2 align-middle text-xs text-gray-400">
+                          {new Date(tx.timestamp instanceof Date ? tx.timestamp.getTime() : tx.timestamp).toLocaleString()}
                   </td>
-                  <td className="p-3 align-middle">
+                        <td className="p-2 align-middle">
                     <div className="flex items-center">
-                      {statusIcons[tx.status]}
-                      <span className={`ml-1.5 text-xs ${
-                        tx.status === 'pending' ? 'text-yellow-400' : 
-                        tx.status === 'confirmed' ? 'text-green-400' : 
-                        'text-red-400'
-                      }`}>
-                        {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
-                      </span>
+                            {statusIcons[status]}
+                            <span className={`ml-1 text-xs ${statusColors[status]}`}>
+                              {status.charAt(0).toUpperCase() + status.slice(1)}
+                          </span>
                     </div>
                   </td>
-                  <td className="p-3 align-middle">
+                        <td className="p-2 align-middle">
                     <a 
                       href={`https://sepolia.basescan.org/tx/${tx.hash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-indigo-400 hover:text-indigo-300 flex items-center"
                     >
-                      <span>View</span>
-                      <ExternalLink className="h-3 w-3 ml-1" />
+                            <span className="text-xs">View</span>
+                            <ExternalLink className="h-3 w-3 ml-0.5" />
                     </a>
                   </td>
                 </tr>
-              ))}
+                    );
+                  })}
             </tbody>
           </table>
         </div>
         
-        <div className="p-4 border-t border-indigo-500/30 bg-indigo-900/20 flex justify-end">
+            <div className="p-2 border-t border-indigo-500/30 bg-indigo-900/20 flex justify-between items-center">
+              <div className="text-xs text-gray-400">
+                Showing {transactions.length} of {totalTransactions} transactions
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1 || isLoading}
+                    className={`p-1 rounded-md ${
+                      currentPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'text-indigo-400 hover:text-indigo-300'
+                    }`}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                  <span className="text-white text-xs">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages || isLoading}
+                    className={`p-1 rounded-md ${
+                      currentPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'text-indigo-400 hover:text-indigo-300'
+                    }`}
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
           <button 
-            className="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-white text-xs rounded-md border border-indigo-500/30 transition-colors"
-            onClick={clearTransactionHistory}
+                  className="px-2 py-1 bg-red-600/20 hover:bg-red-600/40 text-white text-xs rounded-md border border-red-500/30 transition-colors"
+                  onClick={handleClearHistory}
+                  disabled={transactions.length === 0}
           >
             Clear History
           </button>
         </div>
       </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }; 
