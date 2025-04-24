@@ -19,16 +19,17 @@ fi
 
 # Create and setup the environment if needed
 if [ "$CREATE_ENV" = true ]; then
-    echo "Creating new virtual environment..."
-    python -m venv "$VENV_PATH"
+    echo "Creating new virtual environment with Python 3.13..."
+    python3.13 -m venv "$VENV_PATH"
     
     echo "Activating virtual environment..."
     source "$VENV_PATH/bin/activate"
     
     echo "Installing CPU-only dependencies..."
+    pip install --upgrade pip
     pip install torch==2.6.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
     pip install transformers==4.51.3 protobuf==6.30.2 einops==0.8.1 accelerate==1.6.0 fastapi==0.115.12 uvicorn==0.34.2 numpy==2.2.5
-    
+
     # Update requirements.txt with specific versions
     cat > "$SCRIPT_DIR/requirements.txt" << EOL
 torch==2.6.0+cpu
@@ -40,12 +41,12 @@ fastapi==0.115.12
 uvicorn==0.34.2
 numpy==2.2.5
 EOL
-    
+
 else
     # Just activate the existing environment
     echo "Activating existing virtual environment..."
     source "$VENV_PATH/bin/activate"
-    
+
     # Make sure server dependencies are installed
     echo "Ensuring server dependencies are installed..."
     pip install -r "$SCRIPT_DIR/requirements.txt"
@@ -70,4 +71,4 @@ echo ""
 
 # Run the FastAPI server
 cd "$SCRIPT_DIR"
-python app.py 
+python app.py

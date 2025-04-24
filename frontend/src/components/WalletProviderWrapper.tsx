@@ -32,7 +32,7 @@ export default function WalletProviderWrapper({ children }: WalletProviderWrappe
       const projectId = 'c86f23da1913707381b31528a79c3e23';
 
       // Set up connectors with proper type and error handling
-      let connectors = [];
+      let connectors: any[] = [];
       try {
         const walletData = getDefaultWallets({
           appName: 'GeneTrust Dashboard',
@@ -79,12 +79,7 @@ export default function WalletProviderWrapper({ children }: WalletProviderWrappe
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        {children}Creating new chat session
-￼useSynapseAI.ts:217 Creating new chat session
-￼useSynapseAI.ts:227 New session created: 680a64109227de6d53c8d98f
-￼useSynapseAI.ts:108 Fetching all sessions for user: 680454b5244a58d990e14de7
-￼useSynapseAI.ts:195 Sessions refreshed: 
-
+        {children}
       </QueryClientProvider>
     </WagmiProvider>
   );
