@@ -3,7 +3,7 @@ import asyncHandler from '../utils/asyncHandler';
 import ApiError from '../utils/ApiError';
 import ApiResponse from '../utils/ApiResponse';
 import config from '../config';
-import Gene, { IGene } from '../models/gene.model';
+import Gene, {IGene} from '../models/gene.model';
 import mongoose from 'mongoose';
 import { crisprAnalysisService } from '../services/gene.service';
 import logger from '../utils/logger';
