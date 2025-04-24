@@ -43,7 +43,7 @@ jobs:
             echo "✅ Python server is up!"
             break
           fi
-          if [ $i -eq 30 ]; then
+          if [ $i -eq 60 ]; then
             echo "❌ Timeout waiting for Python server"
             exit 1
           fi
