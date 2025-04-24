@@ -76,7 +76,7 @@ const AgentStatusIndicator: React.FC<AgentStatusIndicatorProps> = ({
           duration: 2, 
           ease: "easeInOut" 
         }}
-      >
+    >
         <Sparkles className="absolute right-4 top-1 w-3 h-3" />
         <Sparkles className="absolute left-8 bottom-1 w-2 h-2" />
       </motion.div>

@@ -57,25 +57,25 @@ const SynapseMessage: React.FC<SynapseMessageProps> = ({ message, sessionId }) =
           )}
           
           <div className="relative z-10">
-            {message.processing ? (
-              <div className="flex items-center justify-center py-2">
+          {message.processing ? (
+            <div className="flex items-center justify-center py-2">
                 <Loader2 size={20} className="animate-spin text-indigo-300" />
-              </div>
-            ) : (
+            </div>
+          ) : (
               <div className={`prose prose-sm max-w-none ${isAssistant ? 'prose-headings:text-indigo-200 prose-a:text-blue-300 hover:prose-a:text-blue-200 prose-strong:text-blue-200 prose-code:text-violet-300 prose-code:bg-indigo-950/50 prose-code:rounded prose-code:px-1' : 'prose-invert'}`}>
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {message.content}
-                </ReactMarkdown>
-                
-                {/* Add source attribution for assistant messages if sources are available */}
-                {isAssistant && message.sources && message.sources.length > 0 && (
-                  <SourceAttribution 
-                    sources={message.sources} 
-                    onSourceClick={handleSourceClick}
-                  />
-                )}
-              </div>
-            )}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content}
+              </ReactMarkdown>
+              
+              {/* Add source attribution for assistant messages if sources are available */}
+              {isAssistant && message.sources && message.sources.length > 0 && (
+                <SourceAttribution 
+                  sources={message.sources} 
+                  onSourceClick={handleSourceClick}
+                />
+              )}
+            </div>
+          )}
           </div>
         </div>
         

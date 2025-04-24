@@ -79,7 +79,7 @@ const SynapseSuggestions: React.FC = () => {
           
           {/* Text content */}
           <div className="relative z-10">
-            {suggestion}
+          {suggestion}
           </div>
         </motion.button>
       ))}

@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import { AuthenticatedRequest } from './auth.controller';
 import transactionService, { TransactionQuery } from '../services/transaction.service';
 import { TransactionType, TransactionStatus } from '../models/transaction.model';
-
 export const createTransaction = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { hash, description, type, timestamp, status, walletAddress, blockNumber, gasUsed, metadata, entityId, contractAddress } = req.body;

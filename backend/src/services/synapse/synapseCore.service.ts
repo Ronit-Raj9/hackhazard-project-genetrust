@@ -11,7 +11,6 @@ import * as geneService from '../gene.service';
 import transactionService from '../transaction.service';
 import * as labService from '../labIoTService';
 import ChatSession from '../../models/chat-session.model';
-
 /**
  * SynapseCore
  * A unified AI service that combines functionality from:
@@ -943,7 +942,7 @@ ${alerts.map((alert, index) => {
   async getSession(
     userId: string,
     sessionId: string
-  ): Promise<import('../../models/chat-session.model').IChatSession | null> {
+  ): Promise<import('../../models/chat-session.model.ts').IChatSession | null> {
     // Retrieve the session document including messages
     return ChatSession.findOne({ userId, sessionId }).lean();
   }

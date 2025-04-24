@@ -1,12 +1,19 @@
 // Color palette for the ChainSight components
-export const DNA_COLORS = [
-  '#00CCFF',  // Vivid cyan
-  '#B16CEA',  // Bright purple
-  '#FF4D6E',  // Coral pink
-  '#4F46E5',  // Indigo
-  '#16A34A',  // Green
-  '#F59E0B',  // Amber
-];
+export const DNA_COLORS = {
+  primary: '#00CCFF',  // Vivid cyan
+  secondary: '#B16CEA',  // Bright purple
+  tertiary: '#FF4D6E',  // Coral pink
+  accent: '#4F46E5',  // Indigo
+  status: {
+    success: '#16A34A',  // Green
+    warning: '#F59E0B',  // Amber
+  },
+  text: {
+    primary: '#F8FAFC',
+    secondary: '#CBD5E1',
+    muted: '#64748B'
+  }
+};
 
 export const GENOMIC_THEME = {
   primary: '#4F46E5',

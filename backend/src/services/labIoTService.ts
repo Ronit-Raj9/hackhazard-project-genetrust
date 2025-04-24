@@ -109,19 +109,19 @@ class LabIoTService {
     
     // Create Socket.IO server only if it doesn't exist yet
     if (!io) {
-      // Create Socket.IO server
-      io = new Server(server, {
-        cors: {
-          origin: config.FRONTEND_URL,
-          methods: ['GET', 'POST'],
-          credentials: true,
-        },
-      });
+    // Create Socket.IO server
+    io = new Server(server, {
+      cors: {
+        origin: config.FRONTEND_URL,
+        methods: ['GET', 'POST'],
+        credentials: true,
+      },
+    });
 
       // Set up event handlers
       setupLabSocketHandlers(io);
 
-      logger.info('Socket.IO initialized');
+    logger.info('Socket.IO initialized');
     } else {
       logger.warn('Socket.IO already initialized, using existing instance');
     }

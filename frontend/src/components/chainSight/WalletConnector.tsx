@@ -503,19 +503,19 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
                   <ul className="space-y-2">
                     <motion.li variants={itemVariants} className="flex items-start gap-2">
                       <div className="min-w-5 pt-0.5">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS && Array.isArray(DNA_COLORS) ? DNA_COLORS[0] || '#6366f1' : '#6366f1' }}></div>
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS.primary }}></div>
                       </div>
                       <span className="text-gray-300">Authorize blockchain interactions with our smart contracts</span>
                     </motion.li>
                     <motion.li variants={itemVariants} className="flex items-start gap-2">
                       <div className="min-w-5 pt-0.5">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS && Array.isArray(DNA_COLORS) ? DNA_COLORS[1] || '#8b5cf6' : '#8b5cf6' }}></div>
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS.secondary }}></div>
                           </div>
                       <span className="text-gray-300">Access secure genomic data management features</span>
                     </motion.li>
                     <motion.li variants={itemVariants} className="flex items-start gap-2">
                       <div className="min-w-5 pt-0.5">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS && Array.isArray(DNA_COLORS) ? DNA_COLORS[2] || '#ec4899' : '#ec4899' }}></div>
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: DNA_COLORS.tertiary }}></div>
                         </div>
                       <span className="text-gray-300">Sign transactions and verify your identity</span>
                       </motion.li>
