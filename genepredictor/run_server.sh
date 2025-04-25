@@ -27,7 +27,7 @@ if [ "$CREATE_ENV" = true ]; then
 
     echo "Installing CPU-only dependencies..."
     pip install --upgrade pip
-    pip install torch==2.6.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+    pip install torch==2.7.0+cpu
     pip install transformers==4.51.3 protobuf==6.30.2 einops==0.8.1 accelerate==1.6.0 fastapi==0.115.12 uvicorn==0.34.2 numpy==2.2.5
 
     # Save dependencies to requirements.txt
