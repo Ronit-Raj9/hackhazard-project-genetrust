@@ -64,6 +64,7 @@ jobs:
     - name: Install dependencies
       working-directory: ./backend
       run: |
+        npm ci
         if [ -d "node_modules" ]; then
           echo "node_modules already exists. Skipping install."
         else
