@@ -19,8 +19,8 @@ fi
 
 # Create and setup the environment if needed
 if [ "$CREATE_ENV" = true ]; then
-    echo "Creating new virtual environment with Python 3.10..."
-    python3.10 -m venv "$VENV_PATH"
+    echo "Creating new virtual environment with Python 3.12..."
+    python3.12 -m venv "$VENV_PATH"
 
     echo "Activating virtual environment..."
     source "$VENV_PATH/bin/activate"
