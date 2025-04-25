@@ -496,7 +496,7 @@ export const TransactionHistory = ({
                             {statusIcons[status]}
                             <span className={`ml-1 text-xs ${statusColors[status]}`}>
                               {status.charAt(0).toUpperCase() + status.slice(1)}
-                          </span>
+                      </span>
                     </div>
                   </td>
                         <td className="p-2 align-middle">

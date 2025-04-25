@@ -83,7 +83,7 @@ export const SynapseProvider: React.FC<{ children: React.ReactNode }> = ({ child
     ...synapseState,
     loadSession: synapseState.fetchExistingSession,
   };
-
+  
   return (
     <SynapseContext.Provider value={contextValue}>
       {children}

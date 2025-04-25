@@ -198,14 +198,14 @@ export const useSynapseAI = () => {
       
       if (newSessionId) {
         console.log('New session created:', newSessionId);
-        setSessionId(newSessionId);
-        
+          setSessionId(newSessionId);
+          
         // Add a welcome message
         setMessages([{
           id: `welcome_${Date.now()}`,
-          role: 'assistant',
+            role: 'assistant',
           content: "Hello! How can I help you today?",
-          timestamp: new Date()
+            timestamp: new Date()
         }]);
         
         // Update the sessions list, but only after creating a new session
@@ -220,7 +220,7 @@ export const useSynapseAI = () => {
       } else {
         console.error('Failed to create new chat session - missing session ID:', response.data);
         throw new Error('Failed to create new chat - session ID not returned');
-      }
+        }
     } catch (error) {
       console.error('Error creating new chat session:', error);
       setError('Failed to create new chat. Please try again.');
@@ -288,7 +288,7 @@ export const useSynapseAI = () => {
       setIsLoading(false);
     }
   }, [user?.id, setIsChatOpen]);
-  
+    
   // Set up socket.io listeners for real-time updates
   useEffect(() => {
     const socket = getSocket();
@@ -305,7 +305,7 @@ export const useSynapseAI = () => {
               if (!data.message.isLoading) setIsTyping(false);
               return prev.map(msg => msg.isLoading
                 ? { id: data.message.id || msg.id, role: 'assistant', content: data.message.content, timestamp: new Date(), isLoading: false }
-                : msg
+                  : msg
               );
             }
             if (!data.message.isLoading) setIsTyping(false);
@@ -330,18 +330,18 @@ export const useSynapseAI = () => {
   // Send a message to Synapse
   const sendMessage = useCallback(async (content: string, useAgentMode: boolean = false) => {
     if (!content.trim()) return;  // allow anonymous
-
+    
     // Anonymous user flow: one-off chat without sessions
     if (!user?.id) {
-      try {
+    try {
         // Add user message locally
         const tempUserId = `anon_msg_${Date.now()}`;
-        const userMessage: SynapseMessage = {
+      const userMessage: SynapseMessage = {
           id: tempUserId,
-          role: 'user',
-          content,
-          timestamp: new Date()
-        };
+        role: 'user',
+        content,
+        timestamp: new Date()
+      };
         setMessages(prev => [...prev, userMessage]);
         setIsTyping(true);
 
@@ -355,7 +355,7 @@ export const useSynapseAI = () => {
         // Add assistant reply
         const assistantMessage: SynapseMessage = {
           id: `anon_bot_${Date.now()}`,
-          role: 'assistant',
+        role: 'assistant',
           content: botText || '',
           timestamp: new Date()
         };
@@ -388,16 +388,16 @@ export const useSynapseAI = () => {
       const tempAssistantMessage: SynapseMessage = { id: `msg_${Date.now()+1}`, role: 'assistant', content: '', timestamp: new Date(), isLoading: true, processing: true };
       setMessages(prev => [...prev, userMessage, tempAssistantMessage]);
       setIsTyping(true);
-
+      
       const context = determineContext();
       const contextHint = {
         page: pathname,
-        dataType: context.pageType === 'gene-predictor'
-          ? 'gene_analysis'
-          : context.pageType === 'lab-monitor'
-            ? 'lab_monitor'
-            : context.pageType === 'blockchain'
-              ? 'blockchain_transaction'
+        dataType: context.pageType === 'gene-predictor' 
+          ? 'gene_analysis' 
+          : context.pageType === 'lab-monitor' 
+            ? 'lab_monitor' 
+            : context.pageType === 'blockchain' 
+              ? 'blockchain_transaction' 
               : 'general',
         relevantId: context.relevantId
       };
