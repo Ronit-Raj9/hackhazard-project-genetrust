@@ -48,7 +48,7 @@ jobs:
         bash run_server.sh &
 
         echo "Waiting for Python server to become healthy..."
-        for i in {1..30}; do
+        for i in {1..60}; do
           if curl -s http://localhost:4000/health > /dev/null; then
             echo "✅ Python server is up!"
             break
@@ -57,16 +57,9 @@ jobs:
             echo "❌ Timeout waiting for Python server"
             exit 1
           fi
-          echo "⏳ Waiting for Python server... ($i/30)"
+          echo "⏳ Waiting for Python server... ($i/60)"
           sleep 2
         done
-
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: ./backend/package-lock.json
 
     - name: Install dependencies
       working-directory: ./backend
