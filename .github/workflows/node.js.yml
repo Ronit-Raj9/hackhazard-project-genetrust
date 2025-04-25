@@ -71,28 +71,23 @@ jobs:
     - name: Build TypeScript
       working-directory: ./backend
       run: npm run build
-
+      
     - name: Manage PM2 processes
       run: |
-        PYTHON_PID=$(pgrep -f "python app.py")
-        if [ ! -z "$PYTHON_PID" ]; then
-          if pm2 describe genetrust-python-server > /dev/null 2>&1; then
-            echo "🔄 Restarting existing PM2 process for Python server..."
-            pm2 restart genetrust-python
-          else
-            echo "🚀 Starting new PM2 process for Python server..."
-            pm2 start ./run_server.sh --name genetrust-python
-
-          fi
+        # Restart or start genetrust-python
+        if pm2 describe genetrust-python > /dev/null 2>&1; then
+          echo "🔄 Restarting genetrust-python..."
+          pm2 restart genetrust-python
         else
-          echo "❌ Python server not found running!"
-          exit 1
+          echo "🚀 Starting genetrust-python with run_server.sh..."
+          pm2 start ./run_server.sh --name genetrust-python --cwd ./genetrust
         fi
 
-        if pm2 describe genetrust-backend > /dev/null 2>&1; then
-          echo "🔄 Restarting existing PM2 process for Node backend..."
+        # Restart or start genetrust-node
+        if pm2 describe genetrust-node > /dev/null 2>&1; then
+          echo "🔄 Restarting genetrust-node..."
           pm2 restart genetrust-node
         else
-          echo "🚀 Starting new PM2 process for Node backend..."
-          pm2 start npm --name genetrust-node -- run start
+          echo "🚀 Starting genetrust-node with npm start..."
+          pm2 start npm --name genetrust-node -- start --cwd ./backend
         fi
