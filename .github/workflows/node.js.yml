@@ -78,10 +78,11 @@ jobs:
         if [ ! -z "$PYTHON_PID" ]; then
           if pm2 describe genetrust-python-server > /dev/null 2>&1; then
             echo "🔄 Restarting existing PM2 process for Python server..."
-            pm2 restart genetrust-python-server
+            pm2 restart genetrust-python
           else
             echo "🚀 Starting new PM2 process for Python server..."
-            pm2 start --name genetrust-python-server --interpreter python3.10 -- run app.py
+            pm2 start ./run_server.sh --name genetrust-python
+
           fi
         else
           echo "❌ Python server not found running!"
@@ -90,8 +91,8 @@ jobs:
 
         if pm2 describe genetrust-backend > /dev/null 2>&1; then
           echo "🔄 Restarting existing PM2 process for Node backend..."
-          pm2 restart genetrust-backend
+          pm2 restart genetrust-node
         else
           echo "🚀 Starting new PM2 process for Node backend..."
-          pm2 start npm --name genetrust-backend -- run start
+          pm2 start npm --name genetrust-node -- run start
         fi
