@@ -27,6 +27,13 @@ jobs:
       working-directory: ./backend
       run: echo "${{ secrets.PROD_ENV_FILE }}" > .env
     
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: ./backend/package-lock.json
+
     - name: Installing PM2
       run: npm install -g pm2
 
