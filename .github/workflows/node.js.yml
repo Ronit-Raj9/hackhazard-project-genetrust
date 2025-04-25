@@ -26,6 +26,9 @@ jobs:
     - name: Create .env file from PROD_ENV_FILE secret
       working-directory: ./backend
       run: echo "${{ secrets.PROD_ENV_FILE }}" > .env
+    
+    - name: Installing PM2
+      run: npm install -g pm2
 
     - name: Start Python DNA Prediction Server
       working-directory: ./genepredictor
@@ -71,7 +74,7 @@ jobs:
     - name: Build TypeScript
       working-directory: ./backend
       run: npm run build
-      
+
     - name: Manage PM2 processes
       run: |
         # Restart or start genetrust-python
