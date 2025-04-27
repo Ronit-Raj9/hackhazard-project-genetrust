@@ -19,9 +19,9 @@ By combining AI-powered prediction (a fine-tuned DNABERT model accelerated by Gr
 ## 🧠 Team & Approach
 **Team Name:** GeneX
 **Team Members:**
-- Ronit Raj (Web Platform Development and Integration) – [GitHub](https://github.com/Ronit-Raj9) / [LinkedIn](https://www.linkedin.com/in/ronitrajai/)  
+- Ronit Raj (Web Platform Development, Blockchain and Groq Integration) – [GitHub](https://github.com/Ronit-Raj9) / [LinkedIn](https://www.linkedin.com/in/ronitrajai/)  
 - Achyut Mukund (Blockchain and Smart Contract) – [GitHub](https://github.com/cropsgg) / [LinkedIn](https://www.linkedin.com/in/achyut-mukund-845857289/)  
-- Vishwesh Pal Saini (ML Model Development) – [GitHub](https://github.com/VishPS) / [LinkedIn](https://linkedin.com/in/username)  
+- Vishwesh Pal Saini (ML Model Development) – [GitHub](https://github.com/VishPS) / [LinkedIn](https://www.linkedin.com/in/vishwesh-pal-saini-47766028a/)  
 - Madhav Mittal (IOT Integration) – [GitHub](https://github.com/msquarex) / [LinkedIn](https://www.linkedin.com/in/madhav-mittal-4368b7313/)
 
 **Our Approach:**  
