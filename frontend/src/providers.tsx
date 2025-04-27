@@ -2,14 +2,13 @@
 
 import { ReactNode, createContext, useContext, useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider, createConfig, http } from 'wagmi';
-import { baseSepolia } from 'wagmi/chains';
-import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import '@rainbow-me/rainbowkit/styles.css';
 import { AuthProvider } from '@/lib/contexts/AuthProvider';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { WagmiProvider, createConfig, http } from 'wagmi';
+import { baseSepolia } from 'wagmi/chains';
+import { coinbaseWallet } from 'wagmi/connectors';
 
-// Create a context to track if WalletConnect has been initialized
+// Create a context to track if Wallet has been initialized
 const WalletInitContext = createContext(false);
 export const useWalletInit = () => useContext(WalletInitContext);
 
@@ -22,8 +21,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Get project ID from environment variables with fallback
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c86f23da1913707381b31528a79c3e23';
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '356405303441-ge8ghhld339vnmm627o414b6fa0aiger.apps.googleusercontent.com';
 
 // Log Google client ID (truncated for security)
@@ -42,24 +39,19 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Configure chains
-const chains = [baseSepolia];
-
-// Create a function to get the Wagmi configuration
+// Function to get wagmi config for Base Onchain Kit
 const getWagmiConfig = () => {
-  // Set up wallet connectors
-  const { connectors } = getDefaultWallets({
-    appName: 'GeneTrust Chain Explorer',
-    projectId: projectId,
-  });
-  
-  // Create wagmi config
   return createConfig({
-    chains,
+    chains: [baseSepolia],
+    connectors: [
+      coinbaseWallet({
+        appName: 'GeneTrust Chain Explorer',
+      }),
+    ],
+    ssr: true,
     transports: {
       [baseSepolia.id]: http('https://sepolia.base.org'),
     },
-    connectors,
   });
 };
 
@@ -94,13 +86,11 @@ export function Providers({ children }: { children: ReactNode }) {
     <WalletInitContext.Provider value={true}>
       <WagmiProvider config={wagmiConfig}>
         <QueryClientProvider client={queryClient}>
-          <RainbowKitProvider>
             <GoogleOAuthProvider clientId={googleClientId}>
               <AuthProvider>
                 {children}
               </AuthProvider>
             </GoogleOAuthProvider>
-          </RainbowKitProvider>
         </QueryClientProvider>
       </WagmiProvider>
     </WalletInitContext.Provider>

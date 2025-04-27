@@ -3,8 +3,8 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { baseSepolia } from 'wagmi/chains';
-import { getDefaultWallets } from '@rainbow-me/rainbowkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { coinbaseWallet } from 'wagmi/connectors';
 
 interface WalletProviderWrapperProps {
   children?: ReactNode;
@@ -28,22 +28,12 @@ export default function WalletProviderWrapper({ children }: WalletProviderWrappe
 
   useEffect(() => {
     try {
-      // Use a fixed WalletConnect projectId
-      const projectId = 'c86f23da1913707381b31528a79c3e23';
-
-      // Set up connectors with proper type and error handling
-      let connectors: any[] = [];
-      try {
-        const walletData = getDefaultWallets({
+      // Create connectors with coinbaseWallet
+      const connectors = [
+        coinbaseWallet({
           appName: 'GeneTrust Dashboard',
-          projectId,
-        });
-        
-        connectors = walletData?.connectors || [];
-      } catch (error) {
-        console.error('Error setting up wallet connectors:', error);
-        // Continue with empty connectors array
-      }
+        }),
+      ];
 
       // Create config with proper chain typing
       const wagmiConfig = createConfig({
@@ -52,6 +42,7 @@ export default function WalletProviderWrapper({ children }: WalletProviderWrappe
           [baseSepolia.id]: http('https://sepolia.base.org'),
         },
         connectors,
+        ssr: true,
       });
 
       setConfig(wagmiConfig);

@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { useAccount } from 'wagmi';
-import { Settings, User, LogOut, Wallet, Shield, Moon, Sun, Activity, Bell, ChevronDown, FileText, ExternalLink } from 'lucide-react';
+import { Settings, User, LogOut, Shield, Moon, Sun, Activity, Bell, ChevronDown, FileText } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { profileAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,6 @@ import {
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import React from 'react';
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import Link from 'next/link';
 import { TransactionHistory } from './dashboard/TransactionHistory';
 import { ActivityFeed } from './dashboard/ActivityFeed';
@@ -78,9 +76,11 @@ export default function DashboardClient() {
   const [activeTab, setActiveTab] = useState('all');
   const [isMounted, setIsMounted] = useState(false);
   
-  // Wagmi hooks for wallet connection
-  const { address, isConnected } = useAccount();
-
+  // Set isMounted state on client side
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
   // Fetch user profile data
   useEffect(() => {
     const fetchProfile = async () => {
@@ -176,40 +176,6 @@ export default function DashboardClient() {
               <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-cyan-300">Dashboard</h1>
               <p className="text-gray-400 mt-1">Manage your account and view your data</p>
             </motion.div>
-            
-            {/* <motion.div 
-              className="flex items-center mt-4 md:mt-0 space-x-2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-            >
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2 border-indigo-600/30 bg-indigo-900/20 hover:bg-indigo-800/30 text-indigo-100">
-                    <Avatar className="h-6 w-6 border border-indigo-500/30">
-                      <AvatarImage src={user.profileImageUrl} alt={user.name || "User"} />
-                      <AvatarFallback className="bg-indigo-700 text-indigo-200 text-xs">
-                        {user.name ? user.name[0].toUpperCase() : 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="max-w-[100px] truncate">
-                      {user.name || user.email?.split('@')[0] || user.walletAddress?.substring(0, 6) + '...' + user.walletAddress?.substring(38)}
-                    </span>
-                    <ChevronDown className="h-4 w-4 text-indigo-300" />
-                </Button>
-              </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-gray-900 border border-indigo-800/50 text-indigo-100">
-                  <DropdownMenuItem onClick={() => toast.info('Profile settings coming soon')} className="hover:bg-indigo-900/50 hover:text-indigo-300 focus:bg-indigo-900/50">
-                    <Settings className="mr-2 h-4 w-4 text-indigo-400" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                  <DropdownMenuItem onClick={logout} className="hover:bg-red-900/30 hover:text-red-300 focus:bg-red-900/30 text-red-400">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            </motion.div> */}
         </div>
 
           <motion.div 
@@ -251,22 +217,22 @@ export default function DashboardClient() {
                 <CardHeader className="relative pb-4 border-b border-indigo-500/10">
                   <CardTitle className="text-indigo-100">Profile</CardTitle>
                   <CardDescription className="text-indigo-300/70">Your personal information</CardDescription>
-            </CardHeader>
+                </CardHeader>
                 <CardContent className="flex flex-col items-center pb-0 relative pt-6">
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-gradient-to-br from-indigo-600/20 to-cyan-600/20 flex items-center justify-center">
                     <Avatar className="h-16 w-16 border-2 border-indigo-500/30 shadow-lg shadow-indigo-500/20">
-                <AvatarImage src={user.profileImageUrl} alt={user.name || "User"} />
+                    <AvatarImage src={user.profileImageUrl} alt={user.name || "User"} />
                       <AvatarFallback className="bg-indigo-700 text-indigo-200 text-xl">
-                  {user.name ? user.name[0].toUpperCase() : 'U'}
-                </AvatarFallback>
-              </Avatar>
+                      {user.name ? user.name[0].toUpperCase() : 'U'}
+                    </AvatarFallback>
+                  </Avatar>
                   </div>
                   
                   <h3 className="text-xl font-semibold text-white mt-8 mb-1">{user.name || "User"}</h3>
                   <p className="text-indigo-300/70">{user.email || "No email provided"}</p>
                   
                   <div className="mt-6 w-full border-t border-indigo-500/10 pt-4">
-                <div className="flex justify-between items-center mb-3">
+                    <div className="flex justify-between items-center mb-3">
                       <span className="text-indigo-300/70">Role</span>
                       <motion.span 
                         className="font-medium text-white capitalize px-2.5 py-1 bg-indigo-700/30 rounded-full text-sm"
@@ -274,41 +240,41 @@ export default function DashboardClient() {
                       >
                         {user.role}
                       </motion.span>
-                </div>
-                <div className="flex justify-between items-center mb-3">
+                    </div>
+                    <div className="flex justify-between items-center mb-3">
                       <span className="text-indigo-300/70">Account Type</span>
                       <motion.span 
                         className="font-medium text-white px-2.5 py-1 bg-indigo-700/30 rounded-full text-sm"
                         whileHover={{ scale: 1.05 }}
                       >
-                        {user.email ? 'Email' : 'Wallet'}
+                        {user.email ? 'Email' : 'Guest'}
                       </motion.span>
-                </div>
-                <div className="flex justify-between items-center">
+                    </div>
+                    <div className="flex justify-between items-center">
                       <span className="text-indigo-300/70">Member Since</span>
                       <motion.span 
                         className="font-medium text-white px-2.5 py-1 bg-indigo-700/30 rounded-full text-sm"
                         whileHover={{ scale: 1.05 }}
                       >
-                    {new Date().toLocaleDateString()}
+                        {new Date().toLocaleDateString()}
                       </motion.span>
-                </div>
-              </div>
-            </CardContent>
+                    </div>
+                  </div>
+                </CardContent>
                 <CardFooter className="flex justify-center pt-6 pb-6 relative">
-              <Sheet>
-                <SheetTrigger asChild>
+                  <Sheet>
+                    <SheetTrigger asChild>
                       <Button variant="outline" className="border-indigo-500/30 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-100">
                         <FileText className="mr-2 h-4 w-4" />
                         Edit Profile
                       </Button>
-                </SheetTrigger>
+                    </SheetTrigger>
                     <SheetContent className="bg-gray-900 border-l border-indigo-500/20 text-white">
-                  <SheetHeader>
+                      <SheetHeader>
                         <SheetTitle className="text-indigo-100">Edit Profile</SheetTitle>
-                  </SheetHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
+                      </SheetHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
                           <Label htmlFor="name" className="text-indigo-300">Display Name</Label>
                           <Input 
                             id="name" 
@@ -316,9 +282,9 @@ export default function DashboardClient() {
                             defaultValue={user.name || ''} 
                             className="bg-gray-800/50 border-indigo-500/30 focus:border-indigo-400 text-white"
                           />
-                    </div>
-                    
-                    <div className="space-y-2">
+                        </div>
+                        
+                        <div className="space-y-2">
                           <Label htmlFor="email" className="text-indigo-300">Email</Label>
                           <Input 
                             id="email" 
@@ -328,130 +294,105 @@ export default function DashboardClient() {
                             className="bg-gray-800/50 border-indigo-500/30 text-gray-400"
                           />
                           <p className="text-xs text-indigo-400">Email cannot be changed</p>
-                    </div>
+                        </div>
 
                         <div className="space-y-2 pt-4 border-t border-indigo-500/20">
                           <h3 className="font-medium text-indigo-100">Password</h3>
-                      <div className="space-y-2">
+                          <div className="space-y-2">
                             <Label htmlFor="currentPassword" className="text-indigo-300">Current Password</Label>
-                        <Input 
-                          id="currentPassword" 
-                          type="password" 
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
+                            <Input 
+                              id="currentPassword" 
+                              type="password" 
+                              value={currentPassword}
+                              onChange={(e) => setCurrentPassword(e.target.value)}
                               className="bg-gray-800/50 border-indigo-500/30 focus:border-indigo-400 text-white"
-                        />
-                      </div>
-                      <div className="space-y-2">
+                            />
+                          </div>
+                          <div className="space-y-2">
                             <Label htmlFor="newPassword" className="text-indigo-300">New Password</Label>
-                        <Input 
-                          id="newPassword" 
-                          type="password" 
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
+                            <Input 
+                              id="newPassword" 
+                              type="password" 
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
                               className="bg-gray-800/50 border-indigo-500/30 focus:border-indigo-400 text-white"
-                        />
-                      </div>
-                      <div className="space-y-2">
+                            />
+                          </div>
+                          <div className="space-y-2">
                             <Label htmlFor="confirmPassword" className="text-indigo-300">Confirm Password</Label>
-                        <Input 
-                          id="confirmPassword" 
-                          type="password" 
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
+                            <Input 
+                              id="confirmPassword" 
+                              type="password" 
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
                               className="bg-gray-800/50 border-indigo-500/30 focus:border-indigo-400 text-white"
-                        />
-                      </div>
-                      
-                      {passwordError && (
+                            />
+                          </div>
+                          
+                          {passwordError && (
                             <p className="text-sm text-red-400 mt-2">{passwordError}</p>
-                      )}
-                      
-                      <Button 
-                        onClick={handleChangePassword} 
+                          )}
+                          
+                          <Button 
+                            onClick={handleChangePassword} 
                             className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white"
-                        disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
-                      >
-                        {isChangingPassword ? 'Changing Password...' : 'Change Password'}
-                      </Button>
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </CardFooter>
-          </Card>
+                            disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
+                          >
+                            {isChangingPassword ? 'Changing Password...' : 'Change Password'}
+                          </Button>
+                        </div>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </CardFooter>
+              </Card>
             </motion.div>
 
-          {/* Wallet Card */}
+            {/* Settings Card */}
             <motion.div variants={fadeIn} custom={1}>
               <Card className="backdrop-blur-sm bg-gray-900/30 border-indigo-500/20 overflow-hidden h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-transparent to-cyan-900/10 rounded-lg"></div>
                 <CardHeader className="relative pb-4 border-b border-indigo-500/10">
-                  <CardTitle className="text-indigo-100">Wallet Connection</CardTitle>
-                  <CardDescription className="text-indigo-300/70">Manage your blockchain wallet</CardDescription>
-            </CardHeader>
+                  <CardTitle className="text-indigo-100">Dashboard Settings</CardTitle>
+                  <CardDescription className="text-indigo-300/70">Manage your account preferences</CardDescription>
+                </CardHeader>
                 <CardContent className="pb-0 relative pt-6">
                   <motion.div 
                     className="flex items-center justify-between mb-6"
                     whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
-                <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3">
                       <div className="bg-indigo-900/50 p-3 rounded-full border border-indigo-500/30 shadow-lg shadow-indigo-500/10">
-                        <Wallet className="h-6 w-6 text-indigo-300" />
-                  </div>
-                  <div>
-                        <h3 className="font-medium text-white">Wallet Status</h3>
+                        <FileText className="h-6 w-6 text-indigo-300" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-white">Activity Tracking</h3>
                         <p className="text-sm text-indigo-300/70">
-                      {isConnected ? 'Connected' : 'Not connected'}
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  {isConnected ? (
-                        <Badge className="bg-green-900/30 text-green-300 border border-green-500/30">
-                      Active
-                    </Badge>
-                  ) : (
-                        <Badge className="bg-gray-800/50 text-gray-300 border border-gray-600/30">
-                      Inactive
-                    </Badge>
-                  )}
-                </div>
+                          {user?.email ? 'Email verified' : 'Not verified'}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <Badge className={user?.email 
+                        ? "bg-green-900/30 text-green-300 border border-green-500/30" 
+                        : "bg-gray-800/50 text-gray-300 border border-gray-600/30"}>
+                        {user?.email ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
                   </motion.div>
-
-                  <AnimatePresence>
-              {isConnected && address && (
-                      <motion.div 
-                        className="mb-6 p-4 bg-indigo-900/20 rounded-lg border border-indigo-500/20"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                      >
-                  <div className="flex justify-between items-center">
-                          <span className="text-sm text-indigo-300/70">Address</span>
-                          <motion.span 
-                            className="text-sm font-mono font-medium text-indigo-100 bg-indigo-800/30 px-2 py-1 rounded-md"
-                            whileHover={{ scale: 1.05 }}
-                          >
-                      {`${address.substring(0, 6)}...${address.substring(38)}`}
-                          </motion.span>
-                  </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
 
                   <motion.div 
                     className="flex justify-between items-center"
                     whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
-                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3">
                       <div className="bg-orange-900/30 p-3 rounded-full border border-orange-500/30 shadow-lg shadow-orange-500/5">
                         <Shield className="h-5 w-5 text-orange-300" />
-                    </div>
-                    <div>
-                        <h3 className="font-medium text-white">Secured Connection</h3>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-white">Data Protection</h3>
                         <p className="text-sm text-indigo-300/70">End-to-end encryption</p>
                       </div>
                     </div>
@@ -461,96 +402,68 @@ export default function DashboardClient() {
                       className="data-[state=checked]:bg-indigo-600"
                     />
                   </motion.div>
-            </CardContent>
+                </CardContent>
                 <CardFooter className="pt-6 pb-6 relative">
-                <Link href="/chainSight" passHref>
-                  <Button 
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center"
-                  >
-                    <Wallet className="h-4 w-4 mr-2" />
-                    Go to Wallet Hub
-                    <ExternalLink className="h-4 w-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardFooter>
-          </Card>
+                  <Link href="/settings" passHref>
+                    <Button 
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Manage Account Settings
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
             </motion.div>
 
-          {/* Settings Card */}
-            {/* <motion.div variants={fadeIn} custom={2}>
+            {/* User Activity Card */}
+            <motion.div variants={fadeIn} custom={2}>
               <Card className="backdrop-blur-sm bg-gray-900/30 border-indigo-500/20 overflow-hidden h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-transparent to-cyan-900/10 rounded-lg"></div>
                 <CardHeader className="relative pb-4 border-b border-indigo-500/10">
-                  <CardTitle className="text-indigo-100">Settings</CardTitle>
-                  <CardDescription className="text-indigo-300/70">Manage your account preferences</CardDescription>
-            </CardHeader>
+                  <CardTitle className="text-indigo-100">Recent Activity</CardTitle>
+                  <CardDescription className="text-indigo-300/70">Your latest interactions</CardDescription>
+                </CardHeader>
                 <CardContent className="relative pt-6">
-              <div className="space-y-6">
-                    <motion.div 
-                      className="flex justify-between items-center" 
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                    >
-                  <div className="flex items-center space-x-3">
-                        <div className="bg-blue-900/30 p-3 rounded-full border border-blue-500/30 shadow-lg shadow-blue-500/5">
-                      {darkMode ? (
-                            <Moon className="h-5 w-5 text-blue-300" />
-                      ) : (
-                            <Sun className="h-5 w-5 text-blue-300" />
-                      )}
-                    </div>
-                    <div>
-                          <h3 className="font-medium text-white">Dark Mode</h3>
-                          <p className="text-sm text-indigo-300/70">Toggle dark or light theme</p>
-                    </div>
-                  </div>
-                      <Switch 
-                        checked={darkMode} 
-                        onCheckedChange={toggleDarkMode} 
-                        className="data-[state=checked]:bg-indigo-600"
-                      />
-                    </motion.div>
-
-                    <motion.div 
-                      className="flex justify-between items-center"
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                    >
-                  <div className="flex items-center space-x-3">
-                        <div className="bg-purple-900/30 p-3 rounded-full border border-purple-500/30 shadow-lg shadow-purple-500/5">
-                          <Bell className="h-5 w-5 text-purple-300" />
-                    </div>
-                    <div>
-                          <h3 className="font-medium text-white">Notifications</h3>
-                          <p className="text-sm text-indigo-300/70">Receive email updates</p>
-                    </div>
-                  </div>
-                      <Switch defaultChecked className="data-[state=checked]:bg-indigo-600" />
-                    </motion.div>
-
-                    <motion.div 
-                      className="flex justify-between items-center"
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                    >
-                  <div className="flex items-center space-x-3">
-                        <div className="bg-green-900/30 p-3 rounded-full border border-green-500/30 shadow-lg shadow-green-500/5">
-                          <Activity className="h-5 w-5 text-green-300" />
-                    </div>
-                    <div>
-                          <h3 className="font-medium text-white">Activity Logs</h3>
-                          <p className="text-sm text-indigo-300/70">Track your account activity</p>
+                  <div className="space-y-4">
+                    {profile?.recentActivity?.slice(0, 3)?.map((activity: any, index: number) => (
+                      <motion.div
+                        key={index}
+                        className="p-3 bg-indigo-900/20 rounded-lg border border-indigo-500/20"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-white">{activity.type}</p>
+                            <p className="text-xs text-indigo-300/70">{activity.description || 'Activity recorded'}</p>
+                          </div>
+                          <span className="text-xs text-indigo-300/70">
+                            {new Date(activity.timestamp).toLocaleDateString()}
+                          </span>
                         </div>
-                    </div>
-                      <Switch className="data-[state=checked]:bg-indigo-600" />
-                    </motion.div>
-              </div>
-            </CardContent>
-          </Card>
-            </motion.div> */}
+                      </motion.div>
+                    ))}
+
+                    {(!profile?.recentActivity || profile.recentActivity.length === 0) && (
+                      <div className="text-center py-6">
+                        <p className="text-indigo-300/70">No recent activity</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-6 pb-6 relative">
+                  <Button 
+                    onClick={() => setActiveTab('all')} 
+                    className="w-full bg-indigo-600/20 hover:bg-indigo-600/30 text-white border border-indigo-500/30"
+                  >
+                    View All Activity
+                  </Button>
+                </CardFooter>
+              </Card>
+            </motion.div>
           </motion.div>
 
-        {/* Recent Activity Section */}
+          {/* Recent Activity Section */}
           <motion.div 
             className="mt-8"
             variants={fadeIn}
@@ -563,7 +476,7 @@ export default function DashboardClient() {
               <CardHeader className="relative pb-4 border-b border-indigo-500/10">
                 <CardTitle className="text-indigo-100">Recent Activity</CardTitle>
                 <CardDescription className="text-indigo-300/70">Your latest actions and updates</CardDescription>
-            </CardHeader>
+              </CardHeader>
               <CardContent className="relative pt-6">
                 <Tabs 
                   defaultValue="all" 
@@ -596,7 +509,7 @@ export default function DashboardClient() {
                     >
                       Monitoring
                     </TabsTrigger>
-                </TabsList>
+                  </TabsList>
 
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -606,7 +519,7 @@ export default function DashboardClient() {
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.3 }}
                     >
-                  {isLoadingProfile ? (
+                      {isLoadingProfile ? (
                         <div className="flex justify-center items-center py-12">
                           <div className="relative w-12 h-12">
                             <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-indigo-500 animate-spin"></div>
@@ -627,31 +540,31 @@ export default function DashboardClient() {
                         </div>
                       ) : (
                         profile?.recentActivity?.filter((a: any) => a.type === 'monitoring')?.length > 0 ? (
-                    <div className="space-y-4">
-                      {profile.recentActivity
-                        .filter((activity: any) => activity.type === 'monitoring')
-                        .map((activity: any, index: number) => (
+                          <div className="space-y-4">
+                            {profile.recentActivity
+                              .filter((activity: any) => activity.type === 'monitoring')
+                              .map((activity: any, index: number) => (
                                 <motion.div 
                                   key={index}
                                   className="flex justify-between p-4 bg-indigo-900/20 rounded-lg border border-indigo-500/20"
                                   whileHover={{ scale: 1.01 }}
                                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                                 >
-                            <div>
+                                  <div>
                                     <p className="font-medium text-white">IoT Monitoring</p>
                                     <p className="text-sm text-indigo-300/70">
-                                {activity.data.summary || 'Monitoring data recorded'}
-                              </p>
-                            </div>
-                            <div className="text-right">
+                                      {activity.data.summary || 'Monitoring data recorded'}
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
                                     <p className="text-sm text-indigo-300/70">
-                                {new Date(activity.timestamp).toLocaleDateString()}
-                              </p>
-                            </div>
+                                      {new Date(activity.timestamp).toLocaleDateString()}
+                                    </p>
+                                  </div>
                                 </motion.div>
                               ))}
-                    </div>
-                  ) : (
+                          </div>
+                        ) : (
                           <motion.div 
                             className="text-center py-12 bg-indigo-900/10 rounded-lg border border-indigo-500/10"
                             initial={{ opacity: 0 }}
@@ -665,12 +578,12 @@ export default function DashboardClient() {
                       )}
                     </motion.div>
                   </AnimatePresence>
-              </Tabs>
-            </CardContent>
-          </Card>
+                </Tabs>
+              </CardContent>
+            </Card>
           </motion.div>
-      </motion.div>
-    </div>
+        </motion.div>
+      </div>
     </MotionConfig>
   );
 }

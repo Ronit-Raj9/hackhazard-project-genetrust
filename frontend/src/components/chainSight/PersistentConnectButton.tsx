@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useChainSightStore } from '@/lib/stores/chainSightStore';
 import { useWalletAccount } from '@/lib/hooks/use-wallet-account';
 import { useAuthState } from '@/lib/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { Wallet, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { BaseWalletConnector } from '@/components/BaseWalletConnector';
 
 export function PersistentConnectButton() {
   const { address, isConnected } = useWalletAccount();
@@ -44,14 +44,10 @@ export function PersistentConnectButton() {
     router.push('/login');
   };
 
-  // Handle errors in the ConnectButton for guest users
-  const handleOnError = (error) => {
+  // Handle errors in wallet connections
+  const handleOnError = (error: Error) => {
     console.error('Wallet connection error:', error);
-    toast({
-      title: "Connection Error",
-      description: "Failed to connect wallet. Please try again.",
-      variant: "destructive",
-    });
+    toast.error("Failed to connect wallet. Please try again.");
     setIsConnecting(false);
   };
 
@@ -69,12 +65,7 @@ export function PersistentConnectButton() {
       {isAuthenticated ? (
         // Show wallet connect button for authenticated users (including guests)
         <div className="relative">
-          <ConnectButton 
-            label="Connect Wallet" 
-            accountStatus="address"
-            showBalance={!isGuest}
-            chainStatus={!isGuest ? "icon" : "none"}
-          />
+          <BaseWalletConnector />
           {isGuest && (
             <div className="text-xs text-amber-400 mt-1 text-center">
               Connected as guest — data stored locally

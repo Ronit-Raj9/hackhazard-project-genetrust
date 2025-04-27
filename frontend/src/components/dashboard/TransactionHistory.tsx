@@ -1,12 +1,17 @@
 'use client';
 
 import React from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   ExternalLink, AlertCircle, Clock, CheckCircle, XCircle, 
-  Filter, ArrowLeft, ArrowRight, Loader2, DownloadCloud, RefreshCw 
+  ArrowLeft, ArrowRight, Loader2, DownloadCloud, RefreshCw 
 } from 'lucide-react';
-import { useTransactionHistory, TransactionType, TransactionStatus, Transaction } from '@/lib/hooks/useTransactionHistory';
+import { 
+  Transaction, 
+  TransactionType, 
+  TransactionStatus, 
+  useDashboardTransactions 
+} from '@/lib/hooks/useDashboardTransactions';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -21,55 +26,56 @@ export const TransactionHistory = ({
   compact = false, 
   limit 
 }: TransactionHistoryProps) => {
-  const { isAuthenticated, wallet } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { 
-    transactions, isLoading, error,
-    fetchTransactions, syncWithBackend,
-    totalTransactions, totalPages, currentPage,
-    goToPage, exportToCsv, clearHistory
-  } = useTransactionHistory();
+    transactions, 
+    isLoading, 
+    error,
+    fetchTransactions, 
+    totalTransactions, 
+    totalPages, 
+    currentPage,
+    goToPage, 
+    clearTransactions,
+    refreshTransactions
+  } = useDashboardTransactions({ limit });
 
   const [refreshing, setRefreshing] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await syncWithBackend();
-    await fetchTransactions();
+    await refreshTransactions();
     setRefreshing(false);
   };
 
   const handleClearHistory = async () => {
     if (window.confirm('Are you sure you want to clear your transaction history? This cannot be undone.')) {
-      await clearHistory();
+      await clearTransactions();
     }
   };
 
   const handleExport = async () => {
     setExportLoading(true);
     try {
-      await exportToCsv();
+      const csvContent = "data:text/csv;charset=utf-8," 
+        + "Transaction,Hash,Time,Status\n"
+        + transactions.map(tx => {
+            const date = new Date(tx.timestamp instanceof Date ? tx.timestamp.getTime() : tx.timestamp).toLocaleString();
+            return `"${tx.description}","${tx.hash}","${date}","${tx.status}"`;
+          }).join("\n");
+        
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "transaction_history.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } finally {
       setExportLoading(false);
     }
   };
-
-  useEffect(() => {
-    let isMounted = true;
-    
-    const initData = async () => {
-      if (isAuthenticated && wallet.isConnected && isMounted) {
-        await syncWithBackend();
-        await fetchTransactions();
-      }
-    };
-    
-    initData();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [isAuthenticated, wallet.isConnected, syncWithBackend, fetchTransactions]);
   
   // Get types for coloring
   const typeColors: Record<TransactionType, string> = {

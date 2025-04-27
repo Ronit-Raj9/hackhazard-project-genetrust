@@ -2,6 +2,7 @@ import { createPublicClient, createWalletClient, http, custom } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 import { keccak256, stringToHex, parseEther, Hex, Address } from 'viem';
 import { transactionAPI } from '@/lib/api';
+import { useChainSightStore } from '@/lib/stores/chainSightStore';
 
 // Import the contract ABIs for GeneTrust genomics platform
 import SampleProvenanceABI from './abis/SampleProvenance.json';
@@ -142,6 +143,24 @@ async function syncTransactionWithBackend(
     // Convert contract name to transaction type
     const type = contractToTransactionType[contractName];
     
+    // Create transaction object for UI state
+    const transaction = {
+      hash: txHash,
+      description,
+      type,
+      timestamp: Date.now(),
+      status: 'pending' as const,
+      walletAddress,
+      entityId,
+      metadata
+    };
+    
+    // Directly update the global store
+    const chainSightStore = useChainSightStore.getState();
+    
+    // Add transaction to UI state (this ensures it shows up immediately)
+    chainSightStore.addTransaction(transaction);
+    
     // Create transaction record in the backend
     await transactionAPI.createTransaction({
       hash: txHash,
@@ -158,10 +177,11 @@ async function syncTransactionWithBackend(
     console.log(`Transaction ${txHash} synced with backend (${type})`);
     
     // Wait for transaction receipt asynchronously
-    setTimeout(async () => {
+    const checkTransactionReceipt = async () => {
       try {
         const receipt = await publicClient.waitForTransactionReceipt({ 
-          hash: txHash as `0x${string}` 
+          hash: txHash as `0x${string}`,
+          timeout: 60000, // 60 seconds timeout
         });
         
         if (receipt) {
@@ -172,16 +192,36 @@ async function syncTransactionWithBackend(
             gasUsed: Number(receipt.gasUsed)
           };
           
+          // Update backend
           await transactionAPI.updateTransactionStatus(txHash, status, blockData);
+          
+          // Update UI state again
+          chainSightStore.setTransactionStatus(txHash, status, blockData);
+          
+          // Sync with backend to ensure complete data
+          await chainSightStore.syncWithBackend();
+          
           console.log(`Transaction ${txHash} status updated to ${status}`);
         }
       } catch (waitError) {
         console.error(`Failed to get receipt for transaction ${txHash}:`, waitError);
+        // Still try to update local state if we catch an error
+        chainSightStore.setTransactionStatus(txHash, 'failed');
+        
+        // Try syncing with backend one more time
+        try {
+          await chainSightStore.syncWithBackend();
+        } catch (syncError) {
+          console.error('Failed to sync after transaction error:', syncError);
+        }
       }
-    }, 2000); // Wait 2 seconds before checking receipt
+    };
+    
+    // Start checking for receipt
+    checkTransactionReceipt();
     
   } catch (syncError) {
-    console.warn('Failed to sync transaction with backend:', syncError);
+    console.error('Failed to sync transaction with backend:', syncError);
     // Don't throw - we don't want to break the transaction flow for the user
   }
 }
@@ -561,10 +601,12 @@ export async function registerCRISPRExperiment(
   location: string,
   notes: string
 ): Promise<string> {
-  return writeContract('experimentalDataAudit', 'registerExperiment', [
-    specimenId,
-    location,
-    notes
+  return writeContract('experimentalDataAudit', 'recordExperiment', [
+    specimenId.toString(), // Convert to string for the experiment ID
+    specimenId.toString(), // Use specimen ID as the sample ID as well
+    "CRISPR",              // Experiment type
+    notes,                 // Results field
+    location               // Metadata field
   ], {
     description: `Registered Experiment for Specimen: ${specimenId.toString()}`,
     entityId: specimenId.toString(),
@@ -694,13 +736,12 @@ export async function grantResearcherAccess(role: string, targetAccount: string)
  * Update the workflow status of a genetic sample
  */
 export async function updateGeneticSampleStatus(sampleId: string, status: string, notes: string): Promise<string> {
-  // Convert status string to enum value
-  const statusValue = getWorkflowStatusValue(status);
-    
-  return writeContract('workflowAutomation', 'updateSampleStatus', [
-    sampleId,
-    statusValue,
-    notes
+  // First create a workflow if needed
+  let workflowId = BigInt(1); // Default to first workflow for demo
+  
+  return writeContract('workflowAutomation', 'completeStep', [
+    workflowId,
+    BigInt(getWorkflowStatusValue(status)) // Use status value as step ID
   ], {
     description: `Updated ${sampleId} to ${status}`,
     entityId: sampleId,
@@ -729,7 +770,7 @@ export async function registerGeneticIP(
     .map(addr => addr.trim())
     .filter(addr => addr.length > 0) as Address[];
   
-  return writeContract('intellectualProperty', 'registerIP', [
+  return writeContract('intellectualProperty', 'createIPRecord', [
     title,
     description,
     ipType,

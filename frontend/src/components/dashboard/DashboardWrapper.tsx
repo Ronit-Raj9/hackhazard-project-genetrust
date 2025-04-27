@@ -1,12 +1,10 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { WagmiProvider, createConfig, http } from 'wagmi';
-import { baseSepolia } from 'wagmi/chains';
-import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import '@rainbow-me/rainbowkit/styles.css';
 import { useState, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { OnchainKitProvider } from '@coinbase/onchainkit';
+import { baseSepolia } from 'viem/chains';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -55,28 +53,29 @@ export default function DashboardWrapper() {
     );
   }
 
-  // Set up connectors with proper type
-  const { connectors } = getDefaultWallets({
-    appName: 'GeneTrust Dashboard',
-    projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c86f23da1913707381b31528a79c3e23',
-  });
-  
-  // Create wagmi config
-  const config = createConfig({
-    chains: [baseSepolia],
-    transports: {
-      [baseSepolia.id]: http('https://sepolia.base.org'),
-    },
-    connectors,
-  });
+  // Get COINBASE PROJECT ID from environment or fallback
+  const projectId = process.env.NEXT_PUBLIC_COINBASE_PROJECT_ID || 'c86f23da1913707381b31528a79c3e23';
 
   return (
-    <WagmiProvider config={config}>
+    <OnchainKitProvider
+      chain={baseSepolia}
+      projectId={projectId}
+      rpcUrl="https://sepolia.base.org"
+      config={{
+        appearance: {
+          name: 'GeneTrust Dashboard',
+          logo: '/logo.png',
+          mode: 'auto',
+          theme: 'default'
+        },
+        wallet: {
+          display: 'modal'
+        }
+      }}
+    >
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
           <DashboardClient />
-        </RainbowKitProvider>
       </QueryClientProvider>
-    </WagmiProvider>
+    </OnchainKitProvider>
   );
 } 

@@ -283,14 +283,27 @@ export const useChainSightStore = create<ChainSightState>()(
           
           if (exists) {
             // Update existing transaction
+            const updatedHistory = state.transactionHistory.map(tx => 
+              tx.hash === transaction.hash ? { ...tx, ...transaction } : tx
+            );
+            
+            console.log(`Updated existing transaction in store: ${transaction.hash}`);
+            
             return {
-              transactionHistory: state.transactionHistory.map(tx => 
-                tx.hash === transaction.hash ? { ...tx, ...transaction } : tx
-              )
+              transactionHistory: updatedHistory.sort((a, b) => {
+                // Sort by timestamp (newest first)
+                return b.timestamp - a.timestamp;
+              })
             };
           } else {
             // Add new transaction at the beginning of the array
-            const newHistory = [transaction, ...state.transactionHistory];
+            console.log(`Added new transaction to store: ${transaction.hash} (${transaction.description})`);
+            
+            // Add this transaction with a unique ID for React rendering optimization
+            const newTx = {
+              ...transaction,
+              _uniqueId: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+            };
             
             // Try to save to backend if wallet is connected
             if (state.wallet.isConnected && state.wallet.address) {
@@ -306,15 +319,47 @@ export const useChainSightStore = create<ChainSightState>()(
               }
             }
             
-            return { transactionHistory: newHistory };
+            return { 
+              transactionHistory: [newTx, ...state.transactionHistory]
+            };
           }
         });
       },
       
       setTransactionStatus: (hash: string, status: TransactionStatus, blockData?: { blockNumber: number; gasUsed: number }) => {
         set((state) => {
+          // Find the transaction to update
+          const txToUpdate = state.transactionHistory.find(tx => tx.hash === hash);
+          
+          // If transaction doesn't exist, do nothing
+          if (!txToUpdate) {
+            console.warn(`Transaction ${hash} not found in local state when updating status`);
+            return state; // Return unchanged state
+          }
+          
+          console.log(`Updating transaction ${hash} status to ${status}`, blockData || '');
+          
+          // Only update if status has changed
+          if (txToUpdate.status === status && 
+              (!blockData || (txToUpdate.blockNumber === blockData.blockNumber && 
+                            txToUpdate.gasUsed === blockData.gasUsed))) {
+            console.log(`Transaction ${hash} status already set to ${status}, skipping update`);
+            return state;
+          }
+          
+          // Create updated history with the modified transaction
           const updatedHistory = state.transactionHistory.map(tx => 
-            tx.hash === hash ? { ...tx, status, ...blockData } : tx
+            tx.hash === hash 
+              ? { 
+                  ...tx, 
+                  status, 
+                  ...(blockData || {}),
+                  // Add a lastUpdated timestamp for sorting recently updated transactions
+                  lastUpdated: Date.now(),
+                  // Add a unique ID for React rendering optimization on updates
+                  _uniqueId: (tx as any)._uniqueId || `tx_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+                } 
+              : tx
           );
           
           // Try to update status in backend if wallet is connected
@@ -329,7 +374,19 @@ export const useChainSightStore = create<ChainSightState>()(
             }
           }
           
-          return { transactionHistory: updatedHistory };
+          // Re-sort transactions, prioritizing:
+          // 1. Recently updated transactions (if they have a lastUpdated field)
+          // 2. New transactions by timestamp
+          return { 
+            transactionHistory: updatedHistory.sort((a, b) => {
+              // First sort by lastUpdated (if available)
+              const aUpdated = (a as any).lastUpdated || a.timestamp;
+              const bUpdated = (b as any).lastUpdated || b.timestamp;
+              
+              // Then by timestamp (newest first)
+              return bUpdated - aUpdated;
+            }) 
+          };
         });
       },
       
@@ -366,6 +423,8 @@ export const useChainSightStore = create<ChainSightState>()(
           return;
         }
         
+        console.log('Syncing transactions with backend...');
+        
         try {
           // Fetch transactions from backend
           const response = await transactionAPI.getUserTransactions({
@@ -374,44 +433,68 @@ export const useChainSightStore = create<ChainSightState>()(
           });
           
           const backendTransactions = response.data.data.transactions;
+          console.log(`Fetched ${backendTransactions.length} transactions from backend`);
           
-          // Merge local and backend transactions, preferring backend data
-          // but keeping local transactions that aren't in the backend yet
+          // Create a map of existing transactions for faster lookup
+          const existingTransactions = new Map(
+            transactionHistory.map(tx => [tx.hash, tx])
+          );
+          
+          // Keep track of backend hashes
           const backendHashes = new Set(backendTransactions.map((tx: any) => tx.hash));
           
-          // Keep local transactions that aren't in backend
+          // Upload local-only transactions to backend
           const localOnlyTransactions = transactionHistory.filter(tx => !backendHashes.has(tx.hash));
           
-          // Upload local-only transactions to backend
-          for (const tx of localOnlyTransactions) {
-            try {
-              await transactionAPI.createTransaction({
-                ...tx,
-                walletAddress: wallet.address
-              });
-            } catch (err) {
-              console.warn(`Failed to upload local transaction ${tx.hash} to backend:`, err);
+          if (localOnlyTransactions.length > 0) {
+            console.log(`Uploading ${localOnlyTransactions.length} local-only transactions to backend`);
+            
+            for (const tx of localOnlyTransactions) {
+              try {
+                await transactionAPI.createTransaction({
+                  ...tx,
+                  walletAddress: wallet.address
+                });
+              } catch (err) {
+                console.warn(`Failed to upload local transaction ${tx.hash} to backend:`, err);
+              }
             }
           }
           
-          // Convert backend transactions to local format
-          const formattedBackendTxs = backendTransactions.map((tx: any) => ({
-            hash: tx.hash,
-            timestamp: tx.timestamp ? new Date(tx.timestamp).getTime() : Date.now(),
-            description: tx.description,
-            type: tx.type as TransactionType,
-            status: tx.status as TransactionStatus,
-            blockNumber: tx.blockNumber,
-            gasUsed: tx.gasUsed,
-            entityId: tx.entityId
-          }));
+          // Convert backend transactions to local format while preserving local extra data
+          const formattedBackendTxs = backendTransactions.map((backendTx: any) => {
+            // Get existing local transaction if available, to preserve local state like _uniqueId
+            const existingTx = existingTransactions.get(backendTx.hash);
+            
+            return {
+              ...existingTx, // Keep any local extra properties
+              hash: backendTx.hash,
+              timestamp: backendTx.timestamp ? new Date(backendTx.timestamp).getTime() : Date.now(),
+              description: backendTx.description,
+              type: backendTx.type as TransactionType,
+              status: backendTx.status as TransactionStatus,
+              blockNumber: backendTx.blockNumber,
+              gasUsed: backendTx.gasUsed,
+              entityId: backendTx.entityId,
+              // Add/update a unique ID for React rendering optimization
+              _uniqueId: existingTx ? (existingTx as any)._uniqueId : `tx_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+            };
+          });
           
-          // Sort transactions by timestamp (newest first)
-          const mergedTransactions = [...formattedBackendTxs, ...localOnlyTransactions].sort(
-            (a, b) => b.timestamp - a.timestamp
-          );
+          // Combine backend transactions with local-only transactions
+          const mergedTransactions = [...formattedBackendTxs, ...localOnlyTransactions];
           
-          set({ transactionHistory: mergedTransactions });
+          // Sort transactions: prioritize by lastUpdated or timestamp
+          const sortedTransactions = mergedTransactions.sort((a, b) => {
+            const aTime = (a as any).lastUpdated || a.timestamp;
+            const bTime = (b as any).lastUpdated || b.timestamp;
+            return bTime - aTime; // Newest first
+          });
+          
+          console.log(`Synced ${sortedTransactions.length} total transactions`);
+          
+          // Update the store with the merged and sorted transactions
+          set({ transactionHistory: sortedTransactions });
           
         } catch (err) {
           console.error('Failed to sync with backend:', err);

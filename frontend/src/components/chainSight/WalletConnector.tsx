@@ -6,7 +6,6 @@ import { Info, AlertTriangle, ChevronDown, ChevronUp, Zap, ExternalLink, Check, 
 import { DNA_COLORS } from '@/lib/constants/designTokens';
 import { getWalletClient, getAccount, signMessage, connect, disconnect } from 'wagmi/actions';
 import { useWalletAccount } from '@/lib/hooks/use-wallet-account';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useChainSightStore } from '@/lib/stores/chainSightStore';
 import { useChainId, useAccount, useBalance, useDisconnect } from 'wagmi';
 import { PersistentConnectButton } from './PersistentConnectButton';
@@ -29,6 +28,7 @@ import {
 import { useConnect } from 'wagmi';
 import { Badge } from "@/components/ui/badge";
 import lodash from 'lodash';
+import { BaseWalletConnector } from '@/components/BaseWalletConnector';
 
 // Component animations
 const itemVariants = {

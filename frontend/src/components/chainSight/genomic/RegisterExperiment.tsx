@@ -4,7 +4,7 @@ import { useState, FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Info, AlertCircle, Wallet } from 'lucide-react';
 import { useAccount } from 'wagmi';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { BaseWalletConnector } from '@/components/BaseWalletConnector';
 import { registerCRISPRExperiment } from '../../../contracts/contract-service';
 import { useChainSightStore, Transaction } from '@/lib/stores/chainSightStore';
 
@@ -131,7 +131,7 @@ export const RegisterExperiment = () => {
             <Wallet className="h-12 w-12 text-indigo-400 mb-2" />
             <h3 className="text-xl font-semibold text-white">Connect Your Wallet</h3>
             <p className="text-gray-400 text-center mb-4">Please connect your wallet to register experiments on the blockchain</p>
-            <ConnectButton />
+            <BaseWalletConnector />
           </div>
         </div>
       )}

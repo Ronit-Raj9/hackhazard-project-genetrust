@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   ExternalLink, AlertCircle, Clock, CheckCircle, XCircle, 
   Filter, ArrowLeft, ArrowRight, Loader2, DownloadCloud, RefreshCw,
@@ -78,6 +78,9 @@ export const TransactionHistory = ({
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTransactionCountRef = useRef<number>(0);
   
   // Use our custom hook for transaction history
   const {
@@ -102,6 +105,59 @@ export const TransactionHistory = ({
     toDate: toDate ? new Date(toDate) : undefined
   });
   
+  // Check for new transactions and refresh when needed
+  useEffect(() => {
+    // Update our ref for transaction count tracking
+    if (transactionHistory.length !== lastTransactionCountRef.current) {
+      console.log(`Transaction count changed: ${lastTransactionCountRef.current} -> ${transactionHistory.length}`);
+      lastTransactionCountRef.current = transactionHistory.length;
+      
+      // Force a refresh when transaction count changes
+      if (!isLoading && isAuthenticated) {
+        console.log('Refreshing transaction display due to count change');
+        fetchTransactions();
+        fetchCounts();
+      }
+    }
+  }, [transactionHistory.length, isLoading, isAuthenticated, fetchTransactions, fetchCounts]);
+  
+  // Setup periodic polling for transaction updates
+  useEffect(() => {
+    // Clear any existing timer
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+    
+    // Only poll when auto-refresh is enabled and the user is authenticated with a connected wallet
+    if (autoRefresh && isAuthenticated && wallet.isConnected) {
+      console.log('Setting up transaction auto-refresh timer');
+      
+      refreshTimerRef.current = setInterval(() => {
+        // Check if we have any pending transactions that need updating
+        const hasPendingTransactions = transactions.some(tx => tx.status === 'pending');
+        
+        if (hasPendingTransactions) {
+          console.log('Auto-refreshing pending transactions');
+          syncWithBackend().then(() => {
+            fetchTransactions();
+            fetchCounts();
+          }).catch(error => {
+            console.error('Error during auto-refresh:', error);
+          });
+        }
+      }, 5000); // Poll every 5 seconds for pending transaction updates
+    }
+    
+    // Cleanup on unmount or when dependencies change
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+    };
+  }, [autoRefresh, isAuthenticated, wallet.isConnected, transactions, syncWithBackend, fetchTransactions, fetchCounts]);
+  
   // Reload data when filters change
   const applyFilters = useCallback(() => {
     fetchTransactions({
@@ -118,12 +174,47 @@ export const TransactionHistory = ({
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
+      await syncWithBackend();
       await fetchTransactions();
       await fetchCounts();
+    } catch (error) {
+      console.error('Error refreshing transaction data:', error);
     } finally {
       setRefreshing(false);
     }
-  }, [fetchTransactions, fetchCounts]);
+  }, [syncWithBackend, fetchTransactions, fetchCounts]);
+  
+  // Initial data load and automatic refresh
+  useEffect(() => {
+    let isMounted = true;
+    
+    const initData = async () => {
+      if (isAuthenticated && wallet.isConnected && isMounted) {
+        // Initial sync and fetch
+        await syncWithBackend();
+        await fetchTransactions();
+        await fetchCounts();
+        
+        // Force another refresh after 2 seconds to catch any new transactions
+        setTimeout(async () => {
+          if (isMounted) {
+            try {
+              await syncWithBackend();
+              await fetchTransactions();
+            } catch (error) {
+              console.error('Error during delayed refresh:', error);
+            }
+          }
+        }, 2000);
+      }
+    };
+    
+    initData();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, wallet.isConnected, syncWithBackend, fetchTransactions, fetchCounts]);
   
   // Export transactions as CSV
   const exportToCsv = useCallback(async () => {
@@ -225,25 +316,6 @@ export const TransactionHistory = ({
     }
   }, [isAuthenticated, clearBackendHistory, clearTransactionHistory, transactions.length]);
   
-  // Effect to refetch when wallet changes or when component mounts
-  useEffect(() => {
-    let isMounted = true;
-    
-    const initData = async () => {
-      if (isAuthenticated && wallet.isConnected && isMounted) {
-        await syncWithBackend();
-        await fetchTransactions();
-        await fetchCounts();
-      }
-    };
-    
-    initData();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [isAuthenticated, wallet.isConnected, syncWithBackend, fetchTransactions, fetchCounts]);
-  
   if (!isAuthenticated) {
     return (
       <div className="rounded-lg border border-indigo-500/30 bg-indigo-900/10 p-4 text-center">
@@ -275,6 +347,13 @@ export const TransactionHistory = ({
             <Filter className="h-3.5 w-3.5 mr-1" />
             Filters
             {showFiltersPanel ? <ChevronUp className="h-3.5 w-3.5 ml-1" /> : <ChevronDown className="h-3.5 w-3.5 ml-1" />}
+          </button>
+          <button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={`p-1.5 ${autoRefresh ? 'bg-green-600/30' : 'bg-indigo-600/30'} hover:bg-indigo-600/50 text-white rounded-md border ${autoRefresh ? 'border-green-500/30' : 'border-indigo-500/30'} transition-colors flex items-center text-xs`}
+            title={autoRefresh ? "Auto-refresh enabled" : "Auto-refresh disabled"}
+          >
+            <Clock className={`h-3.5 w-3.5 ${autoRefresh ? 'text-green-300' : 'text-white'}`} />
           </button>
           <button 
             onClick={handleRefresh}
