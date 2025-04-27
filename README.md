@@ -62,7 +62,7 @@ Our development process was inherently iterative. We refined the user interface 
 
 ## 📽️ Demo & Deliverables
 - **Demo Video:** [https://www.youtube.com/watch?v=eEd6sDZHP0w](https://www.youtube.com/watch?v=eEd6sDZHP0w)  
-- **Pitch Deck:** [Google Slides/PDF](https://link-to-pitch-deck)
+- **Pitch Deck:** [Google Slides/PDF](https://docs.google.com/presentation/d/19zmHUoRo7Z4dBQV9ap6FYX2ClHsseUO8/edit?usp=sharing&ouid=106709470696939680714&rtpof=true&sd=true)
 
 ## ✅ Tasks & Bonus Checklist
 - [ ] All team members followed official social channels and submitted the form (mandatory)  
