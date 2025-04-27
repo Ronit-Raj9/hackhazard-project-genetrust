@@ -177,7 +177,15 @@ export default function GenePredictorPage() {
                         type="text"
                         placeholder="ATCG..."
                         value={sequence}
-                        onChange={(e) => setSequence(e.target.value.toUpperCase())}
+                        onChange={(e) => {
+                          // Filter out any non-DNA characters (allow only A, T, C, G)
+                          const validDnaSequence = e.target.value
+                            .toUpperCase()
+                            .split('')
+                            .filter(char => ['A', 'T', 'C', 'G'].includes(char))
+                            .join('');
+                          setSequence(validDnaSequence);
+                        }}
                         maxLength={20}
                         className="bg-gray-800/70 border-indigo-500/30 focus:border-indigo-400 text-white font-mono tracking-widest h-12 pl-4 pr-12 shadow-inner shadow-indigo-500/10 transition-all focus:ring-2 focus:ring-indigo-500/50"
                         disabled={isLoading}
