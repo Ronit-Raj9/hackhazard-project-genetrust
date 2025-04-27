@@ -1,7 +1,8 @@
 # GeneTrust AI Studio
 
 ## 🚀 Project Title
-Accelerating Genomic Research with AI-Driven CRISPR Prediction and Real-Time Monitoring
+Empowering Precision Gene Editing with AI 🤖, IoT 🌐, and Blockchain 🔗 – All in One Platform 💻✨
+
 
 ## 📌 Problem Statement
 **Problem Statement 1 – Weave AI magic with Groq**
