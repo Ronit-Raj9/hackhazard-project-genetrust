@@ -37,7 +37,7 @@ This involved several distinct technical pillars and their associated challenges
 
 4.  **System Cohesion:** The overarching `System Integration` challenge was merging these disparate technologies (Python ML, Node.js backend, Next.js frontend, IoT streams, Blockchain interactions, Groq APIs) into a seamless platform. This demanded careful orchestration, robust inter-process communication strategies (like the FastAPI bridge), and rigorous debugging to ensure smooth interaction between components.
 
-Our development process was inherently iterative. We refined the user interface based on early feedback, addressed model latency through targeted optimizations in the Python environment and data serialization, and proactively built comprehensive backend error handling to manage the complexity of the integrated system.
+Our development process was inherently iterative. We refined the user interface based on early feedback, addressed model latency through targeted optimizations in the Python environment and data serialization, and proactively built comprehensive backend error handling to manage the complexity of the integrated system. Our detailed methodology, particularly regarding the ML model integration and validation, is further elaborated in our research paper: [Integrated Genomic Analysis Platform for Disease Prediction and CRISPR-Based Correction with Groq AI Assistance and Base Blockchain Security](https://drive.google.com/file/d/1TSzVd_GTVwccjmpRWrr23jxORlrrvRMc/view?usp=sharing).
 
 ## 🛠️ Tech Stack
 **Core Technologies Used:**
