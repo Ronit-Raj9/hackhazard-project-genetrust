@@ -41,14 +41,24 @@ class TransactionService {
    */
   async createTransaction(transactionData: CreateTransactionDTO): Promise<TransactionDocument> {
     try {
-      const transaction = new Transaction(transactionData);
-      return await transaction.save();
+      // Instead of creating a new transaction, use findOneAndUpdate with upsert
+      // This will update existing transactions with the same hash or create a new one if not found
+      const transaction = await Transaction.findOneAndUpdate(
+        { hash: transactionData.hash },
+        { ...transactionData },
+        { 
+          new: true, // Return the updated document
+          upsert: true, // Create if it doesn't exist
+          setDefaultsOnInsert: true // Apply schema defaults for new documents
+        }
+      );
+      
+      // Log successful transaction creation/update
+      logger.info(`Transaction ${transaction.hash} upserted successfully`);
+      
+      return transaction;
     } catch (error) {
-      // Handle unique constraint violation (duplicate hash)
-      if (error instanceof Error && error.name === 'MongoError' && (error as any).code === 11000) {
-        // If the transaction already exists, we'll fetch it and return it
-        return await Transaction.findOne({ hash: transactionData.hash }) as TransactionDocument;
-      }
+      logger.error('Error in transaction service - createTransaction:', error);
       throw error;
     }
   }
