@@ -5,12 +5,14 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   ExternalLink, AlertCircle, Clock, CheckCircle, XCircle, 
   Filter, ArrowLeft, ArrowRight, Loader2, DownloadCloud, RefreshCw,
-  Calendar, ChevronDown, ChevronUp, X
+  Calendar, ChevronDown, ChevronUp, X, Wallet
 } from 'lucide-react';
 import { useTransactionHistory, TransactionType, TransactionStatus, Transaction } from '@/lib/hooks/useTransactionHistory';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useChainSightStore } from '@/lib/stores/chainSightStore';
 import { transactionAPI } from '@/lib/api';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 interface TransactionHistoryProps {
   compact?: boolean;
@@ -316,14 +318,58 @@ export const TransactionHistory = ({
     }
   }, [isAuthenticated, clearBackendHistory, clearTransactionHistory, transactions.length]);
   
-  if (!isAuthenticated) {
+  // Early return with a friendly UI if wallet isn't connected
+  if (!wallet.isConnected) {
     return (
-      <div className="rounded-lg border border-indigo-500/30 bg-indigo-900/10 p-4 text-center">
-        <AlertCircle className="h-8 w-8 text-indigo-400 mx-auto mb-2" />
-        <h3 className="text-lg font-semibold text-white mb-1">Authentication Required</h3>
-        <p className="text-gray-400 text-sm">
-          Please log in to view your blockchain transaction history.
-        </p>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-xl font-bold text-white">Blockchain Transaction History</h2>
+        </div>
+        
+        <div className="flex flex-col items-center justify-center py-12 border border-dashed border-indigo-500/20 rounded-lg bg-black/20">
+          <div className="h-16 w-16 rounded-full bg-indigo-500/10 flex items-center justify-center mb-3">
+            <Wallet className="h-8 w-8 text-indigo-400/60" />
+          </div>
+          <h3 className="text-lg font-medium text-white mb-2">Wallet Not Connected</h3>
+          <p className="text-gray-400 text-sm max-w-md text-center mb-4">
+            Connect your wallet to view your blockchain transaction history and interact with the Base network.
+          </p>
+
+        </div>
+      </div>
+    );
+  }
+  
+  // If wallet is connected but we still have an error fetching data
+  if (error && !isLoading) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-xl font-bold text-white">Blockchain Transaction History</h2>
+          <Button 
+            onClick={handleRefresh}
+            className="p-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-white rounded-md border border-indigo-500/30 transition-colors"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+        
+        <div className="rounded-lg border border-red-500/30 bg-red-900/10 p-5 flex flex-col items-center">
+          <div className="flex items-center mb-2">
+            <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+            <p className="text-red-300 text-sm font-medium">Error Fetching Transaction Data</p>
+          </div>
+          <p className="text-gray-400 text-xs mb-3 text-center">
+            There was a problem retrieving your transaction history. Please try again later.
+          </p>
+          <Button 
+            onClick={handleRefresh}
+            className="bg-indigo-600/30 hover:bg-indigo-600/50 text-white text-xs px-3 py-1 rounded-md border border-indigo-500/30 transition-colors flex items-center gap-1"
+          >
+            <RefreshCw className="h-3 w-3 mr-1" />
+            Retry
+          </Button>
+        </div>
       </div>
     );
   }
@@ -503,13 +549,6 @@ export const TransactionHistory = ({
         <div className="flex flex-col items-center justify-center py-6 border border-dashed border-indigo-500/20 rounded-lg bg-black/20">
           <Loader2 className="h-6 w-6 text-indigo-400 animate-spin mb-2" />
           <p className="text-gray-400 text-xs">Loading transaction history...</p>
-        </div>
-      ) : error ? (
-        <div className="rounded-lg border border-red-500/30 bg-red-900/10 p-3">
-          <div className="flex items-center">
-            <AlertCircle className="h-4 w-4 text-red-400 mr-2" />
-            <p className="text-red-300 text-xs">{error}</p>
-          </div>
         </div>
       ) : transactions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 border border-dashed border-indigo-500/20 rounded-lg bg-black/20">
