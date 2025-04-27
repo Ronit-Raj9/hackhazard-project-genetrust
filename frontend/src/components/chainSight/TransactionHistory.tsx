@@ -331,14 +331,7 @@ export const TransactionHistory = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold text-white">Blockchain Transaction History</h2>
-          {counts && (
-            <span className="text-xs bg-indigo-900/30 px-2 py-0.5 rounded border border-indigo-500/30 text-indigo-300">
-              {Object.values(counts).reduce((sum, count) => sum + count, 0)} transactions
-            </span>
-          )}
-        </div>
+        <h2 className="text-xl font-bold text-white">Blockchain Transaction History</h2>
         <div className="flex space-x-1.5">
           <button 
             onClick={() => setShowFiltersPanel(!showFiltersPanel)}
@@ -348,13 +341,6 @@ export const TransactionHistory = ({
             Filters
             {showFiltersPanel ? <ChevronUp className="h-3.5 w-3.5 ml-1" /> : <ChevronDown className="h-3.5 w-3.5 ml-1" />}
           </button>
-          <button
-            onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`p-1.5 ${autoRefresh ? 'bg-green-600/30' : 'bg-indigo-600/30'} hover:bg-indigo-600/50 text-white rounded-md border ${autoRefresh ? 'border-green-500/30' : 'border-indigo-500/30'} transition-colors flex items-center text-xs`}
-            title={autoRefresh ? "Auto-refresh enabled" : "Auto-refresh disabled"}
-          >
-            <Clock className={`h-3.5 w-3.5 ${autoRefresh ? 'text-green-300' : 'text-white'}`} />
-          </button>
           <button 
             onClick={handleRefresh}
             disabled={isLoading || refreshing}
@@ -363,19 +349,10 @@ export const TransactionHistory = ({
           >
             <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
-          <button 
-            onClick={exportToCsv}
-            disabled={isLoading || exportLoading || transactions.length === 0}
-            className="p-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-white rounded-md border border-indigo-500/30 transition-colors"
-            title="Export to CSV"
-          >
-            {exportLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <DownloadCloud className="h-3.5 w-3.5" />}
-          </button>
         </div>
-            </div>
+      </div>
       
-      {/* Compact Transaction Type Filters */}
-      {counts && Object.keys(counts).length > 0 && (
+      {!showFiltersPanel && counts && Object.keys(counts).length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto py-1 scrollbar-thin scrollbar-thumb-indigo-700 scrollbar-track-transparent">
           {Object.entries(counts).map(([type, count]) => (
             <button 
@@ -385,7 +362,14 @@ export const TransactionHistory = ({
                   ? 'bg-indigo-700 text-white border-indigo-500' 
                   : 'bg-indigo-900/20 text-gray-300 border-gray-700 hover:bg-indigo-900/30'
               } border transition-colors flex items-center gap-1`}
-              onClick={() => setTypeFilter(type as TransactionType)}
+              onClick={() => {
+                setTypeFilter(typeFilter === type as TransactionType ? 'all' : type as TransactionType);
+                fetchTransactions({
+                  type: typeFilter === type as TransactionType ? undefined : type as TransactionType,
+                  status: statusFilter !== 'all' ? statusFilter : undefined,
+                  page: 1
+                });
+              }}
             >
               {typeLabels[type as TransactionType]}
               <span className={`${typeFilter === type ? 'bg-indigo-800' : 'bg-indigo-950'} px-1.5 py-0.5 rounded-sm`}>
@@ -399,17 +383,19 @@ export const TransactionHistory = ({
                 ? 'bg-indigo-700 text-white border-indigo-500' 
                 : 'bg-indigo-900/20 text-gray-300 border-gray-700 hover:bg-indigo-900/30'
             } border transition-colors flex items-center gap-1`}
-            onClick={() => setTypeFilter('all')}
+            onClick={() => {
+              setTypeFilter('all');
+              fetchTransactions({ type: undefined, page: 1 });
+            }}
           >
             All Types
             <span className={`${typeFilter === 'all' ? 'bg-indigo-800' : 'bg-indigo-950'} px-1.5 py-0.5 rounded-sm`}>
               {Object.values(counts).reduce((sum, count) => sum + count, 0)}
             </span>
           </button>
-            </div>
+        </div>
       )}
       
-      {/* Collapsible Filters Panel */}
       {showFilters && showFiltersPanel && (
         <div className="bg-black/30 rounded-md p-3 border border-gray-800 mb-3 animate-in fade-in">
           <div className="flex justify-between items-center mb-2">
@@ -536,103 +522,147 @@ export const TransactionHistory = ({
       ) : (
         <>
           <div className="rounded-lg overflow-hidden border border-indigo-500/30">
-        <div className="overflow-x-auto bg-black/40">
-              <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-indigo-950/50 border-b border-indigo-500/20">
-                    <th className="font-medium p-2 text-left text-indigo-200">Transaction</th>
-                    {!compact && <th className="font-medium p-2 text-left text-indigo-200">Type</th>}
-                    <th className="font-medium p-2 text-left text-indigo-200">Hash</th>
-                    <th className="font-medium p-2 text-left text-indigo-200">Time</th>
-                    <th className="font-medium p-2 text-left text-indigo-200">Status</th>
-                    <th className="font-medium p-2 text-left text-indigo-200">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-                  {transactions.map((tx, index) => {
-                    // Ensure type safety for the transaction object
-                    const type = tx.type as TransactionType;
-                    const status = tx.status as TransactionStatus;
-                    
-                    return (
-                <tr key={tx.hash} className={index % 2 === 0 ? "bg-transparent" : "bg-indigo-900/10"}>
-                        <td className="p-2 align-middle text-white">{tx.description}</td>
-                  {!compact && (
-                          <td className="p-2 align-middle">
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${typeColors[type]}`}>
-                              {typeLabels[type]}
-                      </span>
-                    </td>
-                  )}
-                        <td className="p-2 align-middle font-mono text-xs text-gray-400">
-                    {tx.hash.slice(0, 6)}...{tx.hash.slice(-4)}
-                  </td>
-                        <td className="p-2 align-middle text-xs text-gray-400">
-                          {new Date(tx.timestamp instanceof Date ? tx.timestamp.getTime() : tx.timestamp).toLocaleString()}
-                  </td>
-                        <td className="p-2 align-middle">
-                    <div className="flex items-center">
-                            {statusIcons[status]}
-                            <span className={`ml-1 text-xs ${statusColors[status]}`}>
-                              {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </span>
-                    </div>
-                  </td>
-                        <td className="p-2 align-middle">
-                    <a 
-                      href={`https://sepolia.basescan.org/tx/${tx.hash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-indigo-400 hover:text-indigo-300 flex items-center"
-                    >
-                            <span className="text-xs">View</span>
-                            <ExternalLink className="h-3 w-3 ml-0.5" />
-                    </a>
-                  </td>
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-indigo-950/50 border-b border-indigo-500/20">
+                  <th className="font-medium p-2 text-left text-indigo-200">Transaction</th>
+                  {!compact && <th className="font-medium p-2 text-left text-indigo-200">Type</th>}
+                  <th className="font-medium p-2 text-left text-indigo-200">Hash</th>
+                  <th className="font-medium p-2 text-left text-indigo-200">Time</th>
+                  <th className="font-medium p-2 text-left text-indigo-200">Status</th>
+                  <th className="font-medium p-2 text-left text-indigo-200">Actions</th>
                 </tr>
-                    );
-                  })}
-            </tbody>
-          </table>
-        </div>
-        
-            <div className="p-2 border-t border-indigo-500/30 bg-indigo-900/20 flex justify-between items-center">
-              <div className="text-xs text-gray-400">
+              </thead>
+              <tbody>
+                {transactions.map((tx) => {
+                  // Ensure type safety for the transaction object
+                  const type = tx.type as TransactionType;
+                  const status = tx.status as TransactionStatus;
+                  
+                  return (
+                    <tr key={tx.hash} className="border-b border-indigo-500/10 hover:bg-indigo-900/20">
+                      <td className="p-2 align-middle text-white">
+                        {type === 'sample' && 'Registered Sample: '}
+                        {type === 'experiment' && 'Registered Experiment for Specimen: '}
+                        {type === 'ip' && 'Registered IP: '}
+                        {type === 'access' && 'Registered Access: '}
+                        {type === 'workflow' && 'Registered Workflow: '}
+                        <span className="text-indigo-300">
+                          {tx.description.replace('Registered Sample: ', '')
+                                         .replace('Registered Experiment for Specimen: ', '')
+                                         .replace('Registered IP: ', '')
+                                         .replace('Registered Access: ', '')
+                                         .replace('Registered Workflow: ', '')}
+                        </span>
+                      </td>
+                      {!compact && (
+                        <td className="p-2 align-middle">
+                          <span className="px-2 py-1 rounded-sm text-xs font-medium bg-opacity-30" 
+                                style={{ 
+                                  backgroundColor: type === 'sample' ? '#1e40af' : 
+                                                  type === 'experiment' ? '#7e22ce' : 
+                                                  type === 'ip' ? '#be185d' :
+                                                  type === 'access' ? '#047857' :
+                                                  type === 'workflow' ? '#b45309' : '#374151',
+                                  color: type === 'sample' ? '#93c5fd' : 
+                                        type === 'experiment' ? '#d8b4fe' : 
+                                        type === 'ip' ? '#f9a8d4' :
+                                        type === 'access' ? '#6ee7b7' :
+                                        type === 'workflow' ? '#fcd34d' : '#d1d5db'
+                                }}>
+                            {typeLabels[type]}
+                          </span>
+                        </td>
+                      )}
+                      <td className="p-2 align-middle font-mono text-xs text-indigo-300">
+                        {`0x${tx.hash.slice(0, 5)}...${tx.hash.slice(-3)}`}
+                      </td>
+                      <td className="p-2 align-middle text-xs text-indigo-300/70">
+                        {new Date(tx.timestamp instanceof Date ? tx.timestamp.getTime() : tx.timestamp).toLocaleString('en-US', {
+                          month: 'numeric',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </td>
+                      <td className="p-2 align-middle">
+                        {status === 'confirmed' && (
+                          <div className="flex items-center">
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                            <span className="ml-1 text-xs text-green-400">Confirmed</span>
+                          </div>
+                        )}
+                        {status === 'pending' && (
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 text-yellow-400" />
+                            <span className="ml-1 text-xs text-yellow-400">Pending</span>
+                          </div>
+                        )}
+                        {status === 'failed' && (
+                          <div className="flex items-center">
+                            <XCircle className="h-4 w-4 text-red-400" />
+                            <span className="ml-1 text-xs text-red-400">Failed</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-2 align-middle">
+                        <a 
+                          href={`https://sepolia.basescan.org/tx/${tx.hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-300 hover:text-indigo-200 flex items-center"
+                        >
+                          <span className="text-xs">View</span>
+                          <ExternalLink className="h-3 w-3 ml-0.5" />
+                        </a>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            
+            <div className="flex justify-between items-center px-4 py-2 border-t border-indigo-500/20 bg-indigo-950/30">
+              <div className="text-xs text-indigo-300/70">
                 Showing {transactions.length} of {totalTransactions} transactions
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
                   <button
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage === 1 || isLoading}
-                    className={`p-1 rounded-md ${
-                      currentPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'text-indigo-400 hover:text-indigo-300'
+                    className={`px-2 py-1 rounded-sm text-xs ${
+                      currentPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'text-indigo-300 hover:text-indigo-200 bg-indigo-800/30 hover:bg-indigo-800/50'
                     }`}
                   >
-                    <ArrowLeft className="h-4 w-4" />
+                    <span className="flex items-center">
+                      <ArrowLeft className="h-3 w-3 mr-1" />
+                      Page {currentPage} of {totalPages}
+                    </span>
                   </button>
-                  <span className="text-white text-xs">
-                    Page {currentPage} of {totalPages}
-                  </span>
                   <button
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === totalPages || isLoading}
-                    className={`p-1 rounded-md ${
-                      currentPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'text-indigo-400 hover:text-indigo-300'
+                    className={`px-2 py-1 rounded-sm text-xs ml-2 ${
+                      currentPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'text-indigo-300 hover:text-indigo-200 bg-indigo-800/30 hover:bg-indigo-800/50'
                     }`}
                   >
-                    <ArrowRight className="h-4 w-4" />
+                    <span className="flex items-center">
+                      <ArrowRight className="h-3 w-3 ml-1" />
+                    </span>
                   </button>
                 </div>
-          <button 
-                  className="px-2 py-1 bg-red-600/20 hover:bg-red-600/40 text-white text-xs rounded-md border border-red-500/30 transition-colors"
+                <button 
+                  className="px-2 py-1 bg-red-600/20 hover:bg-red-600/30 text-white text-xs rounded-sm border border-red-500/30 transition-colors"
                   onClick={handleClearHistory}
                   disabled={transactions.length === 0}
-          >
-            Clear History
-          </button>
-        </div>
-      </div>
+                >
+                  Clear History
+                </button>
+              </div>
+            </div>
           </div>
         </>
       )}

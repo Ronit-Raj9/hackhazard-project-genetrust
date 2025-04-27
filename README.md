@@ -84,34 +84,34 @@ Both the `frontend` and `backend` directories require environment variable confi
     ```bash
     git clone https://github.com/your-team/project-name # Replace with your repo URL
     cd project-name
-    ```
+   ```
 
 2.  **Install Backend Dependencies:**
     ```bash
     cd backend
-    npm install
+   npm install
     # Set up backend/.env file as described above
     ```
 
 3.  **Start Backend Server:**
     ```bash
     # In the backend directory
-    npm run dev
-    ```
+   npm run dev
+   ```
     *(The backend should now be running, typically on a port like 8000)*
 
 4.  **Install Frontend Dependencies:**
     ```bash
     cd ../frontend # Navigate back to root, then into frontend
-    npm install
+   npm install
     # Set up frontend/.env.local file as described above
     ```
 
 5.  **Start Frontend Development Server:**
     ```bash
     # In the frontend directory
-    npm run dev
-    ```
+   npm run dev
+   ```
     *(The frontend should now be running, typically on http://localhost:3000)*
 
 6.  **Access the Application:** Open [http://localhost:3000](http://localhost:3000) in your browser.

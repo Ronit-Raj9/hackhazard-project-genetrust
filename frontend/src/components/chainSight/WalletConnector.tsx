@@ -447,12 +447,26 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
                   </div>
                 </motion.div>
               ) : (
-          <motion.div 
-            variants={itemVariants}
-                  className="flex justify-center mb-6"
-          >
-            <PersistentConnectButton />
-          </motion.div>
+                <motion.div 
+                  variants={itemVariants}
+                  className="mb-6"
+                >
+                  <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-0.5 rounded-lg shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all">
+                    <div className="bg-gradient-to-br from-black/80 to-indigo-950/90 rounded-md p-4 flex flex-col items-center">
+                      <span className="text-white font-medium mb-3 text-center">Connect your wallet to interact with the blockchain</span>
+                      <div className="w-full relative">
+                        <div className="absolute -inset-0.5 bg-indigo-500 rounded-lg opacity-20 blur-md animate-pulse"></div>
+                        <div className="relative w-full">
+                          <PersistentConnectButton />
+                        </div>
+                      </div>
+                      <div className="flex items-center mt-3 text-xs text-indigo-300">
+                        <Wallet className="w-3 h-3 mr-1" />
+                        <span>Secure connection using Base Network</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               )}
 
               {/* Info Section: About Base Network */}
@@ -481,7 +495,7 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
               >
                 <div className="flex items-center space-x-2">
                   <Zap className="w-5 h-5 text-indigo-400" />
-                  <span className="font-medium">Why Connect?</span>
+                  <span className="font-medium text-white">Why Connect?</span>
             </div>
                   {isConnectReasonExpanded ? (
                   <ChevronUp className="w-5 h-5 text-indigo-400" />
@@ -535,7 +549,7 @@ const WalletConnector: React.FC<WalletConnectorProps> = ({
               >
                 <div className="flex items-center space-x-2">
                   <AlertTriangle className="w-5 h-5 text-yellow-400" />
-                  <span className="font-medium">Security Information</span>
+                  <span className="font-medium text-white">Security Information</span>
             </div>
                   {isSecurityInfoExpanded ? (
                   <ChevronUp className="w-5 h-5 text-indigo-400" />

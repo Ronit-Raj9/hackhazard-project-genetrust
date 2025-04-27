@@ -11,6 +11,10 @@ import * as geneService from '../gene.service';
 import transactionService from '../transaction.service';
 import * as labService from '../labIoTService';
 import ChatSession from '../../models/chat-session.model';
+import User from '../../models/user.model';
+import Profile from '../../models/profile.model';
+import Gene from '../../models/gene.model';
+import { Transaction } from '../../models/transaction.model';
 /**
  * SynapseCore
  * A unified AI service that combines functionality from:
@@ -505,7 +509,7 @@ export class SynapseCore {
   //===== RAG (RETRIEVAL) METHODS =====
 
   /**
-   * Retrieve relevant knowledge chunks based on query and context
+   * Retrieve knowledge relevant to the user's query, including user-specific data
    */
   async retrieveKnowledge(
     query: string,
@@ -513,47 +517,338 @@ export class SynapseCore {
     userId: string,
     maxChunks: number = 5
   ): Promise<KnowledgeChunk[]> {
-    logger.info('Retrieving knowledge for query', { 
-      query, 
-      userId, 
-      contextType: contextHint.dataType || 'general'
-    });
-    
     try {
-      const chunks: KnowledgeChunk[] = [];
+      logger.info('Retrieving knowledge for user query', { userId, query });
       
-      // Retrieve context-specific knowledge
-      if (contextHint.dataType === 'gene_analysis' && contextHint.relevantId) {
-        // Get gene analysis data
-        const geneChunks = await this.retrieveGeneContext(contextHint.relevantId, userId);
-        chunks.push(...geneChunks);
-      } 
-      else if (contextHint.dataType === 'blockchain_transaction' && contextHint.relevantId) {
-        // Get blockchain transaction data
-        const txChunks = await this.retrieveTransactionContext(contextHint.relevantId, userId);
-        chunks.push(...txChunks);
-      } 
-      else if (contextHint.dataType === 'lab_monitor') {
-        // Get lab monitoring data
-        const labChunks = await this.retrieveLabContext(userId);
-        chunks.push(...labChunks);
+      let chunks: KnowledgeChunk[] = [];
+      const dataType = contextHint.dataType || 'general';
+
+      // First, retrieve user-specific base context data for RAG
+      const userContextChunks = await this.retrieveUserContext(userId, query);
+      chunks = [...chunks, ...userContextChunks];
+      
+      // Then get context specific to the page/dataType the user is on
+      if (dataType === 'gene_analysis' && contextHint.relevantId) {
+        const geneContextChunks = await this.retrieveGeneContext(
+          contextHint.relevantId,
+          userId
+        );
+        chunks = [...chunks, ...geneContextChunks];
+      } else if (dataType === 'blockchain_transaction' && contextHint.relevantId) {
+        const transactionContextChunks = await this.retrieveTransactionContext(
+          contextHint.relevantId,
+          userId
+        );
+        chunks = [...chunks, ...transactionContextChunks];
+      } else if (dataType === 'lab_monitor') {
+        const labContextChunks = await this.retrieveLabContext(userId);
+        chunks = [...chunks, ...labContextChunks];
+      } else {
+        // For general queries, use keyword analysis to selectively retrieve data
+        if (this.isQueryAboutPredictions(query)) {
+          const genePredictionChunks = await this.retrieveUserGenePredictions(userId, 3);
+          chunks = [...chunks, ...genePredictionChunks];
+        }
+        
+        if (this.isQueryAboutTransactions(query)) {
+          const transactionChunks = await this.retrieveUserTransactions(userId, 3);
+          chunks = [...chunks, ...transactionChunks];
+        }
+        
+        // Get general context for anything else
+        const generalContextChunks = await this.retrieveGeneralContext(query, userId);
+        chunks = [...chunks, ...generalContextChunks];
       }
       
-      // If we have specific chunks from context, return those
-      if (chunks.length > 0) {
-        return chunks.slice(0, maxChunks);
-      }
+      // Rank chunks by relevance to query
+      const rankedChunks = this.rankChunks(chunks, query);
       
-      // If no context-specific data or not enough, fetch general knowledge
-      const generalChunks = await this.retrieveGeneralContext(query, userId);
-      chunks.push(...generalChunks);
-      
-      // Return combined and sorted chunks, limited to maxChunks
-      return this.rankChunks(chunks, query).slice(0, maxChunks);
+      // Return the most relevant chunks up to maxChunks
+      return rankedChunks.slice(0, maxChunks);
     } catch (error) {
-      logger.error('Error retrieving knowledge chunks:', error);
+      logger.error('Error retrieving knowledge:', error);
+      // Return empty array on error
       return [];
     }
+  }
+  
+  /**
+   * Retrieve basic user context data (profile, preferences, etc.)
+   */
+  private async retrieveUserContext(userId: string, query: string): Promise<KnowledgeChunk[]> {
+    try {
+      if (!userId || userId === 'anonymous') {
+        return [{
+          content: "User is not authenticated. No personalized data available.",
+          source: "system",
+          sourceType: "system"
+        }];
+      }
+      
+      const chunks: KnowledgeChunk[] = [];
+      
+      // Get user profile information
+      const user = await User.findById(this.safeObjectId(userId))
+        .select('name email walletAddress preferences');
+      
+      if (user) {
+        const userProfileChunk: KnowledgeChunk = {
+          content: `User Profile Information:
+Name: ${user.name || 'Not provided'}
+Email: ${user.email || 'Not provided'}
+Wallet Address: ${user.walletAddress || 'Not connected'}
+Theme Preference: ${user.preferences?.theme || 'default'}`,
+          source: "user_profile",
+          sourceType: "user",
+          relevance: 1.0 // Always include user profile context
+        };
+        
+        chunks.push(userProfileChunk);
+      }
+      
+      // Get extended profile if available
+      try {
+        const profile = await Profile.findOne({ userId: this.safeObjectId(userId) });
+        
+        if (profile) {
+          const profileChunk: KnowledgeChunk = {
+            content: `User Extended Profile:
+Role: ${profile.role || 'Not specified'}
+Experience Level: ${profile.experienceLevel || 'Not specified'}
+Interests: ${profile.interests?.join(', ') || 'None specified'}
+Onboarding Completed: ${profile.onboardingCompleted ? 'Yes' : 'No'}`,
+            source: "user_extended_profile",
+            sourceType: "user",
+            relevance: 0.9
+          };
+          
+          chunks.push(profileChunk);
+        }
+      } catch (profileError) {
+        logger.warn('Error fetching user profile, continuing without it:', profileError);
+        // Continue without profile data
+      }
+      
+      // Add activity summaries
+      const geneticActivity = await this.getUserGeneticActivitySummary(userId);
+      const blockchainActivity = await this.getUserBlockchainActivitySummary(userId);
+      
+      if (geneticActivity) {
+        chunks.push({
+          content: geneticActivity,
+          source: "genetic_activity_summary",
+          sourceType: "user",
+          relevance: this.isQueryAboutPredictions(query) ? 0.95 : 0.7
+        });
+      }
+      
+      if (blockchainActivity) {
+        chunks.push({
+          content: blockchainActivity,
+          source: "blockchain_activity_summary",
+          sourceType: "user",
+          relevance: this.isQueryAboutTransactions(query) ? 0.95 : 0.7
+        });
+      }
+      
+      return chunks;
+    } catch (error) {
+      logger.error('Error retrieving user context:', error);
+      return [];
+    }
+  }
+  
+  /**
+   * Generate a summary of user's genetic activity
+   */
+  private async getUserGeneticActivitySummary(userId: string): Promise<string | null> {
+    try {
+      const geneModel = mongoose.model('Gene');
+      
+      // Count predictions
+      const predictionsCount = await geneModel.countDocuments({ 
+        userId: this.safeObjectId(userId),
+        type: 'prediction'
+      });
+      
+      // Get latest prediction date
+      const latestPrediction = await geneModel.findOne({ 
+        userId: this.safeObjectId(userId),
+        type: 'prediction'
+      }).sort({ createdAt: -1 });
+      
+      const latestDate = latestPrediction ? 
+        new Date(latestPrediction.createdAt).toLocaleDateString() : 
+        'never';
+      
+      if (predictionsCount === 0) {
+        return 'You have not made any gene predictions yet.';
+      }
+      
+      return `Genetic Activity Summary:
+Total gene predictions: ${predictionsCount}
+Last prediction: ${latestDate}
+${latestPrediction ? `Latest sequence analyzed: ${latestPrediction.sequence?.substring(0, 20)}...` : ''}`;
+    } catch (error) {
+      logger.error('Error getting genetic activity summary:', error);
+      return null;
+    }
+  }
+  
+  /**
+   * Generate a summary of user's blockchain activity
+   */
+  private async getUserBlockchainActivitySummary(userId: string): Promise<string | null> {
+    try {
+      // Get transaction counts by type
+      const transactionCounts = await Transaction.aggregate([
+        { $match: { userId: this.safeObjectId(userId) } },
+        { $group: { _id: '$type', count: { $sum: 1 } } }
+      ]);
+      
+      // Count total transactions
+      const totalTransactions = transactionCounts.reduce((sum, item) => sum + item.count, 0);
+      
+      // Get latest transaction
+      const latestTransaction = await Transaction.findOne({ 
+        userId: this.safeObjectId(userId) 
+      }).sort({ timestamp: -1 });
+      
+      const latestDate = latestTransaction ? 
+        new Date(latestTransaction.timestamp).toLocaleDateString() : 
+        'never';
+        
+      if (totalTransactions === 0) {
+        return 'You have not recorded any blockchain transactions yet.';
+      }
+      
+      // Format transaction type counts in a readable way
+      const typeCounts = transactionCounts.map(item => 
+        `${item._id}: ${item.count}`
+      ).join(', ');
+      
+      return `Blockchain Activity Summary:
+Total transactions: ${totalTransactions}
+Transaction types: ${typeCounts}
+Last transaction: ${latestDate}
+${latestTransaction ? `Latest transaction: ${latestTransaction.description || latestTransaction.hash}` : ''}`;
+    } catch (error) {
+      logger.error('Error getting blockchain activity summary:', error);
+      return null;
+    }
+  }
+  
+  /**
+   * Retrieve recent gene predictions for the user
+   */
+  private async retrieveUserGenePredictions(userId: string, limit: number = 3): Promise<KnowledgeChunk[]> {
+    try {
+      const geneModel = mongoose.model('Gene');
+      
+      // Get recent predictions
+      const predictions = await geneModel.find({ 
+        userId: this.safeObjectId(userId),
+        type: 'prediction'
+      })
+      .sort({ createdAt: -1 })
+      .limit(limit);
+      
+      if (!predictions || predictions.length === 0) {
+        return [];
+      }
+      
+      // Convert each prediction to a knowledge chunk
+      return predictions.map(prediction => ({
+        content: `Gene Prediction (${new Date(prediction.createdAt).toLocaleDateString()}):
+Sequence ID: ${prediction._id}
+Original Sequence: ${prediction.sequence?.substring(0, 30)}...
+Prediction Type: ${prediction.metadata?.predictionType || 'standard'}
+Result: ${prediction.result?.substring(0, 100) || 'Not available'}`,
+        source: prediction._id.toString(),
+        sourceType: 'gene',
+        timestamp: prediction.createdAt,
+        metadata: {
+          sequenceId: prediction._id.toString(),
+          sequenceType: prediction.type
+        }
+      }));
+    } catch (error) {
+      logger.error('Error retrieving user gene predictions:', error);
+      return [];
+    }
+  }
+  
+  /**
+   * Retrieve recent blockchain transactions for the user
+   */
+  private async retrieveUserTransactions(userId: string, limit: number = 3): Promise<KnowledgeChunk[]> {
+    try {
+      // Get recent transactions
+      const transactions = await Transaction.find({ 
+        userId: this.safeObjectId(userId)
+      })
+      .sort({ timestamp: -1 })
+      .limit(limit);
+      
+      if (!transactions || transactions.length === 0) {
+        return [];
+      }
+      
+      // Convert each transaction to a knowledge chunk
+      return transactions.map(tx => ({
+        content: `Blockchain Transaction (${new Date(tx.timestamp).toLocaleDateString()}):
+Hash: ${tx.hash.substring(0, 10)}...
+Description: ${tx.description}
+Type: ${tx.type}
+Status: ${tx.status}
+${tx.blockNumber ? `Block Number: ${tx.blockNumber}` : ''}`,
+        source: tx.hash,
+        sourceType: 'transaction',
+        timestamp: tx.timestamp instanceof Date ? tx.timestamp : new Date(tx.timestamp),
+        metadata: {
+          transactionHash: tx.hash,
+          type: tx.type,
+          status: tx.status
+        }
+      }));
+    } catch (error) {
+      logger.error('Error retrieving user transactions:', error);
+      return [];
+    }
+  }
+  
+  /**
+   * Check if the query is related to gene predictions
+   */
+  private isQueryAboutPredictions(query: string): boolean {
+    const predictionKeywords = [
+      'gene', 'prediction', 'sequence', 'dna', 'rna', 'crispr', 
+      'edit', 'genetic', 'genomic', 'analysis', 'predict', 'base',
+      'mutation', 'code', 'strand', 'experiment'
+    ];
+    
+    return this.containsKeywords(query.toLowerCase(), predictionKeywords);
+  }
+  
+  /**
+   * Check if the query is related to blockchain transactions
+   */
+  private isQueryAboutTransactions(query: string): boolean {
+    const transactionKeywords = [
+      'transaction', 'blockchain', 'wallet', 'crypto', 'base', 
+      'hash', 'block', 'contract', 'transfer', 'ledger', 'record',
+      'history', 'chain', 'sample', 'experiment', 'ip', 'intellectual',
+      'provenance', 'workflow', 'access'
+    ];
+    
+    return this.containsKeywords(query.toLowerCase(), transactionKeywords);
+  }
+  
+  /**
+   * Check if text contains any of the keywords
+   */
+  private containsKeywords(text: string, keywords: string[]): boolean {
+    return keywords.some(keyword => text.includes(keyword));
   }
 
   /**
@@ -786,16 +1081,52 @@ ${alerts.map((alert, index) => {
   }
 
   /**
-   * Format retrieved context into a single string
+   * Format the retrieved context into a coherent text block for the LLM
    */
   formatRetrievedContext(chunks: KnowledgeChunk[]): string {
     if (!chunks || chunks.length === 0) {
-      return "No specific context available.";
+      return '';
     }
     
-    return chunks.map((chunk, index) => {
-      return `SOURCE ${index + 1} [${chunk.sourceType}:${chunk.source}]:\n${chunk.content}`;
+    // Sort chunks by source type to group similar information
+    chunks.sort((a, b) => {
+      // First prioritize user data
+      if (a.sourceType === 'user' && b.sourceType !== 'user') return -1;
+      if (a.sourceType !== 'user' && b.sourceType === 'user') return 1;
+      
+      // Then prioritize by relevance
+      return (b.relevance || 0) - (a.relevance || 0);
+    });
+    
+    // Build the context string
+    const formattedContext = chunks.map(chunk => {
+      // Add a header based on source type
+      let header = '';
+      
+      switch (chunk.sourceType) {
+        case 'user':
+          header = '[USER INFORMATION]';
+          break;
+        case 'gene':
+          header = '[GENE DATA]';
+          break;
+        case 'transaction':
+          header = '[BLOCKCHAIN DATA]';
+          break;
+        case 'lab':
+          header = '[LABORATORY DATA]';
+          break;
+        case 'system':
+          header = '[SYSTEM INFORMATION]';
+          break;
+        default:
+          header = `[${chunk.sourceType.toUpperCase()}]`;
+      }
+      
+      return `${header}\n${chunk.content}`;
     }).join('\n\n');
+    
+    return `===USER AND SYSTEM CONTEXT===\n${formattedContext}\n===END OF CONTEXT===\n\n`;
   }
 
   /**
@@ -942,7 +1273,7 @@ ${alerts.map((alert, index) => {
   async getSession(
     userId: string,
     sessionId: string
-  ): Promise<import('../../models/chat-session.model.ts').IChatSession | null> {
+  ): Promise<import('../../models/chat-session.model').IChatSession | null> {
     // Retrieve the session document including messages
     return ChatSession.findOne({ userId, sessionId }).lean();
   }
@@ -1026,34 +1357,26 @@ ${alerts.map((alert, index) => {
     retrievedContext: string,
     chatHistory: Array<{ role: 'user' | 'assistant'; content: string }>
   ): ChatMessage[] {
-    // Base system prompt
-    const messages: ChatMessage[] = [
-      {
-        role: 'system',
-        content: `${this.systemPrompts.default}\n\nIncorporate relevant information from the provided context in your responses. Cite sources when appropriate.`
-      }
-    ];
+    // Create the system message with enhanced user context
+    const systemMessage: ChatMessage = {
+      role: 'system',
+      content: `${this.systemPrompts.default}\n\nYou have access to the user's data, including their profile, gene predictions, and blockchain transactions. Use this information to provide personalized assistance. Ensure your responses are accurate, helpful, and contextually relevant.\n\n${retrievedContext}`
+    };
     
-    // Add context if available
-    if (retrievedContext && retrievedContext !== "No specific context available.") {
-      messages.push({
-        role: 'system',
-        content: `Here is relevant context to help answer the user's query:\n\n${retrievedContext}`
-      });
-    }
-    
-    // Add chat history for conversation context
-    if (chatHistory && chatHistory.length > 0) {
-      chatHistory.forEach(msg => messages.push(msg as ChatMessage));
-    }
+    // Convert chat history to the format expected by the LLM
+    const historyMessages: ChatMessage[] = chatHistory.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
     
     // Add the current user query
-    messages.push({
+    const userMessage: ChatMessage = {
       role: 'user',
       content: userQuery
-    });
+    };
     
-    return messages;
+    // Assemble and return the full prompt array
+    return [systemMessage, ...historyMessages, userMessage];
   }
 
   /**
@@ -1261,9 +1584,90 @@ ${alerts.map((alert, index) => {
    * Process a message using the agent approach (compatibility method)
    */
   async processAgentMessage(message: UserMessage): Promise<AssistantResponse> {
-    // For simplicity, just delegate to the standard processUserMessage
-    // In a real implementation, this would have more sophisticated logic
-    return this.processUserMessage(message);
+    const startTime = Date.now();
+    
+    try {
+      logger.info('Processing agent message', { 
+        userId: message.userId,
+        sessionId: message.sessionId,
+        contentLength: message.content.length
+      });
+      
+      // Get chat history for context
+      const chatHistory = await this.getChatHistory(message.sessionId);
+      
+      // First, retrieve relevant knowledge based on the message and user context
+      const relevantKnowledge = await this.retrieveKnowledge(
+        message.content,
+        message.contextHint || {},
+        message.userId
+      );
+      
+      // Format the retrieved knowledge into a coherent context block
+      const formattedContext = this.formatRetrievedContext(relevantKnowledge);
+      
+      // Assemble the prompt with the user query, retrieved context, and chat history
+      const prompt = this.assemblePrompt(
+        message.content,
+        formattedContext,
+        chatHistory
+      );
+      
+      // Save the user message to the database
+      await this.saveUserMessage(
+        message.sessionId,
+        message.userId,
+        message.content,
+        message.contextHint
+      );
+      
+      // Call the LLM to generate a response
+      const completion = await this.groq.chat.completions.create({
+        messages: prompt,
+        model: this.model,
+        temperature: 0.7,
+        max_tokens: 2048
+      });
+      
+      // Extract the assistant's response
+      const assistantResponse = completion.choices[0].message.content || 'I apologize, but I was unable to generate a response.';
+      
+      // Save the assistant's response to the database
+      await this.saveAssistantMessage(
+        message.sessionId,
+        message.userId,
+        assistantResponse,
+        undefined, // No audio for now
+        this.model,
+        Date.now() - startTime
+      );
+      
+      logger.info('Agent response generated successfully', {
+        userId: message.userId,
+        sessionId: message.sessionId,
+        processingTimeMs: Date.now() - startTime
+      });
+      
+      // Return the response
+      return {
+        sessionId: message.sessionId,
+        userId: message.userId,
+        textContent: assistantResponse,
+        processingTimeMs: Date.now() - startTime,
+        modelUsed: this.model
+      };
+    } catch (error) {
+      logger.error('Error processing agent message:', error);
+      
+      return {
+        sessionId: message.sessionId,
+        userId: message.userId,
+        textContent: 'I apologize, but I encountered an error while processing your request. Please try again.',
+        processingTimeMs: Date.now() - startTime,
+        modelUsed: this.model,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
   }
 
   /**

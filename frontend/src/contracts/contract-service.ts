@@ -738,7 +738,7 @@ export async function grantResearcherAccess(role: string, targetAccount: string)
 export async function updateGeneticSampleStatus(sampleId: string, status: string, notes: string): Promise<string> {
   // First create a workflow if needed
   let workflowId = BigInt(1); // Default to first workflow for demo
-  
+    
   return writeContract('workflowAutomation', 'completeStep', [
     workflowId,
     BigInt(getWorkflowStatusValue(status)) // Use status value as step ID

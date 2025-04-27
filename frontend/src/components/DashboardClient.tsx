@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { Settings, User, LogOut, Shield, Moon, Sun, Activity, Bell, ChevronDown, FileText } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { Settings, User, LogOut, Wallet, Shield, Moon, Sun, Activity, Bell, ChevronDown, FileText, ExternalLink, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { profileAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -22,9 +23,10 @@ import {
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import React from 'react';
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import Link from 'next/link';
-import { TransactionHistory } from './dashboard/TransactionHistory';
 import { ActivityFeed } from './dashboard/ActivityFeed';
+import { useActivityData } from '@/lib/hooks/useActivityData';
 
 // Import GeneList component
 const GeneList = dynamic(() => import('./dashboard/GeneList'), {
@@ -75,6 +77,12 @@ export default function DashboardClient() {
   const [darkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [isMounted, setIsMounted] = useState(false);
+  
+  // Wagmi hooks for wallet connection
+  const { address, isConnected } = useAccount();
+  
+  // Add the useActivityData hook
+  const { activities, isLoading: isLoadingActivities, error: activitiesError } = useActivityData();
   
   // Set isMounted state on client side
   useEffect(() => {
@@ -247,7 +255,7 @@ export default function DashboardClient() {
                         className="font-medium text-white px-2.5 py-1 bg-indigo-700/30 rounded-full text-sm"
                         whileHover={{ scale: 1.05 }}
                       >
-                        {user.email ? 'Email' : 'Guest'}
+                        {user.email ? 'Email' : 'Wallet'}
                       </motion.span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -348,13 +356,13 @@ export default function DashboardClient() {
               </Card>
             </motion.div>
 
-            {/* Settings Card */}
+            {/* Wallet Card */}
             <motion.div variants={fadeIn} custom={1}>
               <Card className="backdrop-blur-sm bg-gray-900/30 border-indigo-500/20 overflow-hidden h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-transparent to-cyan-900/10 rounded-lg"></div>
                 <CardHeader className="relative pb-4 border-b border-indigo-500/10">
-                  <CardTitle className="text-indigo-100">Dashboard Settings</CardTitle>
-                  <CardDescription className="text-indigo-300/70">Manage your account preferences</CardDescription>
+                  <CardTitle className="text-indigo-100">Wallet Connection</CardTitle>
+                  <CardDescription className="text-indigo-300/70">Manage your blockchain wallet</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-0 relative pt-6">
                   <motion.div 
@@ -364,23 +372,48 @@ export default function DashboardClient() {
                   >
                     <div className="flex items-center space-x-3">
                       <div className="bg-indigo-900/50 p-3 rounded-full border border-indigo-500/30 shadow-lg shadow-indigo-500/10">
-                        <FileText className="h-6 w-6 text-indigo-300" />
+                        <Wallet className="h-6 w-6 text-indigo-300" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-white">Activity Tracking</h3>
+                        <h3 className="font-medium text-white">Wallet Status</h3>
                         <p className="text-sm text-indigo-300/70">
-                          {user?.email ? 'Email verified' : 'Not verified'}
+                      {isConnected ? 'Connected' : 'Not connected'}
                         </p>
                       </div>
                     </div>
                     <div>
-                      <Badge className={user?.email 
-                        ? "bg-green-900/30 text-green-300 border border-green-500/30" 
-                        : "bg-gray-800/50 text-gray-300 border border-gray-600/30"}>
-                        {user?.email ? 'Active' : 'Inactive'}
+                  {isConnected ? (
+                        <Badge className="bg-green-900/30 text-green-300 border border-green-500/30">
+                      Active
+                    </Badge>
+                  ) : (
+                        <Badge className="bg-gray-800/50 text-gray-300 border border-gray-600/30">
+                      Inactive
                       </Badge>
+                  )}
                     </div>
                   </motion.div>
+
+                  <AnimatePresence>
+              {isConnected && address && (
+                      <motion.div 
+                        className="mb-6 p-4 bg-indigo-900/20 rounded-lg border border-indigo-500/20"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                      >
+                  <div className="flex justify-between items-center">
+                          <span className="text-sm text-indigo-300/70">Address</span>
+                          <motion.span 
+                            className="text-sm font-mono font-medium text-indigo-100 bg-indigo-800/30 px-2 py-1 rounded-md"
+                            whileHover={{ scale: 1.05 }}
+                          >
+                      {`${address.substring(0, 6)}...${address.substring(38)}`}
+                          </motion.span>
+                  </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   <motion.div 
                     className="flex justify-between items-center"
@@ -392,7 +425,7 @@ export default function DashboardClient() {
                         <Shield className="h-5 w-5 text-orange-300" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-white">Data Protection</h3>
+                        <h3 className="font-medium text-white">Secured Connection</h3>
                         <p className="text-sm text-indigo-300/70">End-to-end encryption</p>
                       </div>
                     </div>
@@ -404,63 +437,91 @@ export default function DashboardClient() {
                   </motion.div>
                 </CardContent>
                 <CardFooter className="pt-6 pb-6 relative">
-                  <Link href="/settings" passHref>
+                <Link href="/chainSight" passHref>
                     <Button 
                       className="w-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center"
                     >
-                      <Settings className="h-4 w-4 mr-2" />
-                      Manage Account Settings
+                    <Wallet className="h-4 w-4 mr-2" />
+                    Go to Wallet Hub
+                    <ExternalLink className="h-4 w-4 ml-2" />
                     </Button>
                   </Link>
                 </CardFooter>
               </Card>
             </motion.div>
 
-            {/* User Activity Card */}
-            <motion.div variants={fadeIn} custom={2}>
+            {/* Settings Card */}
+            {/* <motion.div variants={fadeIn} custom={2}>
               <Card className="backdrop-blur-sm bg-gray-900/30 border-indigo-500/20 overflow-hidden h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-transparent to-cyan-900/10 rounded-lg"></div>
                 <CardHeader className="relative pb-4 border-b border-indigo-500/10">
-                  <CardTitle className="text-indigo-100">Recent Activity</CardTitle>
-                  <CardDescription className="text-indigo-300/70">Your latest interactions</CardDescription>
+                  <CardTitle className="text-indigo-100">Settings</CardTitle>
+                  <CardDescription className="text-indigo-300/70">Manage your account preferences</CardDescription>
                 </CardHeader>
                 <CardContent className="relative pt-6">
-                  <div className="space-y-4">
-                    {profile?.recentActivity?.slice(0, 3)?.map((activity: any, index: number) => (
+              <div className="space-y-6">
                       <motion.div
-                        key={index}
-                        className="p-3 bg-indigo-900/20 rounded-lg border border-indigo-500/20"
+                      className="flex justify-between items-center" 
                         whileHover={{ scale: 1.02 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
                       >
-                        <div className="flex justify-between items-start">
+                  <div className="flex items-center space-x-3">
+                        <div className="bg-blue-900/30 p-3 rounded-full border border-blue-500/30 shadow-lg shadow-blue-500/5">
+                      {darkMode ? (
+                            <Moon className="h-5 w-5 text-blue-300" />
+                      ) : (
+                            <Sun className="h-5 w-5 text-blue-300" />
+                      )}
+                    </div>
                           <div>
-                            <p className="font-medium text-white">{activity.type}</p>
-                            <p className="text-xs text-indigo-300/70">{activity.description || 'Activity recorded'}</p>
+                          <h3 className="font-medium text-white">Dark Mode</h3>
+                          <p className="text-sm text-indigo-300/70">Toggle dark or light theme</p>
                           </div>
-                          <span className="text-xs text-indigo-300/70">
-                            {new Date(activity.timestamp).toLocaleDateString()}
-                          </span>
                         </div>
+                      <Switch 
+                        checked={darkMode} 
+                        onCheckedChange={toggleDarkMode} 
+                        className="data-[state=checked]:bg-indigo-600"
+                      />
                       </motion.div>
-                    ))}
 
-                    {(!profile?.recentActivity || profile.recentActivity.length === 0) && (
-                      <div className="text-center py-6">
-                        <p className="text-indigo-300/70">No recent activity</p>
+                    <motion.div 
+                      className="flex justify-between items-center"
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                  <div className="flex items-center space-x-3">
+                        <div className="bg-purple-900/30 p-3 rounded-full border border-purple-500/30 shadow-lg shadow-purple-500/5">
+                          <Bell className="h-5 w-5 text-purple-300" />
+                    </div>
+                    <div>
+                          <h3 className="font-medium text-white">Notifications</h3>
+                          <p className="text-sm text-indigo-300/70">Receive email updates</p>
                       </div>
-                    )}
+                  </div>
+                      <Switch defaultChecked className="data-[state=checked]:bg-indigo-600" />
+                    </motion.div>
+
+                    <motion.div 
+                      className="flex justify-between items-center"
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                  <div className="flex items-center space-x-3">
+                        <div className="bg-green-900/30 p-3 rounded-full border border-green-500/30 shadow-lg shadow-green-500/5">
+                          <Activity className="h-5 w-5 text-green-300" />
+                    </div>
+                    <div>
+                          <h3 className="font-medium text-white">Activity Logs</h3>
+                          <p className="text-sm text-indigo-300/70">Track your account activity</p>
+                        </div>
+                    </div>
+                      <Switch className="data-[state=checked]:bg-indigo-600" />
+                    </motion.div>
                   </div>
                 </CardContent>
-                <CardFooter className="pt-6 pb-6 relative">
-                  <Button 
-                    onClick={() => setActiveTab('all')} 
-                    className="w-full bg-indigo-600/20 hover:bg-indigo-600/30 text-white border border-indigo-500/30"
-                  >
-                    View All Activity
-                  </Button>
-                </CardFooter>
               </Card>
-            </motion.div>
+            </motion.div> */}
           </motion.div>
 
           {/* Recent Activity Section */}
@@ -535,8 +596,121 @@ export default function DashboardClient() {
                         </div>
                       ) : activeTab === 'transactions' ? (
                         <div className="space-y-6">
-                          {/* Just use the component directly */}
-                          <TransactionHistory limit={8} />
+                          {/* Show transactions from activity data */}
+                          {isLoadingActivities ? (
+                            <div className="flex justify-center items-center py-12">
+                              <div className="relative w-12 h-12">
+                                <div className="absolute inset-0 rounded-full border-t-2 border-r-2 border-indigo-500 animate-spin"></div>
+                                <div className="absolute inset-3 rounded-full border-t-2 border-l-2 border-cyan-400 animate-spin-slow"></div>
+                              </div>
+                            </div>
+                          ) : activitiesError ? (
+                            <motion.div 
+                              className="text-center py-12 bg-red-900/10 rounded-lg border border-red-500/10"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                            >
+                              <FileText className="h-12 w-12 mx-auto mb-4 text-red-400/50" />
+                              <p className="text-lg text-red-300">Error Loading Transactions</p>
+                              <p className="text-sm text-red-300/70 mt-1">{activitiesError}</p>
+                            </motion.div>
+                          ) : (
+                            <>
+                              {activities.filter(activity => activity.type === 'transaction').length > 0 ? (
+                                <div className="overflow-x-auto bg-gray-900/30 rounded-lg border border-indigo-500/20">
+                                  <table className="w-full text-sm">
+                                    <tbody>
+                                      {activities
+                                        .filter(activity => activity.type === 'transaction')
+                                        .map((transaction) => (
+                                          <tr 
+                                            key={transaction.id}
+                                            className="border-b border-indigo-500/10 hover:bg-indigo-900/30 transition-colors"
+                                          >
+                                            <td className="py-4 pl-4 pr-2">
+                                              <div className="font-medium text-indigo-100">
+                                                {/* Use transaction title or default based on type */}
+                                                Registered {transaction.data.type ? (
+                                                  <>
+                                                    {transaction.data.type === 'sample' && 'Sample: '}
+                                                    {transaction.data.type === 'experiment' && 'Experiment for Specimen: '}
+                                                    {transaction.data.type === 'ip' && 'IP: '}
+                                                    {transaction.data.type === 'access' && 'Access: '}
+                                                    {transaction.data.type === 'workflow' && 'Workflow: '}
+                                                    {transaction.data.type === 'other' && ''}
+                                                  </>
+                                                ) : ''}
+                                                <span className="text-indigo-300">
+                                                  {transaction.title.replace('Blockchain Transaction', '').replace('Transaction', '')}
+                                                </span>
+                                              </div>
+                                            </td>
+                                            <td className="py-4 px-2">
+                                              <Link 
+                                                href={`/chainSight/transaction/${transaction.id}`} 
+                                                className="text-indigo-300 hover:text-indigo-200 transition font-mono"
+                                              >
+                                                {transaction.data.hash && (
+                                                  <>0x{transaction.data.hash.substring(0, 5)}...{transaction.data.hash.substring(transaction.data.hash.length - 3)}</>
+                                                )}
+                                              </Link>
+                                            </td>
+                                            <td className="py-4 px-2 text-indigo-300/70">
+                                              {new Date(transaction.timestamp).toLocaleString('en-US', {
+                                                month: 'numeric',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true
+                                              })}
+                                            </td>
+                                            <td className="py-4 px-2">
+                                              {transaction.data.status === 'confirmed' && (
+                                                <div className="flex items-center">
+                                                  <CheckCircle className="h-4 w-4 text-green-400 mr-1.5" />
+                                                  <span className="text-green-400">Confirmed</span>
+                                                </div>
+                                              )}
+                                              {transaction.data.status === 'pending' && (
+                                                <div className="flex items-center">
+                                                  <Clock className="h-4 w-4 text-yellow-400 mr-1.5" />
+                                                  <span className="text-yellow-400">Pending</span>
+                                                </div>
+                                              )}
+                                              {transaction.data.status === 'failed' && (
+                                                <div className="flex items-center">
+                                                  <XCircle className="h-4 w-4 text-red-400 mr-1.5" />
+                                                  <span className="text-red-400">Failed</span>
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="py-4 pl-2 pr-4 text-right">
+                                              <Link 
+                                                href={`/chainSight/transaction/${transaction.id}`}
+                                                className="text-indigo-300 hover:text-indigo-200 transition flex items-center justify-end"
+                                              >
+                                                View <ExternalLink className="h-3.5 w-3.5 ml-1" />
+                                              </Link>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <motion.div 
+                                  className="text-center py-12 bg-indigo-900/10 rounded-lg border border-indigo-500/10"
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                >
+                                  <FileText className="h-12 w-12 mx-auto mb-4 text-indigo-400/50" />
+                                  <p className="text-lg text-indigo-300">No Transactions Found</p>
+                                  <p className="text-sm text-indigo-300/70 mt-1">Your transaction history will appear here</p>
+                                </motion.div>
+                              )}
+                            </>
+                          )}
                         </div>
                       ) : (
                         profile?.recentActivity?.filter((a: any) => a.type === 'monitoring')?.length > 0 ? (

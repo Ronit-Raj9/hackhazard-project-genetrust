@@ -1,6 +1,7 @@
 'use client';
 
 import axios from 'axios';
+import { Transaction } from './hooks/useDashboardTransactions';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -255,28 +256,24 @@ export const geneAPI = {
 
 // Transaction API for blockchain transactions
 export const transactionAPI = {
-  // Create a new blockchain transaction record
-  createTransaction: (transactionData: {
-    hash: string;
-    description: string;
-    type: 'sample' | 'experiment' | 'access' | 'workflow' | 'ip' | 'other';
-    timestamp?: number; // Milliseconds timestamp
-    status?: 'pending' | 'confirmed' | 'failed';
-    walletAddress: string;
-    blockNumber?: number;
-    gasUsed?: number;
-    metadata?: Record<string, any>;
-    entityId?: string;
-    contractAddress?: string;
-  }) => api.post('/transactions', transactionData),
+  createTransaction: async (data: Partial<Transaction>) => {
+    try {
+      return await api.post('/transactions', data);
+    } catch (error) {
+      console.error('Error creating transaction:', error);
+      throw error;
+    }
+  },
   
-  // Update transaction status (e.g., when confirmed on blockchain)
-  updateTransactionStatus: (hash: string, status: 'pending' | 'confirmed' | 'failed', blockData?: {
-    blockNumber: number;
-    gasUsed: number;
-  }) => api.patch(`/transactions/${hash}/status`, { status, ...blockData }),
+  updateTransaction: async (id: string, data: Partial<Transaction>) => {
+    try {
+      return await api.put(`/transactions/${id}`, data);
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      throw error;
+    }
+  },
   
-  // Get all transactions for the user with filtering
   getUserTransactions: (options?: {
     type?: string | string[]; // Single type or comma-separated list
     status?: string | string[]; // Single status or comma-separated list
@@ -289,55 +286,90 @@ export const transactionAPI = {
     sort?: string;
     order?: 'asc' | 'desc';
   }) => {
-    const params = new URLSearchParams();
-    if (options) {
-      if (options.type) {
-        const typeParam = Array.isArray(options.type) ? options.type.join(',') : options.type;
-        params.append('type', typeParam);
+    try {
+      const params = new URLSearchParams();
+
+      if (options) {
+        // Handle type filtering
+        if (options.type) {
+          const typeValue = Array.isArray(options.type) ? options.type.join(',') : options.type;
+          params.append('type', typeValue);
+        }
+        
+        // Handle status filtering
+        if (options.status) {
+          const statusValue = Array.isArray(options.status) ? options.status.join(',') : options.status;
+          params.append('status', statusValue);
+        }
+        
+        // Handle date range filtering
+        if (options.fromDate) {
+          const fromDateString = options.fromDate instanceof Date 
+            ? options.fromDate.toISOString() 
+            : options.fromDate;
+          params.append('fromDate', fromDateString);
+        }
+        
+        if (options.toDate) {
+          const toDateString = options.toDate instanceof Date 
+            ? options.toDate.toISOString() 
+            : options.toDate;
+          params.append('toDate', toDateString);
+        }
+        
+        // Handle entity filtering
+        if (options.entityId) {
+          params.append('entityId', options.entityId);
+        }
+        
+        // Handle wallet filtering
+        if (options.walletAddress) {
+          params.append('walletAddress', options.walletAddress);
+        }
+        
+        // Handle pagination
+        if (options.page) {
+          params.append('page', options.page.toString());
+        }
+        
+        if (options.limit) {
+          params.append('limit', options.limit.toString());
+        }
+        
+        // Handle sorting
+        if (options.sort) {
+          params.append('sort', options.sort);
+        }
+        
+        if (options.order) {
+          params.append('order', options.order);
+        }
       }
       
-      if (options.status) {
-        const statusParam = Array.isArray(options.status) ? options.status.join(',') : options.status;
-        params.append('status', statusParam);
-      }
-      
-      if (options.walletAddress) params.append('walletAddress', options.walletAddress);
-      if (options.entityId) params.append('entityId', options.entityId);
-      
-      if (options.fromDate) {
-        const fromDateStr = options.fromDate instanceof Date 
-          ? options.fromDate.toISOString() 
-          : options.fromDate;
-        params.append('fromDate', fromDateStr);
-      }
-      
-      if (options.toDate) {
-        const toDateStr = options.toDate instanceof Date 
-          ? options.toDate.toISOString() 
-          : options.toDate;
-        params.append('toDate', toDateStr);
-      }
-      
-      if (options.page) params.append('page', options.page.toString());
-      if (options.limit) params.append('limit', options.limit.toString());
-      if (options.sort) params.append('sort', options.sort);
-      if (options.order) params.append('order', options.order);
+      return api.get(`/transactions?${params.toString()}`);
+    } catch (error) {
+      console.error('Error fetching user transactions:', error);
+      throw error;
     }
-    
-    return api.get(`/transactions?${params.toString()}`);
   },
   
-  // Get a specific transaction by hash
-  getTransactionByHash: (hash: string) => api.get(`/transactions/${hash}`),
+  getTransactionCounts: async () => {
+    try {
+      return await api.get('/transactions/counts');
+    } catch (error) {
+      console.error('Error getting transaction counts:', error);
+      throw error;
+    }
+  },
   
-  // Delete a transaction record
-  deleteTransaction: (hash: string) => api.delete(`/transactions/${hash}`),
-  
-  // Get transaction counts by type
-  getTransactionCounts: () => api.get('/transactions/stats/counts'),
-  
-  // Clear transaction history (soft delete)
-  clearTransactions: () => api.post('/transactions/clear')
+  clearTransactions: async () => {
+    try {
+      return await api.delete('/transactions');
+    } catch (error) {
+      console.error('Error clearing transactions:', error);
+      throw error;
+    }
+  }
 };
 
 // IoT Monitoring API

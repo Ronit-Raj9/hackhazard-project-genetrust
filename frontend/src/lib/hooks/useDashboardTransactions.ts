@@ -1,153 +1,264 @@
-import { useState, useCallback, useEffect } from 'react';
-import { transactionAPI } from '../api';
-import { useAuth } from './useAuth';
+'use client';
 
-export type TransactionType = 'sample' | 'experiment' | 'access' | 'workflow' | 'ip' | 'other';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from './useAuth';
+import { transactionAPI } from '@/lib/api';
+
 export type TransactionStatus = 'pending' | 'confirmed' | 'failed';
+export type TransactionType = 'sample' | 'experiment' | 'access' | 'workflow' | 'ip' | 'other';
 
 export interface Transaction {
-  _id?: string;
   hash: string;
-  description: string;
+  timestamp: string | Date;
+  description?: string;
   type: TransactionType;
-  timestamp: number | Date;
   status: TransactionStatus;
+  from?: string;
+  to?: string;
+  value?: string;
+  gas?: string;
   blockNumber?: number;
-  gasUsed?: number;
-  metadata?: Record<string, any>;
-  entityId?: string;
 }
 
 export interface TransactionFilter {
-  type?: TransactionType | TransactionType[];
-  status?: TransactionStatus | TransactionStatus[];
-  fromDate?: Date;
-  toDate?: Date;
-  entityId?: string;
   page?: number;
   limit?: number;
-  sort?: string;
-  order?: 'asc' | 'desc';
+  status?: TransactionStatus;
+  type?: TransactionType;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface UseDashboardTransactionsResult {
   transactions: Transaction[];
   isLoading: boolean;
   error: string | null;
+  filters: TransactionFilter;
+  updateFilters: (newFilters: TransactionFilter) => void;
+  refreshTransactions: () => Promise<void>;
   totalTransactions: number;
   currentPage: number;
   totalPages: number;
   pageSize: number;
-  fetchTransactions: (filters?: TransactionFilter) => Promise<void>;
-  goToPage: (page: number) => Promise<void>;
   clearTransactions: () => Promise<void>;
-  refreshTransactions: () => Promise<void>;
+  goToPage: (page: number) => void;
 }
 
-export function useDashboardTransactions(initialFilters?: TransactionFilter): UseDashboardTransactionsResult {
+// Mock transactions for development/fallback
+const MOCK_TRANSACTIONS: Transaction[] = [
+  {
+    hash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+    description: 'Sample Transaction',
+    type: 'sample',
+    status: 'confirmed',
+    from: '0xabcdef1234567890abcdef1234567890abcdef12',
+    to: '0x1234567890abcdef1234567890abcdef12345678',
+    value: '0.5 ETH'
+  },
+  {
+    hash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+    description: 'Experiment Verification',
+    type: 'experiment',
+    status: 'pending',
+    from: '0x1234567890abcdef1234567890abcdef12345678',
+    to: '0xabcdef1234567890abcdef1234567890abcdef12',
+    value: '0.1 ETH'
+  }
+];
+
+export function useDashboardTransactions(
+  initialFilters: TransactionFilter = {}
+): UseDashboardTransactionsResult {
   const { isAuthenticated } = useAuth();
-  
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalTransactions, setTotalTransactions] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState<number>(initialFilters?.page || 1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(initialFilters?.limit || 10);
-  const [filters, setFilters] = useState<TransactionFilter>(initialFilters || {});
+  const [filters, setFilters] = useState<TransactionFilter>(initialFilters);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [currentPage, setCurrentPage] = useState(initialFilters.page || 1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize, setPageSize] = useState(initialFilters.limit || 10);
   
-  // Fetch transactions with filters
+  // Use a ref to track if the component is mounted
+  const isMounted = useRef(false);
+  // Use a ref to prevent multiple concurrent fetches
+  const isFetching = useRef(false);
+
   const fetchTransactions = useCallback(async (newFilters?: TransactionFilter) => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || isFetching.current || !isMounted.current) return;
     
+    isFetching.current = true;
     setIsLoading(true);
     setError(null);
     
+    const updatedFilters = newFilters ? { ...filters, ...newFilters } : filters;
+    if (newFilters) {
+      setFilters(updatedFilters);
+    }
+    
     try {
-      // Update filters if new ones are provided
-      const currentFilters = newFilters ? { ...filters, ...newFilters } : filters;
-      setFilters(currentFilters);
-      
-      // If page is provided, update current page
-      if (newFilters?.page) {
-        setCurrentPage(newFilters.page);
-      }
-      
-      // If limit is provided, update page size
-      if (newFilters?.limit) {
-        setPageSize(newFilters.limit);
-      }
-      
       const response = await transactionAPI.getUserTransactions({
-        ...currentFilters,
-        page: newFilters?.page || currentPage,
-        limit: newFilters?.limit || pageSize
+        status: updatedFilters.status || undefined,
+        type: updatedFilters.type || undefined,
+        page: updatedFilters.page || 1,
+        limit: updatedFilters.limit || pageSize
       });
       
-      const { transactions, total, page, limit, totalPages } = response.data.data;
-      
-      setTransactions(transactions);
-      setTotalTransactions(total);
-      setCurrentPage(page);
-      setPageSize(limit);
-      setTotalPages(totalPages);
-    } catch (err) {
+      if (isMounted.current) {
+        // Extract data from the response properly
+        let transactionData: Transaction[] = [];
+        let total = 0;
+        let pages = 1;
+        let current = 1;
+        let size = pageSize;
+        
+        // Handle different response structures
+        if (response && response.data) {
+          // API returns { success: true, data: { transactions, total, page, limit, totalPages } }
+          const responseData = response.data;
+          
+          if (responseData.success && responseData.data) {
+            // Handle the paginated response from backend
+            if (responseData.data.transactions) {
+              transactionData = responseData.data.transactions;
+              total = responseData.data.total || transactionData.length;
+              pages = responseData.data.totalPages || 1;
+              current = responseData.data.page || 1;
+              size = responseData.data.limit || pageSize;
+            } 
+            // Handle direct array in data
+            else if (Array.isArray(responseData.data)) {
+              transactionData = responseData.data;
+              total = transactionData.length;
+              pages = 1;
+              current = 1;
+            }
+            // Handle single transaction object
+            else if (responseData.data.hash) {
+              transactionData = [responseData.data];
+              total = 1;
+              pages = 1;
+              current = 1;
+            }
+          }
+          // Direct data array without success wrapper
+          else if (Array.isArray(responseData)) {
+            transactionData = responseData;
+            total = responseData.length;
+            pages = 1;
+            current = 1;
+          }
+        }
+        // Direct array response
+        else if (Array.isArray(response)) {
+          transactionData = response;
+          total = response.length;
+          pages = 1;
+          current = 1;
+        }
+        
+        setTransactions(transactionData);
+        setTotalTransactions(total);
+        setTotalPages(pages);
+        setCurrentPage(current);
+        setPageSize(size);
+        setIsLoading(false);
+      }
+    } catch (err: any) {
       console.error('Error fetching transactions:', err);
-      setError('Failed to load transaction history');
+      
+      if (isMounted.current) {
+        setIsLoading(false);
+        setError(err?.message || 'Failed to fetch transaction history');
+        
+        // Fallback to mock data during development
+        if (process.env.NODE_ENV === 'development') {
+          setTransactions(MOCK_TRANSACTIONS);
+          setTotalTransactions(MOCK_TRANSACTIONS.length);
+          setTotalPages(1);
+          setCurrentPage(1);
+        }
+      }
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        isFetching.current = false;
+      }
     }
-  }, [isAuthenticated, filters, currentPage, pageSize]);
-  
+  }, [filters, isAuthenticated, pageSize]);
+
+  // Function to refresh transactions with current filters
+  const refreshTransactions = useCallback(async () => {
+    if (!isFetching.current && isMounted.current) {
+      await fetchTransactions();
+    }
+  }, [fetchTransactions]);
+
+  // Update filters and fetch transactions
+  const updateFilters = useCallback((newFilters: TransactionFilter) => {
+    if (!isFetching.current && isMounted.current) {
+      fetchTransactions(newFilters);
+    }
+  }, [fetchTransactions]);
+
   // Go to a specific page
-  const goToPage = useCallback(async (page: number) => {
-    if (page < 1 || page > totalPages) return;
-    
-    await fetchTransactions({ ...filters, page });
-  }, [fetchTransactions, filters, totalPages]);
-  
-  // Clear transaction history
+  const goToPage = useCallback((page: number) => {
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      updateFilters({ ...filters, page });
+    }
+  }, [updateFilters, filters, totalPages, currentPage]);
+
+  // Clear transactions
   const clearTransactions = useCallback(async () => {
+    if (!isAuthenticated || !isMounted.current) return;
+    
     try {
       await transactionAPI.clearTransactions();
-      
-      // Clear local state
-      setTransactions([]);
-      setTotalTransactions(0);
-      setCurrentPage(1);
-      setTotalPages(1);
-      
-      return Promise.resolve();
-    } catch (err) {
-      console.error('Error clearing transaction history:', err);
-      setError('Failed to clear transaction history');
-      return Promise.reject(err);
+      if (isMounted.current) {
+        setTransactions([]);
+        setTotalTransactions(0);
+        setTotalPages(1);
+        setCurrentPage(1);
+      }
+    } catch (err: any) {
+      console.error('Error clearing transactions:', err);
+      if (isMounted.current) {
+        setError(err?.message || 'Failed to clear transaction history');
+      }
     }
-  }, []);
+  }, [isAuthenticated]);
 
-  // Refresh transactions (simple refresh without additional parameters)
-  const refreshTransactions = useCallback(async () => {
-    await fetchTransactions();
-  }, [fetchTransactions]);
-  
-  // Initial data fetch
+  // Track initial mount
+  const initialFetchComplete = useRef(false);
+
+  // Set up mount state
   useEffect(() => {
-    if (isAuthenticated) {
+    isMounted.current = true;
+    
+    // Initial data fetch - only on first mount or auth change
+    if (isAuthenticated && !initialFetchComplete.current && !isFetching.current) {
+      initialFetchComplete.current = true;
       fetchTransactions();
     }
-  }, [isAuthenticated, fetchTransactions]);
-  
+    
+    return () => {
+      isMounted.current = false;
+    };
+  }, [isAuthenticated]); // Remove fetchTransactions from dependencies
+
   return {
     transactions,
     isLoading,
     error,
+    filters,
+    updateFilters,
+    refreshTransactions,
     totalTransactions,
     currentPage,
     totalPages,
     pageSize,
-    fetchTransactions,
-    goToPage,
     clearTransactions,
-    refreshTransactions
+    goToPage
   };
 } 
