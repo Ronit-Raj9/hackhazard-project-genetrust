@@ -22,7 +22,7 @@ By combining AI-powered prediction (a fine-tuned DNABERT model accelerated by Gr
 - Ronit Raj (Web Platform Development and Integration) – [GitHub](https://github.com/Ronit-Raj9) / [LinkedIn](https://www.linkedin.com/in/ronitrajai/)  
 - Achyut Mukund (Blockchain and Smart Contract) – [GitHub](https://github.com/cropsgg) / [LinkedIn](https://www.linkedin.com/in/achyut-mukund-845857289/)  
 - Vishwesh Pal Saini (ML Model Development) – [GitHub](https://github.com/VishPS) / [LinkedIn](https://linkedin.com/in/username)  
-- Madhav Mittal (IOT Integration) – [GitHub](https://github.com/msquarex) / [LinkedIn](https://linkedin.com/in/username)
+- Madhav Mittal (IOT Integration) – [GitHub](https://github.com/msquarex) / [LinkedIn](https://www.linkedin.com/in/madhav-mittal-4368b7313/)
 
 **Our Approach:**  
 Recognizing the significant hurdles in modern gene editing—precise guide RNA design, maintaining optimal lab conditions, and ensuring data integrity—we set out to build GeneTrust. Our core strategy was to synergistically combine specialized AI, real-time IoT monitoring, and the transparency of blockchain.
@@ -37,7 +37,7 @@ This involved several distinct technical pillars and their associated challenges
 
 4.  **System Cohesion:** The overarching `System Integration` challenge was merging these disparate technologies (Python ML, Node.js backend, Next.js frontend, IoT streams, Blockchain interactions, Groq APIs) into a seamless platform. This demanded careful orchestration, robust inter-process communication strategies (like the FastAPI bridge), and rigorous debugging to ensure smooth interaction between components.
 
-Our development process was inherently iterative. We refined the user interface based on early feedback, addressed model latency through targeted optimizations in the Python environment and data serialization, and proactively built comprehensive backend error handling to manage the complexity of the integrated system. Our detailed methodology, particularly regarding the ML model integration and validation, is further elaborated in our research paper: [Integrated Genomic Analysis Platform for Disease Prediction and CRISPR-Based Correction with Groq AI Assistance and Base Blockchain Security](https://drive.google.com/file/d/1TSzVd_GTVwccjmpRWrr23jxORlrrvRMc/view?usp=sharing).
+Our development process was inherently iterative. We refined the user interface based on early feedback, addressed model latency through targeted optimizations in the Python environment and data serialization, and proactively built comprehensive backend error handling to manage the complexity of the integrated system. Our detailed methodology, particularly regarding the ML model integration and validation, is further elaborated in our research paper: [Integrated Genomic Analysis Platform for Disease Prediction and CRISPR-Based Correction with Groq AI Assistance and Base Blockchain Security](https://drive.google.com/drive/folders/1OcGagvPWv3VIOOOnRxrxvKYWFugpBD3q).
 
 ## 🛠️ Tech Stack
 **Core Technologies Used:**
@@ -65,9 +65,9 @@ Our development process was inherently iterative. We refined the user interface 
 - **Pitch Deck:** [Google Slides/PDF](https://docs.google.com/presentation/d/19zmHUoRo7Z4dBQV9ap6FYX2ClHsseUO8/edit?usp=sharing&ouid=106709470696939680714&rtpof=true&sd=true)
 
 ## ✅ Tasks & Bonus Checklist
-- [ ] All team members followed official social channels and submitted the form (mandatory)  
-- [ ] Bonus Task 1 – Shared our hackathon badges and filed the form (2 points)  
-- [ ] Bonus Task 2 – Signed up for Sprint.dev and filed the form (3 points)
+- [✅] All team members followed official social channels and submitted the form (mandatory)  
+- [✅ ] Bonus Task 1 – Shared our hackathon badges and filed the form (2 points)  
+- [✅ ] Bonus Task 2 – Signed up for Sprint.dev and filed the form (3 points)
 
 ## 🧪 How to Run the Project
 
