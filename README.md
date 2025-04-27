@@ -5,8 +5,8 @@ Empowering Precision Gene Editing with AI 🤖, IoT 🌐, and Blockchain 🔗 �
 
 
 ## 📌 Problem Statement
-**Problem Statement 1 – Weave AI magic with Groq**
-**Problem Statement 4 – Craft the Future of Onchain Consumer Experiences with Base**
+- **Problem Statement 1 – Weave AI magic with Groq**
+- **Problem Statement 4 – Craft the Future of Onchain Consumer Experiences with Base**
 
 ## 🎯 Objective
 GeneTrust addresses critical challenges in CRISPR-based gene editing—specifically, the difficulty in designing effective guide RNAs, the sensitivity of experiments to lab conditions, and the need for secure, traceable data management. Our objective is to empower researchers, biotech professionals, and students with an integrated platform that significantly enhances the efficiency, reliability, and trustworthiness of gene editing workflows. 
