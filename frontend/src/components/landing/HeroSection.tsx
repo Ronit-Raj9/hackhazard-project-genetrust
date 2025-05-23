@@ -79,7 +79,7 @@ export default function HeroSection() {
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               <AnimatedButton 
-                href="/crispr-predictor" 
+                href="/gene-predictor" 
                 className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-lg shadow-indigo-600/30 backdrop-blur-sm"
                 icon={<Dna className="ml-2 h-5 w-5" />}
               >
