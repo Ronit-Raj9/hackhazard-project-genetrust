@@ -87,7 +87,7 @@ export default function HeroSection() {
               </AnimatedButton>
               
               <AnimatedButton 
-                href="/dashboard/monitor" 
+                href="/lab-monitor" 
                 variant="secondary"
                 className="px-6 py-3 rounded-lg shadow-lg shadow-indigo-900/20 backdrop-blur-sm"
                 icon={<Gauge className="ml-2 h-5 w-5" />}
@@ -96,7 +96,7 @@ export default function HeroSection() {
               </AnimatedButton>
               
               <AnimatedButton 
-                href="/dashboard/blockchain" 
+                href="/chainSight" 
                 variant="outline"
                 className="px-6 py-3 text-white border-white hover:bg-white/10 rounded-lg shadow-lg backdrop-blur-sm"
                 icon={<ShieldCheck className="ml-2 h-5 w-5" />}
